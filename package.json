@@ -7,9 +7,10 @@
   "scripts": {
     "start": "webpack serve --mode development",
     "build": "webpack --mode production",
-    "transpile": "babel src -d dist --extensions \".ts,.tsx\" --copy-files",
+    "transpile": "babel src -d dist --extensions \".ts,.tsx\" --copy-files --ignore \"src/**/*.test.ts\",\"src/**/*.test.tsx\",\"src/**/*.test.js\"",
     "build:types": "tsc --project tsconfig.json",
     "build:lib": "npm run transpile && npm run build:types",
+    "test": "jest",
     "prepublishOnly": "npm run build:lib"
   },
   "repository": {
@@ -34,12 +35,12 @@
     "dist"
   ],
   "peerDependencies": {
-    "react": ">=18 <20",
-    "react-dom": ">=18 <20",
-    "@mui/material": ">=6 <10",
-    "@mui/icons-material": ">=6 <10",
     "@emotion/react": "^11.0.0",
-    "@emotion/styled": "^11.0.0"
+    "@emotion/styled": "^11.0.0",
+    "@mui/icons-material": ">=6 <10",
+    "@mui/material": ">=6 <10",
+    "react": ">=18 <20",
+    "react-dom": ">=18 <20"
   },
   "dependencies": {
     "react-image-pan-zoom-rotate": "^1.6.0",
@@ -55,14 +56,21 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.0.0",
     "@mui/material": "^9.0.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/jest": "^30.0.0",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "babel-loader": "^10.1.1",
     "css-loader": "^7.1.4",
     "html-webpack-plugin": "^5.6.6",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "style-loader": "^4.0.0",
+    "ts-jest": "^29.4.9",
     "typescript": "^5.7.3",
     "webpack": "^5.106.1",
     "webpack-cli": "^7.0.2",

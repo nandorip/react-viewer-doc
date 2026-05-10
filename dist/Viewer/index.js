@@ -29,7 +29,8 @@ var MAX_ZOOM = 5;
 var MIN_ZOOM = 0.5;
 var Viewer = exports.Viewer = function Viewer(_ref) {
   var document = _ref.document,
-    extraToolbar = _ref.extraToolbar;
+    extraToolbar = _ref.extraToolbar,
+    height = _ref.height;
   var _useState = (0, _react.useState)(''),
     _useState2 = _slicedToArray(_useState, 2),
     error = _useState2[0],
@@ -92,6 +93,8 @@ var Viewer = exports.Viewer = function Viewer(_ref) {
     setDx(0);
     setDy(0);
     setZoom(1);
+    setPageNumber(1);
+    setNumPages(0);
   };
   var onPan = function onPan(x, y) {
     setDx(x);
@@ -102,9 +105,11 @@ var Viewer = exports.Viewer = function Viewer(_ref) {
     var element = containerRef.current;
     if (!element) return;
     var handleWheel = function handleWheel(e) {
-      e.preventDefault();
-      var newScale = e.deltaY < 0 ? zoom + ZOOM_SENSITIVITY : zoom - ZOOM_SENSITIVITY;
-      handleZoom(newScale);
+      if (e.ctrlKey) {
+        e.preventDefault();
+        var newScale = e.deltaY < 0 ? zoom + ZOOM_SENSITIVITY : zoom - ZOOM_SENSITIVITY;
+        handleZoom(newScale);
+      }
     };
     element.addEventListener('wheel', handleWheel, {
       passive: false
@@ -134,45 +139,56 @@ var Viewer = exports.Viewer = function Viewer(_ref) {
     }
   };
   var buildFile = function buildFile(fileBase64) {
+    var content = fileBase64;
+    if (fileBase64.startsWith('data:')) {
+      var parts = fileBase64.split(',');
+      if (parts.length > 1) {
+        content = parts[1];
+      }
+    }
     var type = (0, _FileHelpers.getFileTypeFromFile)(fileBase64);
+    var mime = (0, _FileHelpers.getMimeTypeFromBase64)(fileBase64);
     if (type === _FileHelpers.FileExtension.PDF) {
-      var blobFile = (0, _FileHelpers.base64ToBlob)(fileBase64, 'application/pdf');
+      var blobFile = (0, _FileHelpers.base64ToBlob)(content, 'application/pdf');
       return {
         file: blobFile,
-        type: 'pdf'
+        type: 'pdf',
+        mime: mime
       };
     }
-    var prefix = (0, _FileHelpers.getDataURLPrefix)(type);
     return {
-      file: "".concat(prefix).concat(prefix.includes(',') ? '' : ',').concat(fileBase64),
-      type: 'jpeg'
+      file: "data:".concat(mime, ";base64,").concat(content),
+      type: 'image',
+      mime: mime
     };
   };
   var initData = /*#__PURE__*/function () {
     var _ref3 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
-      var arquivo, responseFile, _buildFile, file, type, _buildFile2, _file, _type, extension;
+      var arquivo, responseFile, _buildFile, file, mime, _buildFile2, _file, _mime, extension;
       return _regenerator().w(function (_context) {
         while (1) switch (_context.n) {
           case 0:
-            arquivo = document.document;
+            arquivo = document;
             if (arquivo) {
               _context.n = 1;
               break;
             }
-            setError('Nenhum arquivo selecionado!');
+            setFileType(undefined);
+            setFileSelected(null);
+            setError('');
             return _context.a(2);
           case 1:
             if (!isInitialState()) reset();
             responseFile = arquivo.fileUri;
             if (responseFile === undefined) {
               if (arquivo.fileData) {
-                _buildFile = buildFile(arquivo.fileData), file = _buildFile.file, type = _buildFile.type;
-                setFileType(_FileHelpers.FileTypes[type]);
+                _buildFile = buildFile(arquivo.fileData), file = _buildFile.file, mime = _buildFile.mime;
+                setFileType(mime);
                 setFileSelected(file);
               }
             } else if (responseFile.startsWith('data:')) {
-              _buildFile2 = buildFile(responseFile), _file = _buildFile2.file, _type = _buildFile2.type;
-              setFileType(_FileHelpers.FileTypes[_type]);
+              _buildFile2 = buildFile(responseFile), _file = _buildFile2.file, _mime = _buildFile2.mime;
+              setFileType(_mime);
               setFileSelected(_file);
             } else {
               extension = (0, _FileHelpers.getExtension)(responseFile);
@@ -210,20 +226,28 @@ var Viewer = exports.Viewer = function Viewer(_ref) {
         extra: extraToolbar
       }), fileType === _FileHelpers.FileTypes.pdf ? /*#__PURE__*/(0, _jsxRuntime.jsx)(_styles.DocumentContainer, {
         ref: containerRef,
+        height: height,
+        "data-testid": "document-container",
         children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactPdf.Document, {
           file: fileSelected,
           onLoadSuccess: onPdfLoadSuccess,
+          loading: /*#__PURE__*/(0, _jsxRuntime.jsx)("div", {
+            children: "Carregando documento..."
+          }),
           children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactPdf.Page, {
             pageNumber: pageNumber,
             scale: zoom,
             rotate: rotation,
-            height: 500
+            renderTextLayer: true,
+            renderAnnotationLayer: true
           })
         })
       }) : /*#__PURE__*/(0, _jsxRuntime.jsx)(_styles.ImageContainer, {
         zoom: zoom,
         rotation: rotation,
         ref: containerRef,
+        height: height,
+        "data-testid": "image-container",
         children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactImagePanZoomRotate.PanViewer, {
           zoom: zoom,
           setZoom: function setZoom() {

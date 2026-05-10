@@ -1,13 +1,51 @@
 import styled from '@emotion/styled';
 
 export const ContainerDiv = styled.div`
+  display: flex;
+  flex-direction: column;
   background-color: #f5f5f5;
   border: 1px solid #e0e0e0;
   border-radius: 12px;
   height: 100%;
   width: 100%;
-  gap: 8px;
-  text-align: center;
+  overflow: hidden;
+`;
+
+export const MainContent = styled.div`
+  display: flex;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+`;
+
+export const SidebarContainer = styled.div<{ visible: boolean }>`
+  width: ${props => (props.visible ? '200px' : '0')};
+  transition: width 0.3s ease;
+  background-color: #f0f0f0;
+  border-right: 1px solid #e0e0e0;
+  overflow-y: auto;
+  overflow-x: hidden;
+`;
+
+export const ThumbnailItem = styled.div<{ active: boolean }>`
+  padding: 8px;
+  cursor: pointer;
+  background-color: ${props => (props.active ? '#e3f2fd' : 'transparent')};
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+
+  canvas {
+    max-width: 100% !important;
+    height: auto !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
 `;
 
 export const ToolbarContainer = styled.div`
@@ -42,41 +80,45 @@ export const ButtonContainer = styled.div`
   gap: 16px;
 `;
 
-export const DocumentContainer = styled.div`
+export const DocumentContainer = styled.div<{ height?: string | number }>`
   display: flex;
+  justify-content: center;
   width: 100%;
-  height: 320px;
+  height: ${props => (typeof props.height === 'number' ? `${props.height}px` : props.height || '600px')};
   padding: 16px;
   overflow: auto;
-  scroll-margin: 100px;
+  background-color: #525659;
+  border-radius: 0 0 12px 12px;
 
   canvas {
-    transition: all 0.5s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-bottom: 16px;
   }
 `;
 
 export interface ImageContainerProps {
   zoom: number;
   rotation: number;
+  height?: string | number;
 }
 
 export const ImageContainer = styled.div<ImageContainerProps>`
   display: flex;
   justify-content: center;
   align-items: center;
-  max-width: 99%;
-  height: 400px;
+  max-width: 100%;
+  height: ${props => (typeof props.height === 'number' ? `${props.height}px` : props.height || '600px')};
   padding: 16px;
   overflow: hidden;
-  max-width: 100%;
-  border-radius: 12px;
+  border-radius: 0 0 12px 12px;
+  background-color: #f5f5f5;
 
   img {
     max-width: 100%;
-    max-height: 370px;
-    transition: all 0.5s;
-    rotate: ${props => props.rotation}deg;
-    transform: scale(${props => props.zoom});
+    max-height: 100%;
+    transition: transform 0.3s ease;
+    transform: rotate(${props => props.rotation}deg) scale(${props => props.zoom});
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
 `;
 

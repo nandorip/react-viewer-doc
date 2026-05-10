@@ -3,9 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.base64ToBlob = exports.FileTypes = exports.FileExtension = void 0;
-exports.getDataURLPrefix = getDataURLPrefix;
-exports.isBase64Data = exports.getFileTypeFromFile = exports.getExtension = void 0;
+exports.isBase64Data = exports.getMimeTypeFromBase64 = exports.getFileTypeFromFile = exports.getExtension = exports.base64ToBlob = exports.FileTypes = exports.FileExtension = void 0;
 /* eslint-disable consistent-return */
 /* eslint-disable default-case */
 /* eslint-disable no-plusplus */
@@ -15,22 +13,14 @@ var FileTypes = exports.FileTypes = {
   png: 'image/png',
   jpg: 'image/jpeg',
   jpeg: 'image/jpeg',
+  gif: 'image/gif',
+  webp: 'image/webp',
   csv: 'text/csv'
 };
 var FileExtension = exports.FileExtension = {
   NONE: 0,
   IMAGE: 1,
-  PDF: 2,
-  properties: {
-    1: {
-      key: 1,
-      value: ['jpg', 'jpeg', 'png', '/', 'i']
-    },
-    2: {
-      key: 2,
-      value: ['pdf', 'j']
-    }
-  }
+  PDF: 2
 };
 var getFileTypeFromFile = exports.getFileTypeFromFile = function getFileTypeFromFile(data) {
   if (!data) return FileExtension.NONE;
@@ -38,9 +28,9 @@ var getFileTypeFromFile = exports.getFileTypeFromFile = function getFileTypeFrom
   if (data.startsWith('data:')) {
     var parts = data.split(',');
     if (parts.length > 1) {
-      var mime = parts[0];
-      if (mime.includes('application/pdf')) return FileExtension.PDF;
-      if (mime.includes('image/')) return FileExtension.IMAGE;
+      var mimePart = parts[0];
+      if (mimePart.includes('application/pdf')) return FileExtension.PDF;
+      if (mimePart.includes('image/')) return FileExtension.IMAGE;
       content = parts[1];
     }
   }
@@ -51,10 +41,31 @@ var getFileTypeFromFile = exports.getFileTypeFromFile = function getFileTypeFrom
 
   // Image headers in base64:
   // JPEG: /9j/
-  // PNG: iVBOR
-  // GIF: R0lG
-  if (['/', 'i', 'R'].includes(firstChar)) return FileExtension.IMAGE;
+  // PNG: iVBOR (i)
+  // GIF: R0lG (R)
+  // WebP: UklG (U)
+  if (['/', 'i', 'R', 'U'].includes(firstChar)) return FileExtension.IMAGE;
   return FileExtension.NONE;
+};
+var getMimeTypeFromBase64 = exports.getMimeTypeFromBase64 = function getMimeTypeFromBase64(base64) {
+  if (base64.startsWith('data:')) {
+    return base64.split(';')[0].split(':')[1];
+  }
+  var firstChar = base64.charAt(0);
+  switch (firstChar) {
+    case 'J':
+      return 'application/pdf';
+    case 'i':
+      return 'image/png';
+    case '/':
+      return 'image/jpeg';
+    case 'R':
+      return 'image/gif';
+    case 'U':
+      return 'image/webp';
+    default:
+      return 'application/octet-stream';
+  }
 };
 var base64ToBlob = exports.base64ToBlob = function base64ToBlob(base64, mimeType) {
   var content = base64;
@@ -81,15 +92,6 @@ var getExtension = exports.getExtension = function getExtension(file) {
   var parts = urlWithoutQuery.split('.');
   return parts.length > 1 ? ((_parts$pop = parts.pop()) === null || _parts$pop === void 0 ? void 0 : _parts$pop.toLowerCase()) || '' : '';
 };
-function getDataURLPrefix(type) {
-  switch (type) {
-    case FileExtension.PDF:
-      return 'data:application/pdf;base64';
-    case FileExtension.IMAGE:
-    default:
-      return 'data:image/jpeg;base64';
-  }
-}
 var isBase64Data = exports.isBase64Data = function isBase64Data(data) {
   return /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/.test(data);
 };

@@ -5,9 +5,12 @@ A versatile React component for viewing documents, supporting both images (JPG, 
 ## Features
 
 - 📄 **PDF Support**: View PDF files from URLs or base64 strings.
-- 🖼️ **Image Support**: View JPG, JPEG, and PNG files with pan, zoom, and rotate.
+- 🖼️ **Image Support**: View JPG, JPEG, PNG, GIF, and WebP files with pan, zoom, and rotate.
 - 🔗 **Flexible Data**: Support for `fileUri` (URL or Data URI) and `fileData` (pure base64).
 - 🛠️ **Customizable**: Add extra buttons to the toolbar with `extraToolbar`.
+- 🌍 **Internationalization**: Customizable labels for all buttons and messages.
+- ⌨️ **Accessibility**: Keyboard shortcuts (Ctrl +/- for zoom, Arrows for PDF pages) and ARIA support.
+- 💾 **Actions**: Built-in Download, Print, and Fullscreen support.
 - 💻 **TypeScript**: Built with TypeScript for better developer experience.
 - 🎨 **MUI Integration**: Uses Material UI v6+ for a modern and accessible interface.
 
@@ -21,7 +24,7 @@ Note: This package requires `@mui/material`, `@mui/icons-material`, `@emotion/re
 
 ## Usage
 
-### Viewing a PDF via Base64
+### Viewing a PDF via Base64 with Custom Labels
 
 ```tsx
 import { ReactDocumentViewer } from 'react-document-viewer';
@@ -34,6 +37,12 @@ function App() {
           fileData: 'JVBERi0xLjQK...', // base64 string
           fileName: 'document.pdf'
         }}
+        labels={{
+          download: 'Download PDF',
+          print: 'Print Document',
+          loading: 'Preparing viewer...'
+        }}
+        onLoad={() => console.log('Ready!')}
       />
     </div>
   );
@@ -52,6 +61,7 @@ function App() {
         fileUri: 'https://example.com/image.jpg',
         fileName: 'nature.jpg'
       }}
+      height="80vh"
       extraToolbar={<button onClick={() => alert('Custom Action')}>Custom</button>}
     />
   );
@@ -66,7 +76,37 @@ function App() {
 | `document.fileData` | `string` (optional) | Base64 encoded file content. |
 | `document.fileUri` | `string` (optional) | URL or Data URI of the file. |
 | `document.fileName` | `string` | Name of the file (used for extension detection). |
+| `height` | `string \| number` (optional) | Height of the viewer container (default: `600px`). |
 | `extraToolbar` | `ReactNode` (optional) | Custom components to be added to the left side of the toolbar. |
+| `labels` | `object` (optional) | Custom text for buttons and status messages. |
+| `onLoad` | `function` (optional) | Callback function called when the document is successfully loaded. |
+| `onError` | `function` (optional) | Callback function called when an error occurs during loading. |
+
+### Labels Object
+
+| Key | Default (PT-BR) |
+| :--- | :--- |
+| `zoomIn` | `Aumentar Zoom` |
+| `zoomOut` | `Diminuir Zoom` |
+| `rotate` | `Girar` |
+| `reset` | `Resetar` |
+| `nextPage` | `Próxima Página` |
+| `prevPage` | `Página Anterior` |
+| `download` | `Download` |
+| `print` | `Imprimir` |
+| `openInNew` | `Abrir em nova aba` |
+| `fullscreen` | `Tela Cheia` |
+| `loading` | `Carregando documento...` |
+| `error` | `Erro ao carregar documento` |
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+| :--- | :--- |
+| `Ctrl` + `+` / `=` | Zoom In |
+| `Ctrl` + `-` | Zoom Out |
+| `Arrow Right` | Next PDF Page |
+| `Arrow Left` | Previous PDF Page |
 
 ## Development
 

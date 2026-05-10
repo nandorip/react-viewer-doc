@@ -5,6 +5,7 @@ type Props = {
         fileName: string;
     };
     extraToolbar?: React.ReactNode;
+    height?: string | number;
 };
-export declare const ReactDocumentViewer: ({ document, extraToolbar }: Props) => import("react/jsx-runtime").JSX.Element;
+export declare const ReactDocumentViewer: ({ document, extraToolbar, height }: Props) => import("react/jsx-runtime").JSX.Element;
 export {};

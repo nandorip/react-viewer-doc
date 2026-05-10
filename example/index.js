@@ -30,25 +30,25 @@ function App() {
     reader.readAsDataURL(file);
   };
 
-  const loadRemotePdf = () => {
-    setDocument({
-      fileName: 'dummy.pdf',
-      fileUri: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf?demo=1',
-    });
-  };
-
   return (
     <div style={containerStyle}>
       <h2>react-document-viewer demo</h2>
-      <p>Select an image or PDF from your machine, or load a public PDF URL.</p>
+      <p>Select an image or PDF from your machine.</p>
 
       <input type="file" accept="image/*,.pdf" onChange={onFileChange} />
-      <button type="button" onClick={loadRemotePdf} style={{ marginLeft: '12px' }}>
-        Load sample PDF URL
-      </button>
 
       <div style={{ marginTop: '20px' }}>
-        <ReactDocumentViewer document={document} />
+        <ReactDocumentViewer 
+          document={document} 
+          height={600}
+          onLoad={() => console.log('Document loaded!')}
+          onError={(err) => console.error('Error loading document:', err)}
+          labels={{
+            download: 'Baixar arquivo',
+            print: 'Imprimir documento',
+            fullscreen: 'Ver em tela cheia'
+          }}
+        />
       </div>
     </div>
   );

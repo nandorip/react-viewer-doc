@@ -6,10 +6,9 @@ interface DocumentData {
     fileName: string;
 }
 interface ViewerProps {
-    document: {
-        document?: DocumentData;
-    };
+    document?: DocumentData;
     extraToolbar?: React.ReactNode;
+    height?: string | number;
 }
-export declare const Viewer: ({ document, extraToolbar }: ViewerProps) => import("react/jsx-runtime").JSX.Element;
+export declare const Viewer: ({ document, extraToolbar, height }: ViewerProps) => import("react/jsx-runtime").JSX.Element;
 export {};

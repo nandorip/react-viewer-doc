@@ -21,10 +21,13 @@ export declare const ButtonContainer: import("@emotion/styled").StyledComponent<
 export declare const DocumentContainer: import("@emotion/styled").StyledComponent<{
     theme?: import("@emotion/react").Theme;
     as?: React.ElementType;
+} & {
+    height?: string | number;
 }, import("react").DetailedHTMLProps<import("react").HTMLAttributes<HTMLDivElement>, HTMLDivElement>, {}>;
 export interface ImageContainerProps {
     zoom: number;
     rotation: number;
+    height?: string | number;
 }
 export declare const ImageContainer: import("@emotion/styled").StyledComponent<{
     theme?: import("@emotion/react").Theme;
