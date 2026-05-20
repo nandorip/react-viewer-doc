@@ -127,20 +127,20 @@ var Viewer = exports.Viewer = function Viewer(_ref) {
       setPageNumber(pageNumberRef.current - 1);
     }
   });
-  var isInitialState = function isInitialState() {
-    return rotation === 0 && zoom === 1;
-  };
-  var reset = (0, _react.useCallback)(function () {
+  var resetViewState = (0, _react.useCallback)(function () {
     setRotation(0);
     setDx(0);
     setDy(0);
     setZoom(1);
     setPageNumber(1);
-    setNumPages(0);
     setViewerResetKey(function (key) {
       return key + 1;
     });
   }, []);
+  var resetDocumentState = (0, _react.useCallback)(function () {
+    resetViewState();
+    setNumPages(0);
+  }, [resetViewState]);
   var onPan = function onPan(x, y) {
     setDx(x);
     setDy(y);
@@ -340,12 +340,13 @@ var Viewer = exports.Viewer = function Viewer(_ref) {
               _context.n = 1;
               break;
             }
+            resetDocumentState();
             setFileType(undefined);
             setFileSelected(null);
             setError('');
             return _context.a(2);
           case 1:
-            if (!isInitialState()) reset();
+            resetDocumentState();
             responseFile = doc.fileUri;
             if (!(responseFile === undefined)) {
               _context.n = 6;
@@ -445,7 +446,7 @@ var Viewer = exports.Viewer = function Viewer(_ref) {
         onRotate: handleRotate,
         onZoomIn: handleZoomIn,
         onZoomOut: handleZoomOut,
-        onReset: reset,
+        onReset: resetViewState,
         onNextChange: handleNextPage,
         onPrevPage: handlePrevPage,
         onPageChange: setPageNumber,

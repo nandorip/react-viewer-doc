@@ -96,17 +96,19 @@ export const Viewer = ({
     }
   });
 
-  const isInitialState = () => rotation === 0 && zoom === 1;
-
-  const reset = useCallback(() => {
+  const resetViewState = useCallback(() => {
     setRotation(0);
     setDx(0);
     setDy(0);
     setZoom(1);
     setPageNumber(1);
-    setNumPages(0);
     setViewerResetKey(key => key + 1);
   }, []);
+
+  const resetDocumentState = useCallback(() => {
+    resetViewState();
+    setNumPages(0);
+  }, [resetViewState]);
 
   const onPan = (x: number, y: number) => {
     setDx(x);
@@ -333,13 +335,14 @@ export const Viewer = ({
     const doc = document;
 
     if (!doc) {
+      resetDocumentState();
       setFileType(undefined);
       setFileSelected(null);
       setError('');
       return;
     }
 
-    if (!isInitialState()) reset();
+    resetDocumentState();
 
     const responseFile = doc.fileUri;
 
@@ -409,7 +412,7 @@ export const Viewer = ({
             onRotate={handleRotate}
             onZoomIn={handleZoomIn}
             onZoomOut={handleZoomOut}
-            onReset={reset}
+            onReset={resetViewState}
             onNextChange={handleNextPage}
             onPrevPage={handlePrevPage}
             onPageChange={setPageNumber}

@@ -192,6 +192,26 @@ describe('Viewer', () => {
     expect(screen.getByText('/ 5')).toBeInTheDocument();
   });
 
+  it('resets PDF to the first page without clearing the page count', async () => {
+    const document = {
+      fileName: 'test.pdf',
+      fileUri: 'http://example.com/test.pdf',
+    };
+    render(<Viewer document={document} />);
+    expect(await screen.findByDisplayValue('1')).toBeInTheDocument();
+    expect(screen.getByText('/ 5')).toBeInTheDocument();
+
+    const nextBtn = screen.getByTestId('ChevronRightIcon').closest('button')!;
+    const resetBtn = screen.getByTestId('SettingsBackupRestoreIcon').closest('button')!;
+
+    fireEvent.click(nextBtn);
+    expect(screen.getByDisplayValue('2')).toBeInTheDocument();
+
+    fireEvent.click(resetBtn);
+    expect(screen.getByDisplayValue('1')).toBeInTheDocument();
+    expect(screen.getByText('/ 5')).toBeInTheDocument();
+  });
+
   it('applies custom height to containers', () => {
     const document = {
       fileName: 'test.jpg',
