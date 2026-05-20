@@ -10,12 +10,23 @@ var _jsxRuntime = require("react/jsx-runtime");
 var ReactDocumentViewer = exports.ReactDocumentViewer = function ReactDocumentViewer(_ref) {
   var document = _ref.document,
     extraToolbar = _ref.extraToolbar,
-    height = _ref.height;
-  return /*#__PURE__*/(0, _jsxRuntime.jsx)(_components.Container, {
-    children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_Viewer.Viewer, {
-      document: document,
-      extraToolbar: extraToolbar,
-      height: height
+    height = _ref.height,
+    labels = _ref.labels,
+    pdfWorkerSrc = _ref.pdfWorkerSrc,
+    onLoad = _ref.onLoad,
+    onError = _ref.onError;
+  return /*#__PURE__*/(0, _jsxRuntime.jsx)(_components.ErrorBoundary, {
+    labels: labels,
+    children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_components.Container, {
+      children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_Viewer.Viewer, {
+        document: document,
+        extraToolbar: extraToolbar,
+        height: height,
+        labels: labels,
+        pdfWorkerSrc: pdfWorkerSrc,
+        onLoad: onLoad,
+        onError: onError
+      })
     })
   });
 };

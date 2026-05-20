@@ -10,7 +10,9 @@ import {
   getFileTypeFromFile,
   getMimeTypeFromBase64,
   downloadFile,
+  isValidUrl,
 } from './FileHelpers';
+import { ViewerProps } from '../types';
 import {
   ImageContainer,
   DocumentContainer,
@@ -22,46 +24,23 @@ import {
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+const DEFAULT_PDF_WORKER_SRC = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+
+pdfjs.GlobalWorkerOptions.workerSrc = DEFAULT_PDF_WORKER_SRC;
 
 const ZOOM_SENSITIVITY = 0.1;
 const MAX_ZOOM = 5;
 const MIN_ZOOM = 0.5;
+const BLOB_URL_REVOKE_DELAY_MS = 60_000;
 
-interface DocumentData {
-  fileData?: string;
-  fileUri?: string;
-  fileName: string;
-}
-
-interface ViewerProps {
-  document?: DocumentData;
-  extraToolbar?: React.ReactNode;
-  height?: string | number;
-  labels?: {
-    zoomIn?: string;
-    zoomOut?: string;
-    rotate?: string;
-    reset?: string;
-    nextPage?: string;
-    prevPage?: string;
-    download?: string;
-    openInNew?: string;
-    loading?: string;
-    error?: string;
-    thumbnails?: string;
-  };
-  onLoad?: () => void;
-  onError?: (error: string) => void;
-}
-
-export const Viewer = ({ 
-  document, 
-  extraToolbar, 
-  height, 
+export const Viewer = ({
+  document,
+  extraToolbar,
+  height,
   labels,
+  pdfWorkerSrc,
   onLoad,
-  onError 
+  onError
 }: ViewerProps) => {
   const [error, setError] = useState('');
   const [fileType, setFileType] = useState<string>();
@@ -73,6 +52,7 @@ export const Viewer = ({
   const [dy, setDy] = useState(0);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
+  const [viewerResetKey, setViewerResetKey] = useState(0);
 
   // PDF
   const [numPages, setNumPages] = useState(0);
@@ -91,21 +71,42 @@ export const Viewer = ({
 
   const limits = (num: number) => Math.min(Math.max(num, MIN_ZOOM), MAX_ZOOM);
 
+  const zoomRef = useRef(zoom);
+  zoomRef.current = zoom;
+  const fileTypeRef = useRef(fileType);
+  fileTypeRef.current = fileType;
+  const pageNumberRef = useRef(pageNumber);
+  pageNumberRef.current = pageNumber;
+  const numPagesRef = useRef(numPages);
+  numPagesRef.current = numPages;
+
   const handleZoom = useCallback((num: number) => setZoom(limits(num)), []);
 
-  const handleZoomIn = () => handleZoom(zoom + ZOOM_SENSITIVITY);
-  const handleZoomOut = () => handleZoom(zoom - ZOOM_SENSITIVITY);
+  const handleZoomIn = () => handleZoom(zoomRef.current + ZOOM_SENSITIVITY);
+  const handleZoomOut = () => handleZoom(zoomRef.current - ZOOM_SENSITIVITY);
+
+  const handleNextPageRef = useRef(() => {
+    if (pageNumberRef.current < numPagesRef.current) {
+      setPageNumber(pageNumberRef.current + 1);
+    }
+  });
+  const handlePrevPageRef = useRef(() => {
+    if (pageNumberRef.current > 1) {
+      setPageNumber(pageNumberRef.current - 1);
+    }
+  });
 
   const isInitialState = () => rotation === 0 && zoom === 1;
 
-  const reset = () => {
+  const reset = useCallback(() => {
     setRotation(0);
     setDx(0);
     setDy(0);
     setZoom(1);
     setPageNumber(1);
     setNumPages(0);
-  };
+    setViewerResetKey(key => key + 1);
+  }, []);
 
   const onPan = (x: number, y: number) => {
     setDx(x);
@@ -113,70 +114,161 @@ export const Viewer = ({
   };
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const removeWheelListenerRef = useRef<(() => void) | null>(null);
 
-  useEffect(() => {
-    const element = containerRef.current;
+  const attachContainerRef = useCallback((element: HTMLDivElement | null) => {
+    removeWheelListenerRef.current?.();
+    removeWheelListenerRef.current = null;
+    containerRef.current = element;
+
     if (!element) return;
 
     const handleWheel = (e: WheelEvent) => {
-      if (e.ctrlKey) {
-        e.preventDefault();
-        const newScale = e.deltaY < 0 ? zoom + ZOOM_SENSITIVITY : zoom - ZOOM_SENSITIVITY;
-        handleZoom(newScale);
-      }
+      if (!e.ctrlKey) return;
+
+      e.preventDefault();
+      const nextZoom = e.deltaY < 0
+        ? zoomRef.current + ZOOM_SENSITIVITY
+        : zoomRef.current - ZOOM_SENSITIVITY;
+      setZoom(limits(nextZoom));
     };
 
+    element.addEventListener('wheel', handleWheel, { passive: false });
+    removeWheelListenerRef.current = () => element.removeEventListener('wheel', handleWheel);
+  }, []);
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey) {
         if (e.key === '+' || e.key === '=') {
           e.preventDefault();
-          handleZoomIn();
+          const newZoom = limits(zoomRef.current + ZOOM_SENSITIVITY);
+          setZoom(newZoom);
         } else if (e.key === '-') {
           e.preventDefault();
-          handleZoomOut();
+          const newZoom = limits(zoomRef.current - ZOOM_SENSITIVITY);
+          setZoom(newZoom);
         }
       }
 
-      if (fileType === FileTypes.pdf) {
-        if (e.key === 'ArrowRight') handleNextPage();
-        if (e.key === 'ArrowLeft') handlePrevPage();
+      if (fileTypeRef.current === FileTypes.pdf) {
+        if (e.key === 'ArrowRight' && pageNumberRef.current < numPagesRef.current) {
+          setPageNumber(pageNumberRef.current + 1);
+        }
+        if (e.key === 'ArrowLeft' && pageNumberRef.current > 1) {
+          setPageNumber(pageNumberRef.current - 1);
+        }
       }
     };
 
-    element.addEventListener('wheel', handleWheel, { passive: false });
     window.addEventListener('keydown', handleKeyDown);
     
     return () => {
-      element.removeEventListener('wheel', handleWheel);
       window.removeEventListener('keydown', handleKeyDown);
+      removeWheelListenerRef.current?.();
     };
-  }, [zoom, handleZoom, fileType, pageNumber, numPages]);
+  }, []);
 
   const handleRotate = () => setRotation(prev => (prev + 90) % 360);
-  const handleNextPage = () =>
-    pageNumber < numPages && setPageNumber(pageNumber + 1);
-  const handlePrevPage = () => pageNumber > 1 && setPageNumber(pageNumber - 1);
+  const handleNextPage = () => handleNextPageRef.current();
+  const handlePrevPage = () => handlePrevPageRef.current();
 
-  const handleOpenInNew = () => {
-    if (!fileSelected) return;
+  const createOpenableFileUrl = () => {
+    if (!fileSelected) return null;
 
     if (fileSelected instanceof Blob) {
-      const url = URL.createObjectURL(fileSelected);
-      window.open(url, '_blank');
-    } else {
-      window.open(fileSelected, '_blank');
+      return {
+        url: URL.createObjectURL(fileSelected),
+        shouldRevoke: true,
+      };
+    }
+
+    if (isValidUrl(fileSelected)) {
+      return {
+        url: fileSelected,
+        shouldRevoke: false,
+      };
+    }
+
+    return null;
+  };
+
+  const scheduleRevokeObjectUrl = (url: string) => {
+    window.setTimeout(() => URL.revokeObjectURL(url), BLOB_URL_REVOKE_DELAY_MS);
+  };
+
+  const handleOpenInNew = () => {
+    const fileUrl = createOpenableFileUrl();
+    if (!fileUrl) return;
+
+    const openedWindow = window.open(fileUrl.url, '_blank');
+    if (fileUrl.shouldRevoke) {
+      if (openedWindow) {
+        scheduleRevokeObjectUrl(fileUrl.url);
+      } else {
+        URL.revokeObjectURL(fileUrl.url);
+      }
     }
   };
 
   const handlePrint = () => {
-    if (!fileSelected) return;
-    
-    const url = fileSelected instanceof Blob ? URL.createObjectURL(fileSelected) : fileSelected;
-    const printWindow = window.open(url, '_blank');
+    const fileUrl = createOpenableFileUrl();
+    if (!fileUrl) return;
+
+    const printWindow = window.open('', '_blank');
     if (printWindow) {
-      printWindow.onload = () => {
+      if (fileType === FileTypes.pdf) {
+        printWindow.location.href = fileUrl.url;
+        printWindow.onload = () => {
+          printWindow.print();
+          if (fileUrl.shouldRevoke) scheduleRevokeObjectUrl(fileUrl.url);
+        };
+        return;
+      }
+
+      printWindow.document.open();
+      printWindow.document.write(`
+        <!doctype html>
+        <html>
+          <head>
+            <title>${document?.fileName || 'document'}</title>
+            <style>
+              html, body {
+                margin: 0;
+                min-height: 100%;
+              }
+              body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              }
+              img {
+                max-width: 100%;
+                max-height: 100vh;
+              }
+            </style>
+          </head>
+          <body>
+            <img src="${fileUrl.url}" alt="${document?.fileName || 'document'}" />
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+
+      const printableImage = printWindow.document.querySelector('img');
+      const printImage = () => {
+        printWindow.focus();
         printWindow.print();
+        if (fileUrl.shouldRevoke) scheduleRevokeObjectUrl(fileUrl.url);
       };
+
+      if (printableImage?.complete) {
+        printImage();
+      } else {
+        printableImage?.addEventListener('load', printImage, { once: true });
+      }
+    } else if (fileUrl.shouldRevoke) {
+      URL.revokeObjectURL(fileUrl.url);
     }
   };
 
@@ -193,6 +285,14 @@ export const Viewer = ({
 
   const handleToggleSidebar = () => setShowSidebar(prev => !prev);
 
+  const getUnsupportedFileMessage = () => labels?.unsupportedFile || labels?.error || 'Tipo de arquivo não suportado';
+
+  const setUnsupportedFileError = () => {
+    const msg = getUnsupportedFileMessage();
+    setError(msg);
+    onError?.(msg);
+  };
+
   const buildFile = (fileBase64: string) => {
     let content = fileBase64;
     if (fileBase64.startsWith('data:')) {
@@ -207,7 +307,19 @@ export const Viewer = ({
 
     if (type === FileExtension.PDF) {
       const blobFile = base64ToBlob(content, 'application/pdf');
+      if (!blobFile) return null;
       return { file: blobFile, type: 'pdf', mime };
+    }
+
+    if (type !== FileExtension.IMAGE) return null;
+
+    const blobFile = base64ToBlob(content, mime);
+    if (blobFile) {
+      return {
+        file: blobFile,
+        type: 'image',
+        mime,
+      };
     }
 
     return {
@@ -218,9 +330,9 @@ export const Viewer = ({
   };
 
   const initData = async () => {
-    const arquivo = document;
+    const doc = document;
 
-    if (!arquivo) {
+    if (!doc) {
       setFileType(undefined);
       setFileSelected(null);
       setError('');
@@ -229,26 +341,48 @@ export const Viewer = ({
 
     if (!isInitialState()) reset();
 
-    const responseFile = arquivo.fileUri;
+    const responseFile = doc.fileUri;
 
     if (responseFile === undefined) {
-      if (arquivo.fileData) {
-        const { file, mime } = buildFile(arquivo.fileData);
-        setFileType(mime);
-        setFileSelected(file);
+      if (doc.fileData) {
+        const result = buildFile(doc.fileData);
+        if (result) {
+          setFileType(result.mime);
+          setFileSelected(result.file);
+        } else {
+          setUnsupportedFileError();
+          return;
+        }
+      } else {
+        setUnsupportedFileError();
+        return;
       }
     } else if (responseFile.startsWith('data:')) {
-      const { file, mime } = buildFile(responseFile);
-      setFileType(mime);
-      setFileSelected(file);
+      const result = buildFile(responseFile);
+      if (result) {
+        setFileType(result.mime);
+        setFileSelected(result.file);
+      } else {
+        setUnsupportedFileError();
+        return;
+      }
     } else {
       const extension = getExtension(responseFile);
-      setFileType(FileTypes[extension as keyof typeof FileTypes]);
+      const type = FileTypes[extension as keyof typeof FileTypes];
+      if (!type || type === FileTypes.csv) {
+        setUnsupportedFileError();
+        return;
+      }
+      setFileType(type);
       setFileSelected(responseFile);
     }
 
     setError('');
   };
+
+  useEffect(() => {
+    pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerSrc || DEFAULT_PDF_WORKER_SRC;
+  }, [pdfWorkerSrc]);
 
   useEffect(() => {
     initData();
@@ -319,7 +453,7 @@ export const Viewer = ({
             )}
             
             {fileType === FileTypes.pdf ? (
-              <DocumentContainer ref={containerRef} height={height} data-testid="document-container">
+              <DocumentContainer ref={attachContainerRef} height={height} data-testid="document-container">
                 <Document
                   file={fileSelected}
                   onLoadSuccess={onPdfLoadSuccess}
@@ -335,15 +469,16 @@ export const Viewer = ({
                   />
                 </Document>
               </DocumentContainer>
-            ) : (
+            ) : fileSelected ? (
               <ImageContainer
                 zoom={zoom}
                 rotation={rotation}
-                ref={containerRef}
+                ref={attachContainerRef}
                 height={height}
                 data-testid="image-container"
               >
                 <PanViewer
+                  key={viewerResetKey}
                   zoom={zoom}
                   setZoom={() => false}
                   pandx={dx}
@@ -362,7 +497,7 @@ export const Viewer = ({
                   />
                 </PanViewer>
               </ImageContainer>
-            )}
+            ) : null}
           </MainContent>
         </>
       )}

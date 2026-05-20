@@ -1,0 +1,5 @@
+<i> [webpack-dev-server] Project is running at:
+<i> [webpack-dev-server] Loopback: [36mhttp://localhost:3001/[39m, [36mhttp://[::1]:3001/[39m
+<i> [webpack-dev-server] On Your Network (IPv4): [36mhttp://192.168.0.151:3001/[39m
+<i> [webpack-dev-server] Content not from webpack is served from '[36mC:\Projetos\react-document-viewer\example[39m' directory
+<i> [webpack-dev-middleware] wait until bundle finished: /main.056c4e35994df3ec9e59.hot-update.json

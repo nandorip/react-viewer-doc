@@ -9,6 +9,12 @@ Object.defineProperty(exports, "Container", {
     return _Container.Container;
   }
 });
+Object.defineProperty(exports, "ErrorBoundary", {
+  enumerable: true,
+  get: function get() {
+    return _ErrorBoundary.ErrorBoundary;
+  }
+});
 Object.defineProperty(exports, "ErrorViewer", {
   enumerable: true,
   get: function get() {
@@ -24,3 +30,4 @@ Object.defineProperty(exports, "Toolbar", {
 var _Container = require("./Container");
 var _Toolbar = require("./Toolbar");
 var _ErrorViewer = require("./ErrorViewer");
+var _ErrorBoundary = require("./ErrorBoundary");

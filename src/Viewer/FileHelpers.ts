@@ -2,6 +2,15 @@
 /* eslint-disable default-case */
 /* eslint-disable no-plusplus */
 
+export const isValidUrl = (url: string): boolean => {
+  try {
+    const parsed = new URL(url);
+    return ['http:', 'https:', 'blob:', 'data:'].includes(parsed.protocol);
+  } catch {
+    return false;
+  }
+};
+
 export const FileTypes = {
   pdf: 'application/pdf',
   png: 'image/png',
@@ -67,24 +76,29 @@ export const getMimeTypeFromBase64 = (base64: string): string => {
   }
 };
 
-export const base64ToBlob = (base64: string, mimeType: string) => {
-  let content = base64;
-  if (base64.startsWith('data:')) {
-    const parts = base64.split(',');
-    if (parts.length > 1) {
-      content = parts[1];
+export const base64ToBlob = (base64: string, mimeType: string): Blob | null => {
+  try {
+    let content = base64;
+    if (base64.startsWith('data:')) {
+      const parts = base64.split(',');
+      if (parts.length > 1) {
+        content = parts[1];
+      }
     }
+
+    const byteCharacters = atob(content);
+    const byteNumbers = new Array(byteCharacters.length);
+
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: mimeType });
+  } catch (error) {
+    console.error('Invalid base64 string:', error);
+    return null;
   }
-
-  const byteCharacters = atob(content);
-  const byteNumbers = new Array(byteCharacters.length);
-
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
-  }
-
-  const byteArray = new Uint8Array(byteNumbers);
-  return new Blob([byteArray], { type: mimeType });
 };
 
 export const getExtension = (file: string) => {
@@ -106,6 +120,3 @@ export const downloadFile = (file: Blob | string, fileName: string) => {
     URL.revokeObjectURL(url);
   }
 };
-
-export const isBase64Data = (data: string) =>
-  /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/.test(data);

@@ -1,3 +1,4 @@
+export declare const isValidUrl: (url: string) => boolean;
 export declare const FileTypes: {
     pdf: string;
     png: string;
@@ -14,6 +15,6 @@ export declare const FileExtension: {
 };
 export declare const getFileTypeFromFile: (data: string) => number;
 export declare const getMimeTypeFromBase64: (base64: string) => string;
-export declare const base64ToBlob: (base64: string, mimeType: string) => Blob;
+export declare const base64ToBlob: (base64: string, mimeType: string) => Blob | null;
 export declare const getExtension: (file: string) => string;
-export declare const isBase64Data: (data: string) => boolean;
+export declare const downloadFile: (file: Blob | string, fileName: string) => void;

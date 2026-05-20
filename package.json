@@ -4,14 +4,22 @@
   "description": "A React component for document viewing (image and PDF).",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "scripts": {
     "start": "webpack serve --mode development",
     "build": "webpack --mode production",
-    "transpile": "babel src -d dist --extensions \".ts,.tsx\" --copy-files --ignore \"src/**/*.test.ts\",\"src/**/*.test.tsx\",\"src/**/*.test.js\"",
+    "clean": "node scripts/clean-dist.cjs",
+    "transpile": "babel src -d dist --extensions \".ts,.tsx\" --ignore \"src/**/*.test.ts\",\"src/**/*.test.tsx\",\"src/**/*.test.js\"",
     "build:types": "tsc --project tsconfig.json",
-    "build:lib": "npm run transpile && npm run build:types",
+    "build:lib": "npm run clean && npm run transpile && npm run build:types",
     "test": "jest",
-    "prepublishOnly": "npm run build:lib"
+    "prepack": "npm run build:lib",
+    "prepublishOnly": "npm test -- --runInBand && npm run build:lib"
   },
   "repository": {
     "type": "git",
@@ -32,7 +40,13 @@
   },
   "homepage": "https://github.com/nandorip/react-document-viewer#readme",
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "dist/**/*.css",
+    "src/**/*.css"
   ],
   "peerDependencies": {
     "@emotion/react": "^11.0.0",

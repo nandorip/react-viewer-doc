@@ -1,35 +1,16 @@
 import { Container, ErrorBoundary } from './components';
 import { Viewer } from './Viewer';
+import { ViewerProps } from './types';
 
-type Props = {
-  document?: { fileData?: string; fileUri?: string; fileName: string };
-  extraToolbar?: React.ReactNode;
-  height?: string | number;
-  labels?: {
-    zoomIn?: string;
-    zoomOut?: string;
-    rotate?: string;
-    reset?: string;
-    nextPage?: string;
-    prevPage?: string;
-    download?: string;
-    openInNew?: string;
-    loading?: string;
-    error?: string;
-    thumbnails?: string;
-  };
-  onLoad?: () => void;
-  onError?: (error: string) => void;
-};
-
-export const ReactDocumentViewer = ({ 
-  document, 
-  extraToolbar, 
+export const ReactDocumentViewer = ({
+  document,
+  extraToolbar,
   height,
   labels,
+  pdfWorkerSrc,
   onLoad,
   onError
-}: Props) => (
+}: ViewerProps) => (
   <ErrorBoundary labels={labels}>
     <Container>
       <Viewer 
@@ -37,6 +18,7 @@ export const ReactDocumentViewer = ({
         extraToolbar={extraToolbar} 
         height={height} 
         labels={labels}
+        pdfWorkerSrc={pdfWorkerSrc}
         onLoad={onLoad}
         onError={onError}
       />

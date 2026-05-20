@@ -2,6 +2,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Viewer } from './index';
+import { pdfjs } from 'react-pdf';
 
 // Mock das dependências externas que podem ser difíceis em JSDOM
 jest.mock('react-pdf', () => ({
@@ -26,14 +27,36 @@ jest.mock('react-pdf', () => ({
 }));
 
 jest.mock('react-image-pan-zoom-rotate', () => ({
-  PanViewer: ({ children, zoom }: any) => (
-    <div data-testid="mock-pan-viewer" data-zoom={zoom}>
+  PanViewer: ({ children, zoom, pandx, pandy, onPan }: any) => (
+    <div
+      data-testid="mock-pan-viewer"
+      data-zoom={zoom}
+      data-pandx={pandx}
+      data-pandy={pandy}
+      onClick={() => onPan?.(25, -30)}
+    >
       {children}
     </div>
   ),
 }));
 
 describe('Viewer', () => {
+  beforeEach(() => {
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: jest.fn(() => 'blob:http://localhost/file'),
+    });
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      value: jest.fn(),
+    });
+    jest.spyOn(window, 'open').mockReturnValue(null);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it('renders correctly with no document', () => {
     render(<Viewer />);
     // O toolbar deve estar lá, mas sem botões de página
@@ -80,6 +103,21 @@ describe('Viewer', () => {
     expect(screen.getByTestId('mock-pan-viewer')).toHaveAttribute('data-zoom', '1');
   });
 
+  it('handles ctrl + wheel zoom in and out', () => {
+    const document = {
+      fileName: 'test.jpg',
+      fileUri: 'http://example.com/test.jpg',
+    };
+    render(<Viewer document={document} />);
+    const imageContainer = screen.getByTestId('image-container');
+
+    fireEvent.wheel(imageContainer, { ctrlKey: true, deltaY: -100 });
+    expect(screen.getByTestId('mock-pan-viewer')).toHaveAttribute('data-zoom', '1.1');
+
+    fireEvent.wheel(imageContainer, { ctrlKey: true, deltaY: 100 });
+    expect(screen.getByTestId('mock-pan-viewer')).toHaveAttribute('data-zoom', '1');
+  });
+
   it('handles rotation', () => {
     const document = {
       fileName: 'test.jpg',
@@ -113,7 +151,25 @@ describe('Viewer', () => {
     expect(img).toHaveStyle('transform: rotate(90deg) scale(1.1)');
 
     fireEvent.click(resetBtn);
-    expect(img).toHaveStyle('transform: rotate(0deg) scale(1)');
+    expect(screen.getByAltText('test.jpg')).toHaveStyle('transform: rotate(0deg) scale(1)');
+  });
+
+  it('centers image on reset button click', () => {
+    const document = {
+      fileName: 'test.jpg',
+      fileUri: 'http://example.com/test.jpg',
+    };
+    render(<Viewer document={document} />);
+    const panViewer = screen.getByTestId('mock-pan-viewer');
+    const resetBtn = screen.getByTestId('SettingsBackupRestoreIcon').closest('button')!;
+
+    fireEvent.click(panViewer);
+    expect(screen.getByTestId('mock-pan-viewer')).toHaveAttribute('data-pandx', '25');
+    expect(screen.getByTestId('mock-pan-viewer')).toHaveAttribute('data-pandy', '-30');
+
+    fireEvent.click(resetBtn);
+    expect(screen.getByTestId('mock-pan-viewer')).toHaveAttribute('data-pandx', '0');
+    expect(screen.getByTestId('mock-pan-viewer')).toHaveAttribute('data-pandy', '0');
   });
 
   it('changes PDF pages', async () => {
@@ -153,12 +209,86 @@ describe('Viewer', () => {
   });
 
   it('renders image from base64 data correctly', () => {
+    jest.spyOn(URL, 'createObjectURL').mockReturnValue('blob:http://localhost/image');
     const document = {
       fileName: 'test.png',
       fileData: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
     };
     render(<Viewer document={document} />);
     const img = screen.getByAltText('test.png');
-    expect(img).toHaveAttribute('src', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==');
+    expect(img).toHaveAttribute('src', 'blob:http://localhost/image');
+  });
+
+  it('opens a base64 image blob URL in a new tab', () => {
+    jest.spyOn(URL, 'createObjectURL').mockReturnValue('blob:http://localhost/image');
+    jest.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
+    const document = {
+      fileName: 'test.png',
+      fileData: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
+    };
+    render(<Viewer document={document} />);
+    const openButton = screen.getByTestId('OpenInNewIcon').closest('button')!;
+
+    fireEvent.click(openButton);
+
+    expect(window.open).toHaveBeenCalledWith(
+      'blob:http://localhost/image',
+      '_blank'
+    );
+  });
+
+  it('prints an image using a generated print document', () => {
+    const print = jest.fn();
+    const focus = jest.fn();
+    const addEventListener = jest.fn((event, callback) => {
+      if (event === 'load') callback();
+    });
+    const querySelector = jest.fn(() => ({
+      complete: false,
+      addEventListener,
+    }));
+    const printWindow = {
+      document: {
+        open: jest.fn(),
+        write: jest.fn(),
+        close: jest.fn(),
+        querySelector,
+      },
+      focus,
+      print,
+    } as unknown as Window;
+    jest.spyOn(window, 'open').mockReturnValue(printWindow);
+    const document = {
+      fileName: 'test.jpg',
+      fileUri: 'http://example.com/test.jpg',
+    };
+    render(<Viewer document={document} />);
+    const printButton = screen.getByTestId('PrintIcon').closest('button')!;
+
+    fireEvent.click(printButton);
+
+    expect(printWindow.document.write).toHaveBeenCalledWith(expect.stringContaining('http://example.com/test.jpg'));
+    expect(focus).toHaveBeenCalled();
+    expect(print).toHaveBeenCalled();
+  });
+
+  it('shows an error for unsupported files', () => {
+    const onError = jest.fn();
+    render(
+      <Viewer
+        document={{ fileName: 'data.csv', fileUri: 'http://example.com/data.csv' }}
+        labels={{ unsupportedFile: 'Unsupported file type' }}
+        onError={onError}
+      />
+    );
+
+    expect(screen.getByText('Unsupported file type')).toBeInTheDocument();
+    expect(onError).toHaveBeenCalledWith('Unsupported file type');
+  });
+
+  it('uses custom PDF worker source when provided', () => {
+    render(<Viewer pdfWorkerSrc="/pdf.worker.min.mjs" />);
+
+    expect(pdfjs.GlobalWorkerOptions.workerSrc).toBe('/pdf.worker.min.mjs');
   });
 });

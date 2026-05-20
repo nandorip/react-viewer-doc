@@ -3,11 +3,19 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.isBase64Data = exports.getMimeTypeFromBase64 = exports.getFileTypeFromFile = exports.getExtension = exports.base64ToBlob = exports.FileTypes = exports.FileExtension = void 0;
+exports.isValidUrl = exports.getMimeTypeFromBase64 = exports.getFileTypeFromFile = exports.getExtension = exports.downloadFile = exports.base64ToBlob = exports.FileTypes = exports.FileExtension = void 0;
 /* eslint-disable consistent-return */
 /* eslint-disable default-case */
 /* eslint-disable no-plusplus */
 
+var isValidUrl = exports.isValidUrl = function isValidUrl(url) {
+  try {
+    var parsed = new URL(url);
+    return ['http:', 'https:', 'blob:', 'data:'].includes(parsed.protocol);
+  } catch (_unused) {
+    return false;
+  }
+};
 var FileTypes = exports.FileTypes = {
   pdf: 'application/pdf',
   png: 'image/png',
@@ -37,7 +45,7 @@ var getFileTypeFromFile = exports.getFileTypeFromFile = function getFileTypeFrom
   var firstChar = content.charAt(0);
 
   // PDF starts with JVBERi... (base64 for %PDF-)
-  if (firstChar === 'J') return FileExtension.PDF;
+  if (firstChar === 'J' || content.startsWith('JVBERi')) return FileExtension.PDF;
 
   // Image headers in base64:
   // JPEG: /9j/
@@ -51,7 +59,9 @@ var getMimeTypeFromBase64 = exports.getMimeTypeFromBase64 = function getMimeType
   if (base64.startsWith('data:')) {
     return base64.split(';')[0].split(':')[1];
   }
-  var firstChar = base64.charAt(0);
+  var content = base64.trim();
+  var firstChar = content.charAt(0);
+  if (content.startsWith('JVBERi')) return 'application/pdf';
   switch (firstChar) {
     case 'J':
       return 'application/pdf';
@@ -68,22 +78,27 @@ var getMimeTypeFromBase64 = exports.getMimeTypeFromBase64 = function getMimeType
   }
 };
 var base64ToBlob = exports.base64ToBlob = function base64ToBlob(base64, mimeType) {
-  var content = base64;
-  if (base64.startsWith('data:')) {
-    var parts = base64.split(',');
-    if (parts.length > 1) {
-      content = parts[1];
+  try {
+    var content = base64;
+    if (base64.startsWith('data:')) {
+      var parts = base64.split(',');
+      if (parts.length > 1) {
+        content = parts[1];
+      }
     }
+    var byteCharacters = atob(content);
+    var byteNumbers = new Array(byteCharacters.length);
+    for (var i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    var byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], {
+      type: mimeType
+    });
+  } catch (error) {
+    console.error('Invalid base64 string:', error);
+    return null;
   }
-  var byteCharacters = atob(content);
-  var byteNumbers = new Array(byteCharacters.length);
-  for (var i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
-  }
-  var byteArray = new Uint8Array(byteNumbers);
-  return new Blob([byteArray], {
-    type: mimeType
-  });
 };
 var getExtension = exports.getExtension = function getExtension(file) {
   var _parts$pop;
@@ -92,6 +107,15 @@ var getExtension = exports.getExtension = function getExtension(file) {
   var parts = urlWithoutQuery.split('.');
   return parts.length > 1 ? ((_parts$pop = parts.pop()) === null || _parts$pop === void 0 ? void 0 : _parts$pop.toLowerCase()) || '' : '';
 };
-var isBase64Data = exports.isBase64Data = function isBase64Data(data) {
-  return /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/.test(data);
+var downloadFile = exports.downloadFile = function downloadFile(file, fileName) {
+  var url = typeof file === 'string' ? file : URL.createObjectURL(file);
+  var link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  if (typeof file !== 'string') {
+    URL.revokeObjectURL(url);
+  }
 };

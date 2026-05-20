@@ -35,5 +35,10 @@ module.exports = {
       directory: path.join(__dirname, 'example'),
     },
     port: 3001,
+    host: '0.0.0.0',
+    allowedHosts: 'all',
+    client: {
+      webSocketURL: 'ws://localhost:3001/ws',
+    },
   },
 };

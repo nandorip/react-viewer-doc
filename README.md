@@ -21,6 +21,7 @@ npm install react-document-viewer
 ```
 
 Note: This package requires `@mui/material`, `@mui/icons-material`, `@emotion/react`, and `@emotion/styled` as peer dependencies.
+It also expects `react` and `react-dom` to be installed by your application.
 
 ## Usage
 
@@ -37,6 +38,7 @@ function App() {
           fileData: 'JVBERi0xLjQK...', // base64 string
           fileName: 'document.pdf'
         }}
+        pdfWorkerSrc="/pdf.worker.min.mjs"
         labels={{
           download: 'Download PDF',
           print: 'Print Document',
@@ -79,6 +81,7 @@ function App() {
 | `height` | `string \| number` (optional) | Height of the viewer container (default: `600px`). |
 | `extraToolbar` | `ReactNode` (optional) | Custom components to be added to the left side of the toolbar. |
 | `labels` | `object` (optional) | Custom text for buttons and status messages. |
+| `pdfWorkerSrc` | `string` (optional) | Custom PDF.js worker URL. Defaults to a versioned unpkg URL. |
 | `onLoad` | `function` (optional) | Callback function called when the document is successfully loaded. |
 | `onError` | `function` (optional) | Callback function called when an error occurs during loading. |
 
@@ -98,6 +101,7 @@ function App() {
 | `fullscreen` | `Tela Cheia` |
 | `loading` | `Carregando documento...` |
 | `error` | `Erro ao carregar documento` |
+| `unsupportedFile` | `Tipo de arquivo não suportado` |
 
 ## Keyboard Shortcuts
 
@@ -117,6 +121,12 @@ npm start
 
 Open `http://localhost:3001` to view the demo.
 
+Run the test suite:
+
+```bash
+npm test -- --runInBand
+```
+
 ## Build
 
 To build the library:
@@ -126,6 +136,19 @@ npm run build:lib
 ```
 
 This will generate both the transpiled JavaScript and the TypeScript definitions in the `dist` folder.
+
+## Publishing
+
+The npm package is built from `dist` during `npm pack`/`npm publish` via the `prepack` script. Use this command to inspect what will be published:
+
+```bash
+npm pack --dry-run
+```
+
+## Notes
+
+- PDF rendering depends on the PDF.js worker. By default this package uses a versioned unpkg worker URL; pass `pdfWorkerSrc` if your application requires a local asset, strict CSP, or offline support.
+- Remote documents must be served with browser-compatible CORS headers.
 
 ## License
 

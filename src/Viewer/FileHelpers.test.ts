@@ -1,7 +1,6 @@
 import {
   getFileTypeFromFile,
   getExtension,
-  isBase64Data,
   getMimeTypeFromBase64,
   base64ToBlob,
   FileExtension,
@@ -78,29 +77,27 @@ describe('FileHelpers', () => {
     });
   });
 
-  describe('isBase64Data', () => {
-    it('should return true for valid base64', () => {
-      expect(isBase64Data('SGVsbG8gd29ybGQ=')).toBe(true);
-    });
-
-    it('should return false for invalid base64', () => {
-      expect(isBase64Data('invalid base64!')).toBe(false);
-    });
-  });
-
   describe('base64ToBlob', () => {
     it('should convert base64 to Blob', () => {
       const base64 = 'SGVsbG8='; // "Hello"
       const blob = base64ToBlob(base64, 'text/plain');
+      expect(blob).not.toBeNull();
       expect(blob).toBeInstanceOf(Blob);
-      expect(blob.type).toBe('text/plain');
-      expect(blob.size).toBe(5);
+      expect(blob?.type).toBe('text/plain');
+      expect(blob?.size).toBe(5);
     });
 
     it('should handle data URI in base64ToBlob', () => {
       const dataUri = 'data:text/plain;base64,SGVsbG8=';
       const blob = base64ToBlob(dataUri, 'text/plain');
-      expect(blob.size).toBe(5);
+      expect(blob).not.toBeNull();
+      expect(blob?.size).toBe(5);
+    });
+
+    it('should return null for invalid base64', () => {
+      const invalidBase64 = 'not valid base64!@#$';
+      const blob = base64ToBlob(invalidBase64, 'text/plain');
+      expect(blob).toBeNull();
     });
   });
 });
