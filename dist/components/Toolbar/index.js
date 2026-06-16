@@ -33,7 +33,7 @@ var Toolbar = exports.Toolbar = function Toolbar(_ref) {
     showSidebar = _ref.showSidebar,
     extra = _ref.extra,
     labels = _ref.labels;
-  var resolvedLabels = (0, _i18n.resolveLabels)(undefined, labels);
+  var resolvedLabels = labels !== null && labels !== void 0 ? labels : (0, _i18n.resolveLabels)(_i18n.DEFAULT_LOCALE);
   return /*#__PURE__*/(0, _jsxRuntime.jsx)(_styles.ToolbarContainer, {
     children: /*#__PURE__*/(0, _jsxRuntime.jsxs)(_material.Grid, {
       container: true,

@@ -1,12 +1,20 @@
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ReactDocumentViewer } from '../src';
+import { ReactDocumentViewer } from 'react-document-viewer';
 
 const containerStyle = {
   maxWidth: '980px',
   margin: '24px auto',
   padding: '0 16px',
   fontFamily: 'Segoe UI, Tahoma, sans-serif',
+  width: '100%',
+  boxSizing: 'border-box',
+};
+
+const viewerWrapperStyle = {
+  marginTop: '20px',
+  width: '100%',
+  minHeight: 'clamp(280px, 60vh, 600px)',
 };
 
 function App() {
@@ -40,10 +48,11 @@ function App() {
         {document ? `Selected file: ${document.fileName}` : 'No file selected'}
       </div>
 
-      <div style={{ marginTop: '20px' }}>
-        <ReactDocumentViewer 
-          document={document} 
-          height={600}
+      <div style={viewerWrapperStyle}>
+        <ReactDocumentViewer
+          document={document}
+          height="clamp(280px, 65vh, 600px)"
+          pdfWorkerSrc="/pdf.worker.min.mjs"
           labels={{
             download: 'Baixar arquivo',
             print: 'Imprimir documento',

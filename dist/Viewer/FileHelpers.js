@@ -3,9 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.isValidUrl = exports.getMimeTypeFromBase64 = exports.getFileTypeFromFile = exports.getExtension = exports.downloadFile = exports.base64ToBlob = exports.FileTypes = exports.FileExtension = void 0;
-/* eslint-disable consistent-return */
-/* eslint-disable default-case */
+exports.revokeBlobUrlWhenClosed = exports.resolveOpenableUrl = exports.resolveExtension = exports.resolveDownloadFileName = exports.isValidUrl = exports.getMimeTypeFromExtension = exports.getMimeTypeFromBase64 = exports.getFileTypeFromFile = exports.getExtension = exports.escapeHtml = exports.downloadFile = exports.buildFileFromBase64 = exports.base64ToBlob = exports.FileTypes = exports.FileExtension = void 0;
 /* eslint-disable no-plusplus */
 
 var isValidUrl = exports.isValidUrl = function isValidUrl(url) {
@@ -15,6 +13,21 @@ var isValidUrl = exports.isValidUrl = function isValidUrl(url) {
   } catch (_unused) {
     return false;
   }
+};
+var resolveOpenableUrl = exports.resolveOpenableUrl = function resolveOpenableUrl(url) {
+  if (!url) return null;
+  if (isValidUrl(url)) return url;
+  try {
+    if (typeof window !== 'undefined') {
+      return new URL(url, window.location.href).href;
+    }
+  } catch (_unused2) {
+    return null;
+  }
+  return null;
+};
+var escapeHtml = exports.escapeHtml = function escapeHtml(value) {
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 };
 var FileTypes = exports.FileTypes = {
   pdf: 'application/pdf',
@@ -42,16 +55,9 @@ var getFileTypeFromFile = exports.getFileTypeFromFile = function getFileTypeFrom
       content = parts[1];
     }
   }
-  var firstChar = content.charAt(0);
-
-  // PDF starts with JVBERi... (base64 for %PDF-)
-  if (firstChar === 'J' || content.startsWith('JVBERi')) return FileExtension.PDF;
-
-  // Image headers in base64:
-  // JPEG: /9j/
-  // PNG: iVBOR (i)
-  // GIF: R0lG (R)
-  // WebP: UklG (U)
+  var trimmed = content.trim();
+  if (trimmed.startsWith('JVBERi')) return FileExtension.PDF;
+  var firstChar = trimmed.charAt(0);
   if (['/', 'i', 'R', 'U'].includes(firstChar)) return FileExtension.IMAGE;
   return FileExtension.NONE;
 };
@@ -60,11 +66,8 @@ var getMimeTypeFromBase64 = exports.getMimeTypeFromBase64 = function getMimeType
     return base64.split(';')[0].split(':')[1];
   }
   var content = base64.trim();
-  var firstChar = content.charAt(0);
   if (content.startsWith('JVBERi')) return 'application/pdf';
-  switch (firstChar) {
-    case 'J':
-      return 'application/pdf';
+  switch (content.charAt(0)) {
     case 'i':
       return 'image/png';
     case '/':
@@ -95,16 +98,67 @@ var base64ToBlob = exports.base64ToBlob = function base64ToBlob(base64, mimeType
     return new Blob([byteArray], {
       type: mimeType
     });
-  } catch (_unused2) {
+  } catch (_unused3) {
     return null;
   }
 };
 var getExtension = exports.getExtension = function getExtension(file) {
   var _parts$pop;
   if (!file) return '';
-  var urlWithoutQuery = file.split('?')[0];
-  var parts = urlWithoutQuery.split('.');
+  var path = file;
+  try {
+    if (file.includes('://')) {
+      path = new URL(file).pathname;
+    }
+  } catch (_unused4) {
+    path = file;
+  }
+  var pathWithoutQuery = path.split('?')[0];
+  var fileName = pathWithoutQuery.split('/').pop() || pathWithoutQuery;
+  var parts = fileName.split('.');
   return parts.length > 1 ? ((_parts$pop = parts.pop()) === null || _parts$pop === void 0 ? void 0 : _parts$pop.toLowerCase()) || '' : '';
+};
+var resolveExtension = exports.resolveExtension = function resolveExtension(fileUri, fileName) {
+  var fromUri = getExtension(fileUri);
+  if (fromUri) return fromUri;
+  if (fileName) return getExtension(fileName);
+  return '';
+};
+var getMimeTypeFromExtension = exports.getMimeTypeFromExtension = function getMimeTypeFromExtension(extension) {
+  var type = FileTypes[extension];
+  if (!type || type === FileTypes.csv) return undefined;
+  return type;
+};
+var buildFileFromBase64 = exports.buildFileFromBase64 = function buildFileFromBase64(fileBase64) {
+  var content = fileBase64;
+  if (fileBase64.startsWith('data:')) {
+    var parts = fileBase64.split(',');
+    if (parts.length > 1) {
+      content = parts[1];
+    }
+  }
+  var type = getFileTypeFromFile(fileBase64);
+  var mime = getMimeTypeFromBase64(fileBase64);
+  if (type === FileExtension.PDF) {
+    var _blobFile = base64ToBlob(content, 'application/pdf');
+    if (!_blobFile) return null;
+    return {
+      file: _blobFile,
+      mime: mime
+    };
+  }
+  if (type !== FileExtension.IMAGE) return null;
+  var blobFile = base64ToBlob(content, mime);
+  if (blobFile) {
+    return {
+      file: blobFile,
+      mime: mime
+    };
+  }
+  return {
+    file: "data:".concat(mime, ";base64,").concat(content),
+    mime: mime
+  };
 };
 var downloadFile = exports.downloadFile = function downloadFile(file, fileName) {
   var url = typeof file === 'string' ? file : URL.createObjectURL(file);
@@ -117,4 +171,23 @@ var downloadFile = exports.downloadFile = function downloadFile(file, fileName) 
   if (typeof file !== 'string') {
     URL.revokeObjectURL(url);
   }
+};
+var resolveDownloadFileName = exports.resolveDownloadFileName = function resolveDownloadFileName(doc) {
+  if (doc !== null && doc !== void 0 && doc.fileName) return doc.fileName;
+  var source = (doc === null || doc === void 0 ? void 0 : doc.fileUri) || '';
+  var extension = resolveExtension(source, doc === null || doc === void 0 ? void 0 : doc.fileName);
+  if (extension) return "download.".concat(extension);
+  return 'download';
+};
+var revokeBlobUrlWhenClosed = exports.revokeBlobUrlWhenClosed = function revokeBlobUrlWhenClosed(url, childWindow) {
+  if (!childWindow) {
+    URL.revokeObjectURL(url);
+    return;
+  }
+  var interval = window.setInterval(function () {
+    if (childWindow.closed) {
+      URL.revokeObjectURL(url);
+      window.clearInterval(interval);
+    }
+  }, 500);
 };

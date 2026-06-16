@@ -1,6 +1,6 @@
-/* eslint-disable consistent-return */
-/* eslint-disable default-case */
 /* eslint-disable no-plusplus */
+
+import { DocumentData } from '../types';
 
 export const isValidUrl = (url: string): boolean => {
   try {
@@ -10,6 +10,29 @@ export const isValidUrl = (url: string): boolean => {
     return false;
   }
 };
+
+export const resolveOpenableUrl = (url: string): string | null => {
+  if (!url) return null;
+  if (isValidUrl(url)) return url;
+
+  try {
+    if (typeof window !== 'undefined') {
+      return new URL(url, window.location.href).href;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+};
+
+export const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
 export const FileTypes = {
   pdf: 'application/pdf',
@@ -41,16 +64,11 @@ export const getFileTypeFromFile = (data: string) => {
     }
   }
 
-  const firstChar = content.charAt(0);
+  const trimmed = content.trim();
 
-  // PDF starts with JVBERi... (base64 for %PDF-)
-  if (firstChar === 'J' || content.startsWith('JVBERi')) return FileExtension.PDF;
+  if (trimmed.startsWith('JVBERi')) return FileExtension.PDF;
 
-  // Image headers in base64:
-  // JPEG: /9j/
-  // PNG: iVBOR (i)
-  // GIF: R0lG (R)
-  // WebP: UklG (U)
+  const firstChar = trimmed.charAt(0);
   if (['/', 'i', 'R', 'U'].includes(firstChar)) return FileExtension.IMAGE;
 
   return FileExtension.NONE;
@@ -62,12 +80,10 @@ export const getMimeTypeFromBase64 = (base64: string): string => {
   }
 
   const content = base64.trim();
-  const firstChar = content.charAt(0);
-  
+
   if (content.startsWith('JVBERi')) return 'application/pdf';
-  
-  switch (firstChar) {
-    case 'J': return 'application/pdf';
+
+  switch (content.charAt(0)) {
     case 'i': return 'image/png';
     case '/': return 'image/jpeg';
     case 'R': return 'image/gif';
@@ -102,9 +118,69 @@ export const base64ToBlob = (base64: string, mimeType: string): Blob | null => {
 
 export const getExtension = (file: string) => {
   if (!file) return '';
-  const urlWithoutQuery = file.split('?')[0];
-  const parts = urlWithoutQuery.split('.');
+
+  let path = file;
+  try {
+    if (file.includes('://')) {
+      path = new URL(file).pathname;
+    }
+  } catch {
+    path = file;
+  }
+
+  const pathWithoutQuery = path.split('?')[0];
+  const fileName = pathWithoutQuery.split('/').pop() || pathWithoutQuery;
+  const parts = fileName.split('.');
   return parts.length > 1 ? parts.pop()?.toLowerCase() || '' : '';
+};
+
+export const resolveExtension = (fileUri: string, fileName?: string): string => {
+  const fromUri = getExtension(fileUri);
+  if (fromUri) return fromUri;
+  if (fileName) return getExtension(fileName);
+  return '';
+};
+
+export const getMimeTypeFromExtension = (extension: string): string | undefined => {
+  const type = FileTypes[extension as keyof typeof FileTypes];
+  if (!type || type === FileTypes.csv) return undefined;
+  return type;
+};
+
+export interface BuiltFile {
+  file: Blob | string;
+  mime: string;
+}
+
+export const buildFileFromBase64 = (fileBase64: string): BuiltFile | null => {
+  let content = fileBase64;
+  if (fileBase64.startsWith('data:')) {
+    const parts = fileBase64.split(',');
+    if (parts.length > 1) {
+      content = parts[1];
+    }
+  }
+
+  const type = getFileTypeFromFile(fileBase64);
+  const mime = getMimeTypeFromBase64(fileBase64);
+
+  if (type === FileExtension.PDF) {
+    const blobFile = base64ToBlob(content, 'application/pdf');
+    if (!blobFile) return null;
+    return { file: blobFile, mime };
+  }
+
+  if (type !== FileExtension.IMAGE) return null;
+
+  const blobFile = base64ToBlob(content, mime);
+  if (blobFile) {
+    return { file: blobFile, mime };
+  }
+
+  return {
+    file: `data:${mime};base64,${content}`,
+    mime,
+  };
 };
 
 export const downloadFile = (file: Blob | string, fileName: string) => {
@@ -118,4 +194,28 @@ export const downloadFile = (file: Blob | string, fileName: string) => {
   if (typeof file !== 'string') {
     URL.revokeObjectURL(url);
   }
+};
+
+export const resolveDownloadFileName = (doc?: DocumentData): string => {
+  if (doc?.fileName) return doc.fileName;
+
+  const source = doc?.fileUri || '';
+  const extension = resolveExtension(source, doc?.fileName);
+  if (extension) return `download.${extension}`;
+
+  return 'download';
+};
+
+export const revokeBlobUrlWhenClosed = (url: string, childWindow: Window | null) => {
+  if (!childWindow) {
+    URL.revokeObjectURL(url);
+    return;
+  }
+
+  const interval = window.setInterval(() => {
+    if (childWindow.closed) {
+      URL.revokeObjectURL(url);
+      window.clearInterval(interval);
+    }
+  }, 500);
 };

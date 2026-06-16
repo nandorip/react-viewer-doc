@@ -11,15 +11,26 @@
     }
   },
   "scripts": {
+    "predev": "node scripts/copy-pdf-worker.cjs",
+    "dev": "webpack serve --mode development",
+    "prestart": "node scripts/copy-pdf-worker.cjs",
     "start": "webpack serve --mode development",
+    "start:dist": "npm run build:lib && webpack serve --mode development --env dist",
     "build": "webpack --mode production",
     "clean": "node scripts/clean-dist.cjs",
     "transpile": "babel src -d dist --extensions \".ts,.tsx\" --ignore \"src/**/*.test.ts\",\"src/**/*.test.tsx\",\"src/**/*.test.js\"",
     "build:types": "tsc --project tsconfig.json",
     "build:lib": "npm run clean && npm run transpile && npm run build:types",
     "test": "jest",
+    "pack:check": "npm pack --dry-run",
+    "pack:local": "npm pack",
+    "link:local": "npm run build:lib && npm link",
+    "publish:prepare": "npm test -- --runInBand && npm run build:lib && npm pack --dry-run",
     "prepack": "npm run build:lib",
     "prepublishOnly": "npm test -- --runInBand && npm run build:lib"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "repository": {
     "type": "git",

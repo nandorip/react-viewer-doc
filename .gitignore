@@ -3,7 +3,9 @@ node_modules
 # Build output
 dist
 example/dist
+example/public/pdf.worker.min.mjs
 coverage
+*.tgz
 
 # Logs and diagnostics
 *.log

@@ -1,8 +1,23 @@
-import { Box, Typography, Alert } from '@mui/material';
+import { Box, Typography, Alert, Button } from '@mui/material';
 
-export const ErrorViewer = ({ message }: { message: string }) => (
+interface ErrorViewerProps {
+  message: string;
+  onRetry?: () => void;
+  retryLabel?: string;
+}
+
+export const ErrorViewer = ({ message, onRetry, retryLabel = 'Retry' }: ErrorViewerProps) => (
   <Box sx={{ p: 2 }}>
-    <Alert severity="error">
+    <Alert
+      severity="error"
+      action={
+        onRetry ? (
+          <Button color="inherit" size="small" onClick={onRetry}>
+            {retryLabel}
+          </Button>
+        ) : undefined
+      }
+    >
       <Typography variant="body2">{message}</Typography>
     </Alert>
   </Box>

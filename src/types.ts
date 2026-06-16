@@ -23,6 +23,7 @@ export interface Labels {
   printDocumentTitle?: string;
   errorBoundary?: string;
   currentPage?: string;
+  retry?: string;
 }
 
 export type Locale = 'en-US' | 'pt-BR' | 'es-ES';

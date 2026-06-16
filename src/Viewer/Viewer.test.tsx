@@ -260,19 +260,24 @@ describe('Viewer', () => {
   it('prints an image using a generated print document', () => {
     const print = jest.fn();
     const focus = jest.fn();
-    const addEventListener = jest.fn((event, callback) => {
-      if (event === 'load') callback();
-    });
-    const querySelector = jest.fn(() => ({
-      complete: false,
-      addEventListener,
-    }));
+    const createdImg = {
+      src: '',
+      alt: '',
+      complete: true,
+      addEventListener: jest.fn(),
+    };
     const printWindow = {
       document: {
         open: jest.fn(),
         write: jest.fn(),
         close: jest.fn(),
-        querySelector,
+        title: '',
+        head: { appendChild: jest.fn() },
+        body: { appendChild: jest.fn() },
+        createElement: jest.fn((tag: string) => {
+          if (tag === 'img') return createdImg;
+          return { textContent: '' };
+        }),
       },
       focus,
       print,
@@ -287,7 +292,8 @@ describe('Viewer', () => {
 
     fireEvent.click(printButton);
 
-    expect(printWindow.document.write).toHaveBeenCalledWith(expect.stringContaining('http://example.com/test.jpg'));
+    expect(createdImg.src).toBe('http://example.com/test.jpg');
+    expect(createdImg.alt).toBe('test.jpg');
     expect(focus).toHaveBeenCalled();
     expect(print).toHaveBeenCalled();
   });
@@ -304,6 +310,115 @@ describe('Viewer', () => {
 
     expect(screen.getByText('Unsupported file type')).toBeInTheDocument();
     expect(onError).toHaveBeenCalledWith('Unsupported file type');
+    expect(screen.getByTestId('AddIcon')).toBeInTheDocument();
+  });
+
+  it('accepts extension-less URLs when fileName has an extension', () => {
+    render(
+      <Viewer
+        document={{
+          fileName: 'report.pdf',
+          fileUri: 'https://api.example.com/files/abc123',
+        }}
+      />
+    );
+
+    expect(screen.queryByText(/Unsupported/i)).not.toBeInTheDocument();
+  });
+
+  it('falls back to fileData when fileUri type detection fails', () => {
+    jest.spyOn(URL, 'createObjectURL').mockReturnValue('blob:http://localhost/image');
+    render(
+      <Viewer
+        document={{
+          fileName: 'fallback.png',
+          fileUri: 'https://api.example.com/files/abc123',
+          fileData: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
+        }}
+      />
+    );
+
+    expect(screen.getByAltText('fallback.png')).toBeInTheDocument();
+  });
+
+  it('opens relative image URLs in a new tab', () => {
+    const document = {
+      fileName: 'test.jpg',
+      fileUri: '/assets/test.jpg',
+    };
+    render(<Viewer document={document} />);
+    const openButton = screen.getByTestId('OpenInNewIcon').closest('button')!;
+
+    fireEvent.click(openButton);
+
+    expect(window.open).toHaveBeenCalledWith(
+      `${window.location.origin}/assets/test.jpg`,
+      '_blank'
+    );
+  });
+
+  it('prints relative image URLs', () => {
+    const print = jest.fn();
+    const focus = jest.fn();
+    const createdImg = {
+      src: '',
+      alt: '',
+      complete: true,
+      addEventListener: jest.fn(),
+    };
+    const printWindow = {
+      document: {
+        open: jest.fn(),
+        write: jest.fn(),
+        close: jest.fn(),
+        title: '',
+        head: { appendChild: jest.fn() },
+        body: { appendChild: jest.fn() },
+        createElement: jest.fn((tag: string) => {
+          if (tag === 'img') return createdImg;
+          return { textContent: '' };
+        }),
+      },
+      focus,
+      print,
+    } as unknown as Window;
+    jest.spyOn(window, 'open').mockReturnValue(printWindow);
+    render(
+      <Viewer
+        document={{ fileName: 'test.jpg', fileUri: '/assets/test.jpg' }}
+      />
+    );
+
+    fireEvent.click(screen.getByTestId('PrintIcon').closest('button')!);
+
+    expect(createdImg.src).toBe(`${window.location.origin}/assets/test.jpg`);
+    expect(focus).toHaveBeenCalled();
+    expect(print).toHaveBeenCalled();
+  });
+
+  it('does not change page when arrow keys are pressed inside the page input', async () => {
+    const document = {
+      fileName: 'test.pdf',
+      fileUri: 'http://example.com/test.pdf',
+    };
+    render(<Viewer document={document} />);
+    expect(await screen.findByDisplayValue('1')).toBeInTheDocument();
+
+    const pageInput = screen.getByDisplayValue('1');
+    fireEvent.keyDown(pageInput, { key: 'ArrowRight' });
+
+    expect(screen.getByDisplayValue('1')).toBeInTheDocument();
+  });
+
+  it('shows a retry action when loading fails', () => {
+    render(
+      <Viewer
+        document={{ fileName: 'data.csv', fileUri: 'http://example.com/data.csv' }}
+        labels={{ unsupportedFile: 'Unsupported file type', retry: 'Try again' }}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
   });
 
   it('uses custom PDF worker source when provided', () => {

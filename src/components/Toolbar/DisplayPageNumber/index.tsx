@@ -38,13 +38,17 @@ export const DisplayPageNumber = ({ totalPages, page, onPageChange, ariaLabel = 
         onChange={e => setVal(e.target.value)}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
-        sx={{ width: '30px', color: 'inherit', fontSize: '14px' }}
-        inputProps={{ 
+        sx={{
+          width: { xs: '24px', sm: '30px' },
+          color: 'inherit',
+          fontSize: { xs: '12px', sm: '14px' },
+        }}
+        inputProps={{
           style: { textAlign: 'center', padding: 0 },
-          'aria-label': ariaLabel
+          'aria-label': ariaLabel,
         }}
       />
-      <span style={{ fontSize: '14px', marginLeft: '4px' }}>{`/ ${totalPages}`}</span>
+      <span style={{ fontSize: 'inherit', marginLeft: '4px' }}>{`/ ${totalPages}`}</span>
     </DisplayPage>
   );
 };

@@ -1,3 +1,7 @@
-export declare const ErrorViewer: ({ message }: {
+interface ErrorViewerProps {
     message: string;
-}) => import("react/jsx-runtime").JSX.Element;
+    onRetry?: () => void;
+    retryLabel?: string;
+}
+export declare const ErrorViewer: ({ message, onRetry, retryLabel }: ErrorViewerProps) => import("react/jsx-runtime").JSX.Element;
+export {};

@@ -16,7 +16,7 @@ import { ToolbarContainer } from '../../styles';
 import { ToolbarButton } from './ToolbarButton';
 import { DisplayPageNumber } from './DisplayPageNumber';
 import { Labels } from '../../types';
-import { resolveLabels } from '../../i18n';
+import { DEFAULT_LOCALE, resolveLabels } from '../../i18n';
 
 interface ToolbarProps {
   onZoomIn: () => void;
@@ -65,11 +65,22 @@ export const Toolbar = ({
   extra,
   labels,
 }: ToolbarProps) => {
-  const resolvedLabels = resolveLabels(undefined, labels);
+  const resolvedLabels = labels ?? resolveLabels(DEFAULT_LOCALE);
 
   return (
   <ToolbarContainer>
-    <Grid container spacing={1} sx={{ alignItems: 'center', justifyContent: 'center' }}>
+    <Grid
+      container
+      spacing={{ xs: 0.25, sm: 1 }}
+      sx={{
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexWrap: 'wrap',
+        rowGap: { xs: 0.25, sm: 0.5 },
+        width: '100%',
+        maxWidth: '100%',
+      }}
+    >
       {onToggleSidebar && (
         <Grid>
           <Tooltip title={resolvedLabels.thumbnails}>

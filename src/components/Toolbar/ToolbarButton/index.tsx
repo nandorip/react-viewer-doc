@@ -6,7 +6,16 @@ interface ToolbarButtonProps {
 }
 
 export const ToolbarButton = ({ icon, onClick }: ToolbarButtonProps) => (
-  <Button onClick={onClick} sx={{ minWidth: '40px' }}>
+  <Button
+    onClick={onClick}
+    sx={{
+      minWidth: { xs: '34px', sm: '40px' },
+      padding: { xs: '4px', sm: '6px 8px' },
+      '& .MuiSvgIcon-root': {
+        fontSize: { xs: '1.2rem', sm: '1.5rem' },
+      },
+    }}
+  >
     {icon}
   </Button>
 );

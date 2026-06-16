@@ -129,6 +129,7 @@ Built-in locales:
 | `printDocumentTitle` | `Document` |
 | `errorBoundary` | `Sorry, something went wrong while loading the viewer.` |
 | `currentPage` | `Current page` |
+| `retry` | `Retry` |
 
 ## Keyboard Shortcuts
 
@@ -141,35 +142,67 @@ Built-in locales:
 
 ## Development
 
+Install dependencies and start the local demo (copies the PDF.js worker automatically):
+
 ```bash
 npm install
-npm start
+npm run dev
 ```
 
-Open `http://localhost:3001` to view the demo.
+Open [http://localhost:3001](http://localhost:3001) to view the demo. The example imports `react-document-viewer` the same way a consumer app would.
 
-Run the test suite:
+Useful scripts:
+
+| Script | Purpose |
+| :--- | :--- |
+| `npm run dev` | Start the demo against `src/` |
+| `npm run start:dist` | Build `dist/` and run the demo against the compiled package |
+| `npm test -- --runInBand` | Run the test suite |
+| `npm run build:lib` | Build JavaScript + TypeScript declarations in `dist/` |
+| `npm run pack:check` | Dry-run `npm pack` and list published files |
+| `npm run publish:prepare` | Test, build, and dry-run pack in one step |
+
+### Test the package locally in another app
+
+Build and create a global link:
 
 ```bash
-npm test -- --runInBand
+npm run link:local
+```
+
+In your consuming app:
+
+```bash
+npm link react-document-viewer
+```
+
+Or install from a tarball without publishing:
+
+```bash
+npm run pack:local
+npm install /absolute/path/to/react-document-viewer-0.1.0.tgz
 ```
 
 ## Build
-
-To build the library:
 
 ```bash
 npm run build:lib
 ```
 
-This will generate both the transpiled JavaScript and the TypeScript definitions in the `dist` folder.
+This generates transpiled JavaScript and TypeScript definitions in `dist/`.
 
 ## Publishing
 
-The npm package is built from `dist` during `npm pack`/`npm publish` via the `prepack` script. Use this command to inspect what will be published:
+1. Log in to npm: `npm login`
+2. Verify the package contents: `npm run publish:prepare`
+3. Publish: `npm publish`
+
+`prepack` rebuilds `dist/` automatically. `prepublishOnly` runs tests and rebuilds before publish.
+
+For a dry-run preview only:
 
 ```bash
-npm pack --dry-run
+npm run pack:check
 ```
 
 ## Notes

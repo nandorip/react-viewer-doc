@@ -3,20 +3,22 @@ import { PanViewer } from 'react-image-pan-zoom-rotate';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { ErrorViewer, Toolbar } from '../components';
 import {
-  base64ToBlob,
-  FileExtension,
+  buildFileFromBase64,
   FileTypes,
-  getExtension,
-  getFileTypeFromFile,
-  getMimeTypeFromBase64,
+  getMimeTypeFromExtension,
+  resolveExtension,
   downloadFile,
-  isValidUrl,
+  resolveOpenableUrl,
+  resolveDownloadFileName,
+  revokeBlobUrlWhenClosed,
 } from './FileHelpers';
+import { useElementWidth } from '../hooks/useElementWidth';
 import { ViewerProps } from '../types';
 import {
   ImageContainer,
   DocumentContainer,
   MainContent,
+  PdfViewerRoot,
   SidebarContainer,
   ThumbnailItem,
 } from '../styles';
@@ -26,12 +28,18 @@ import 'react-pdf/dist/Page/TextLayer.css';
 
 const DEFAULT_PDF_WORKER_SRC = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
-pdfjs.GlobalWorkerOptions.workerSrc = DEFAULT_PDF_WORKER_SRC;
-
 const ZOOM_SENSITIVITY = 0.1;
 const MAX_ZOOM = 5;
 const MIN_ZOOM = 0.5;
-const BLOB_URL_REVOKE_DELAY_MS = 60_000;
+const VIEWER_HORIZONTAL_PADDING = 32;
+const MOBILE_MEDIA_QUERY = '(max-width: 768px)';
+
+const isEditableTarget = (target: EventTarget | null) => {
+  if (!(target instanceof HTMLElement)) return false;
+  const tag = target.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+  return target.isContentEditable;
+};
 
 export const Viewer = ({
   document,
@@ -54,9 +62,13 @@ export const Viewer = ({
   const [rotation, setRotation] = useState(0);
   const [viewerResetKey, setViewerResetKey] = useState(0);
 
-  // PDF
   const [numPages, setNumPages] = useState(0);
   const [pageNumber, setPageNumber] = useState(1);
+
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
+  const labelsRef = useRef(labels);
+  labelsRef.current = labels;
 
   const onPdfLoadSuccess = ({ numPages: total }: { numPages: number }) => {
     setNumPages(total);
@@ -64,9 +76,13 @@ export const Viewer = ({
   };
 
   const onPdfLoadError = (err: Error) => {
-    const msg = labels?.error || 'Unable to load document';
+    const msg = labelsRef.current?.error || 'Unable to load document';
     setError(msg);
-    onError?.(err.message);
+    onErrorRef.current?.(err.message);
+  };
+
+  const onThumbnailLoadError = (err: Error) => {
+    onErrorRef.current?.(err.message);
   };
 
   const limits = (num: number) => Math.min(Math.max(num, MIN_ZOOM), MAX_ZOOM);
@@ -117,6 +133,7 @@ export const Viewer = ({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const removeWheelListenerRef = useRef<(() => void) | null>(null);
+  const { ref: measureContainerRef, width: containerWidth } = useElementWidth<HTMLDivElement>();
 
   const attachContainerRef = useCallback((element: HTMLDivElement | null) => {
     removeWheelListenerRef.current?.();
@@ -139,8 +156,34 @@ export const Viewer = ({
     removeWheelListenerRef.current = () => element.removeEventListener('wheel', handleWheel);
   }, []);
 
+  const attachViewerContainerRef = useCallback((element: HTMLDivElement | null) => {
+    attachContainerRef(element);
+    measureContainerRef(element);
+  }, [attachContainerRef, measureContainerRef]);
+
+  const pdfBaseWidth = Math.max(0, containerWidth - VIEWER_HORIZONTAL_PADDING);
+  const pdfPageWidth = pdfBaseWidth > 0 ? Math.floor(pdfBaseWidth * zoom) : undefined;
+  const thumbnailWidth = Math.min(180, Math.max(72, pdfBaseWidth > 0 ? pdfBaseWidth - 16 : 120));
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+
+    const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
+    const handleViewportChange = (event: MediaQueryListEvent | MediaQueryList) => {
+      if (event.matches) {
+        setShowSidebar(false);
+      }
+    };
+
+    handleViewportChange(mediaQuery);
+    mediaQuery.addEventListener('change', handleViewportChange);
+    return () => mediaQuery.removeEventListener('change', handleViewportChange);
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (isEditableTarget(e.target)) return;
+
       if (e.ctrlKey) {
         if (e.key === '+' || e.key === '=') {
           e.preventDefault();
@@ -164,7 +207,7 @@ export const Viewer = ({
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    
+
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       removeWheelListenerRef.current?.();
@@ -185,18 +228,15 @@ export const Viewer = ({
       };
     }
 
-    if (isValidUrl(fileSelected)) {
+    const resolved = resolveOpenableUrl(fileSelected);
+    if (resolved) {
       return {
-        url: fileSelected,
+        url: resolved,
         shouldRevoke: false,
       };
     }
 
     return null;
-  };
-
-  const scheduleRevokeObjectUrl = (url: string) => {
-    window.setTimeout(() => URL.revokeObjectURL(url), BLOB_URL_REVOKE_DELAY_MS);
   };
 
   const handleOpenInNew = () => {
@@ -205,12 +245,32 @@ export const Viewer = ({
 
     const openedWindow = window.open(fileUrl.url, '_blank');
     if (fileUrl.shouldRevoke) {
-      if (openedWindow) {
-        scheduleRevokeObjectUrl(fileUrl.url);
-      } else {
-        URL.revokeObjectURL(fileUrl.url);
-      }
+      revokeBlobUrlWhenClosed(fileUrl.url, openedWindow);
     }
+  };
+
+  const writeImagePrintDocument = (printWindow: Window, imageUrl: string) => {
+    const printDoc = printWindow.document;
+    printDoc.open();
+    printDoc.write('<!doctype html><html><head></head><body></body></html>');
+    printDoc.close();
+
+    printDoc.title = document?.fileName || labels?.printDocumentTitle || 'Document';
+
+    const style = printDoc.createElement('style');
+    style.textContent = `
+      html, body { margin: 0; min-height: 100%; }
+      body { display: flex; align-items: center; justify-content: center; }
+      img { max-width: 100%; max-height: 100vh; }
+    `;
+    printDoc.head.appendChild(style);
+
+    const img = printDoc.createElement('img');
+    img.src = imageUrl;
+    img.alt = document?.fileName || labels?.defaultDocumentName || 'document';
+    printDoc.body.appendChild(img);
+
+    return img;
   };
 
   const handlePrint = () => {
@@ -223,51 +283,22 @@ export const Viewer = ({
         printWindow.location.href = fileUrl.url;
         printWindow.onload = () => {
           printWindow.print();
-          if (fileUrl.shouldRevoke) scheduleRevokeObjectUrl(fileUrl.url);
+          if (fileUrl.shouldRevoke) revokeBlobUrlWhenClosed(fileUrl.url, printWindow);
         };
         return;
       }
 
-      printWindow.document.open();
-      printWindow.document.write(`
-        <!doctype html>
-        <html>
-          <head>
-            <title>${document?.fileName || labels?.printDocumentTitle || 'Document'}</title>
-            <style>
-              html, body {
-                margin: 0;
-                min-height: 100%;
-              }
-              body {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-              }
-              img {
-                max-width: 100%;
-                max-height: 100vh;
-              }
-            </style>
-          </head>
-          <body>
-            <img src="${fileUrl.url}" alt="${document?.fileName || labels?.defaultDocumentName || 'document'}" />
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-
-      const printableImage = printWindow.document.querySelector('img');
+      const printableImage = writeImagePrintDocument(printWindow, fileUrl.url);
       const printImage = () => {
         printWindow.focus();
         printWindow.print();
-        if (fileUrl.shouldRevoke) scheduleRevokeObjectUrl(fileUrl.url);
+        if (fileUrl.shouldRevoke) revokeBlobUrlWhenClosed(fileUrl.url, printWindow);
       };
 
-      if (printableImage?.complete) {
+      if (printableImage.complete) {
         printImage();
       } else {
-        printableImage?.addEventListener('load', printImage, { once: true });
+        printableImage.addEventListener('load', printImage, { once: true });
       }
     } else if (fileUrl.shouldRevoke) {
       URL.revokeObjectURL(fileUrl.url);
@@ -275,8 +306,8 @@ export const Viewer = ({
   };
 
   const handleDownload = () => {
-    if (!fileSelected || !document?.fileName) return;
-    downloadFile(fileSelected, document.fileName);
+    if (!fileSelected) return;
+    downloadFile(fileSelected, resolveDownloadFileName(document));
   };
 
   const handleFullscreen = () => {
@@ -287,51 +318,37 @@ export const Viewer = ({
 
   const handleToggleSidebar = () => setShowSidebar(prev => !prev);
 
-  const getUnsupportedFileMessage = () => labels?.unsupportedFile || labels?.error || 'Unsupported file type';
+  const getUnsupportedFileMessage = useCallback(
+    () => labelsRef.current?.unsupportedFile || labelsRef.current?.error || 'Unsupported file type',
+    [],
+  );
 
-  const setUnsupportedFileError = () => {
+  const setUnsupportedFileError = useCallback(() => {
     const msg = getUnsupportedFileMessage();
     setError(msg);
-    onError?.(msg);
-  };
+    onErrorRef.current?.(msg);
+  }, [getUnsupportedFileMessage]);
 
-  const buildFile = (fileBase64: string) => {
-    let content = fileBase64;
-    if (fileBase64.startsWith('data:')) {
-      const parts = fileBase64.split(',');
-      if (parts.length > 1) {
-        content = parts[1];
-      }
-    }
+  const applyFileFromBase64 = useCallback((data: string): boolean => {
+    const result = buildFileFromBase64(data);
+    if (!result) return false;
+    setFileType(result.mime);
+    setFileSelected(result.file);
+    setError('');
+    return true;
+  }, []);
 
-    const type = getFileTypeFromFile(fileBase64);
-    const mime = getMimeTypeFromBase64(fileBase64);
+  const applyFileFromUrl = useCallback((url: string, fileName?: string): boolean => {
+    const extension = resolveExtension(url, fileName);
+    const type = getMimeTypeFromExtension(extension);
+    if (!type) return false;
+    setFileType(type);
+    setFileSelected(url);
+    setError('');
+    return true;
+  }, []);
 
-    if (type === FileExtension.PDF) {
-      const blobFile = base64ToBlob(content, 'application/pdf');
-      if (!blobFile) return null;
-      return { file: blobFile, type: 'pdf', mime };
-    }
-
-    if (type !== FileExtension.IMAGE) return null;
-
-    const blobFile = base64ToBlob(content, mime);
-    if (blobFile) {
-      return {
-        file: blobFile,
-        type: 'image',
-        mime,
-      };
-    }
-
-    return {
-      file: `data:${mime};base64,${content}`,
-      type: 'image',
-      mime,
-    };
-  };
-
-  const initData = async () => {
+  const initData = useCallback(() => {
     const doc = document;
 
     if (!doc) {
@@ -344,52 +361,40 @@ export const Viewer = ({
 
     resetDocumentState();
 
-    const responseFile = doc.fileUri;
-
-    if (responseFile === undefined) {
-      if (doc.fileData) {
-        const result = buildFile(doc.fileData);
-        if (result) {
-          setFileType(result.mime);
-          setFileSelected(result.file);
-        } else {
-          setUnsupportedFileError();
-          return;
-        }
-      } else {
-        setUnsupportedFileError();
+    if (doc.fileUri !== undefined) {
+      if (doc.fileUri.startsWith('data:')) {
+        if (applyFileFromBase64(doc.fileUri)) return;
+      } else if (applyFileFromUrl(doc.fileUri, doc.fileName)) {
         return;
       }
-    } else if (responseFile.startsWith('data:')) {
-      const result = buildFile(responseFile);
-      if (result) {
-        setFileType(result.mime);
-        setFileSelected(result.file);
-      } else {
-        setUnsupportedFileError();
-        return;
-      }
-    } else {
-      const extension = getExtension(responseFile);
-      const type = FileTypes[extension as keyof typeof FileTypes];
-      if (!type || type === FileTypes.csv) {
-        setUnsupportedFileError();
-        return;
-      }
-      setFileType(type);
-      setFileSelected(responseFile);
     }
 
+    if (doc.fileData && applyFileFromBase64(doc.fileData)) {
+      return;
+    }
+
+    setUnsupportedFileError();
+  }, [
+    document,
+    resetDocumentState,
+    applyFileFromBase64,
+    applyFileFromUrl,
+    setUnsupportedFileError,
+  ]);
+
+  const handleRetry = useCallback(() => {
     setError('');
-  };
+    initData();
+  }, [initData]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerSrc || DEFAULT_PDF_WORKER_SRC;
   }, [pdfWorkerSrc]);
 
   useEffect(() => {
     initData();
-  }, [document]);
+  }, [initData]);
 
   useEffect(() => {
     if (fileSelected instanceof Blob && fileType !== FileTypes.pdf) {
@@ -402,107 +407,113 @@ export const Viewer = ({
     }
   }, [fileSelected, fileType]);
 
+  const showToolbar = Boolean(document) || Boolean(fileSelected);
+
   return (
     <>
-      {error && <ErrorViewer message={error} />}
+      {showToolbar && (
+        <Toolbar
+          onRotate={handleRotate}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          onReset={resetViewState}
+          onNextChange={handleNextPage}
+          onPrevPage={handlePrevPage}
+          onPageChange={setPageNumber}
+          onNewPage={handleOpenInNew}
+          onDownload={handleDownload}
+          onPrint={handlePrint}
+          onFullscreen={handleFullscreen}
+          onToggleSidebar={fileType === FileTypes.pdf ? handleToggleSidebar : undefined}
+          showSidebar={showSidebar}
+          hideMovePage={fileType !== FileTypes.pdf}
+          pdfPages={numPages}
+          pdfPage={pageNumber}
+          extra={extraToolbar}
+          labels={labels}
+        />
+      )}
+
+      {error && (
+        <ErrorViewer
+          message={error}
+          onRetry={handleRetry}
+          retryLabel={labels?.retry}
+        />
+      )}
 
       {!error && (
-        <>
-          <Toolbar
-            onRotate={handleRotate}
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
-            onReset={resetViewState}
-            onNextChange={handleNextPage}
-            onPrevPage={handlePrevPage}
-            onPageChange={setPageNumber}
-            onNewPage={handleOpenInNew}
-            onDownload={handleDownload}
-            onPrint={handlePrint}
-            onFullscreen={handleFullscreen}
-            onToggleSidebar={fileType === FileTypes.pdf ? handleToggleSidebar : undefined}
-            showSidebar={showSidebar}
-            hideMovePage={fileType !== FileTypes.pdf}
-            pdfPages={numPages}
-            pdfPage={pageNumber}
-            extra={extraToolbar}
-            labels={labels}
-          />
-          <MainContent>
-            {fileType === FileTypes.pdf && (
-              <SidebarContainer visible={showSidebar}>
-                <Document 
-                  file={fileSelected} 
-                  loading={null}
-                  onLoadError={() => null}
-                >
-                  {Array.from(new Array(numPages), (el, index) => (
-                    <ThumbnailItem 
-                      key={`thumb_${index + 1}`} 
-                      active={pageNumber === index + 1}
-                      onClick={() => setPageNumber(index + 1)}
-                    >
-                      <Page 
-                        pageNumber={index + 1} 
-                        width={180} 
-                        renderTextLayer={false}
-                        renderAnnotationLayer={false}
-                      />
-                      <div style={{ fontSize: '12px' }}>{index + 1}</div>
-                    </ThumbnailItem>
-                  ))}
-                </Document>
-              </SidebarContainer>
-            )}
-            
-            {fileType === FileTypes.pdf ? (
-              <DocumentContainer ref={attachContainerRef} height={height} data-testid="document-container">
-                <Document
-                  file={fileSelected}
-                  onLoadSuccess={onPdfLoadSuccess}
-                  onLoadError={onPdfLoadError}
-                  loading={<div>{labels?.loading || 'Loading document...'}</div>}
-                >
+        <MainContent>
+          {fileType === FileTypes.pdf && fileSelected ? (
+            <PdfViewerRoot>
+              <Document
+                file={fileSelected}
+                onLoadSuccess={onPdfLoadSuccess}
+                onLoadError={onPdfLoadError}
+                loading={<div>{labels?.loading || 'Loading document...'}</div>}
+              >
+                {showSidebar && numPages > 0 && (
+                  <SidebarContainer visible={showSidebar}>
+                    {Array.from(new Array(numPages), (el, index) => (
+                      <ThumbnailItem
+                        key={`thumb_${index + 1}`}
+                        active={pageNumber === index + 1}
+                        onClick={() => setPageNumber(index + 1)}
+                      >
+                        <Page
+                          pageNumber={index + 1}
+                          width={thumbnailWidth}
+                          renderTextLayer={false}
+                          renderAnnotationLayer={false}
+                          onLoadError={onThumbnailLoadError}
+                        />
+                        <div style={{ fontSize: '12px' }}>{index + 1}</div>
+                      </ThumbnailItem>
+                    ))}
+                  </SidebarContainer>
+                )}
+
+                <DocumentContainer ref={attachViewerContainerRef} height={height} data-testid="document-container">
                   <Page
                     pageNumber={pageNumber}
-                    scale={zoom}
+                    {...(pdfPageWidth ? { width: pdfPageWidth } : { scale: zoom })}
                     rotate={rotation}
                     renderTextLayer={true}
                     renderAnnotationLayer={true}
                   />
-                </Document>
-              </DocumentContainer>
-            ) : fileSelected ? (
-              <ImageContainer
+                </DocumentContainer>
+              </Document>
+            </PdfViewerRoot>
+          ) : fileSelected ? (
+            <ImageContainer
+              zoom={zoom}
+              rotation={rotation}
+              ref={attachViewerContainerRef}
+              height={height}
+              data-testid="image-container"
+            >
+              <PanViewer
+                key={viewerResetKey}
                 zoom={zoom}
-                rotation={rotation}
-                ref={attachContainerRef}
-                height={height}
-                data-testid="image-container"
+                setZoom={() => false}
+                pandx={dx}
+                pandy={dy}
+                onPan={onPan}
               >
-                <PanViewer
-                  key={viewerResetKey}
-                  zoom={zoom}
-                  setZoom={() => false}
-                  pandx={dx}
-                  pandy={dy}
-                  onPan={onPan}
-                >
-                  <img 
-                    src={imageUrl} 
-                    alt={document?.fileName || labels?.defaultDocumentName || 'document'} 
-                    onLoad={() => onLoad?.()}
-                    onError={() => {
-                      const msg = labels?.error || 'Unable to load image';
-                      setError(msg);
-                      onError?.(msg);
-                    }}
-                  />
-                </PanViewer>
-              </ImageContainer>
-            ) : null}
-          </MainContent>
-        </>
+                <img
+                  src={imageUrl}
+                  alt={document?.fileName || labels?.defaultDocumentName || 'document'}
+                  onLoad={() => onLoad?.()}
+                  onError={() => {
+                    const msg = labels?.error || 'Unable to load image';
+                    setError(msg);
+                    onError?.(msg);
+                  }}
+                />
+              </PanViewer>
+            </ImageContainer>
+          ) : null}
+        </MainContent>
       )}
     </>
   );
