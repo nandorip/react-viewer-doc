@@ -93,7 +93,7 @@ var Viewer = exports.Viewer = function Viewer(_ref) {
     _onLoad === null || _onLoad === void 0 || _onLoad();
   };
   var onPdfLoadError = function onPdfLoadError(err) {
-    var msg = (labels === null || labels === void 0 ? void 0 : labels.error) || 'Erro ao carregar documento';
+    var msg = (labels === null || labels === void 0 ? void 0 : labels.error) || 'Unable to load document';
     setError(msg);
     _onError === null || _onError === void 0 || _onError(err.message);
   };
@@ -253,7 +253,7 @@ var Viewer = exports.Viewer = function Viewer(_ref) {
         return;
       }
       printWindow.document.open();
-      printWindow.document.write("\n        <!doctype html>\n        <html>\n          <head>\n            <title>".concat((document === null || document === void 0 ? void 0 : document.fileName) || 'document', "</title>\n            <style>\n              html, body {\n                margin: 0;\n                min-height: 100%;\n              }\n              body {\n                display: flex;\n                align-items: center;\n                justify-content: center;\n              }\n              img {\n                max-width: 100%;\n                max-height: 100vh;\n              }\n            </style>\n          </head>\n          <body>\n            <img src=\"").concat(fileUrl.url, "\" alt=\"").concat((document === null || document === void 0 ? void 0 : document.fileName) || 'document', "\" />\n          </body>\n        </html>\n      "));
+      printWindow.document.write("\n        <!doctype html>\n        <html>\n          <head>\n            <title>".concat((document === null || document === void 0 ? void 0 : document.fileName) || (labels === null || labels === void 0 ? void 0 : labels.printDocumentTitle) || 'Document', "</title>\n            <style>\n              html, body {\n                margin: 0;\n                min-height: 100%;\n              }\n              body {\n                display: flex;\n                align-items: center;\n                justify-content: center;\n              }\n              img {\n                max-width: 100%;\n                max-height: 100vh;\n              }\n            </style>\n          </head>\n          <body>\n            <img src=\"").concat(fileUrl.url, "\" alt=\"").concat((document === null || document === void 0 ? void 0 : document.fileName) || (labels === null || labels === void 0 ? void 0 : labels.defaultDocumentName) || 'document', "\" />\n          </body>\n        </html>\n      "));
       printWindow.document.close();
       var printableImage = printWindow.document.querySelector('img');
       var printImage = function printImage() {
@@ -288,7 +288,7 @@ var Viewer = exports.Viewer = function Viewer(_ref) {
     });
   };
   var getUnsupportedFileMessage = function getUnsupportedFileMessage() {
-    return (labels === null || labels === void 0 ? void 0 : labels.unsupportedFile) || (labels === null || labels === void 0 ? void 0 : labels.error) || 'Tipo de arquivo não suportado';
+    return (labels === null || labels === void 0 ? void 0 : labels.unsupportedFile) || (labels === null || labels === void 0 ? void 0 : labels.error) || 'Unsupported file type';
   };
   var setUnsupportedFileError = function setUnsupportedFileError() {
     var msg = getUnsupportedFileMessage();
@@ -499,7 +499,7 @@ var Viewer = exports.Viewer = function Viewer(_ref) {
             onLoadSuccess: onPdfLoadSuccess,
             onLoadError: onPdfLoadError,
             loading: /*#__PURE__*/(0, _jsxRuntime.jsx)("div", {
-              children: (labels === null || labels === void 0 ? void 0 : labels.loading) || 'Carregando documento...'
+              children: (labels === null || labels === void 0 ? void 0 : labels.loading) || 'Loading document...'
             }),
             children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactPdf.Page, {
               pageNumber: pageNumber,
@@ -525,12 +525,12 @@ var Viewer = exports.Viewer = function Viewer(_ref) {
             onPan: onPan,
             children: /*#__PURE__*/(0, _jsxRuntime.jsx)("img", {
               src: imageUrl,
-              alt: (document === null || document === void 0 ? void 0 : document.fileName) || 'document',
+              alt: (document === null || document === void 0 ? void 0 : document.fileName) || (labels === null || labels === void 0 ? void 0 : labels.defaultDocumentName) || 'document',
               onLoad: function onLoad() {
                 return _onLoad === null || _onLoad === void 0 ? void 0 : _onLoad();
               },
               onError: function onError() {
-                var msg = (labels === null || labels === void 0 ? void 0 : labels.error) || 'Erro ao carregar imagem';
+                var msg = (labels === null || labels === void 0 ? void 0 : labels.error) || 'Unable to load image';
                 setError(msg);
                 _onError === null || _onError === void 0 || _onError(msg);
               }

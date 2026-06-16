@@ -6,9 +6,10 @@ interface Props {
   totalPages: number;
   page: number;
   onPageChange: (page: number) => void;
+  ariaLabel?: string;
 }
 
-export const DisplayPageNumber = ({ totalPages, page, onPageChange }: Props) => {
+export const DisplayPageNumber = ({ totalPages, page, onPageChange, ariaLabel = 'Current page' }: Props) => {
   const [val, setVal] = useState(page.toString());
 
   useEffect(() => {
@@ -40,7 +41,7 @@ export const DisplayPageNumber = ({ totalPages, page, onPageChange }: Props) => 
         sx={{ width: '30px', color: 'inherit', fontSize: '14px' }}
         inputProps={{ 
           style: { textAlign: 'center', padding: 0 },
-          'aria-label': 'current page'
+          'aria-label': ariaLabel
         }}
       />
       <span style={{ fontSize: '14px', marginLeft: '4px' }}>{`/ ${totalPages}`}</span>

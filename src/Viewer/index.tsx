@@ -64,7 +64,7 @@ export const Viewer = ({
   };
 
   const onPdfLoadError = (err: Error) => {
-    const msg = labels?.error || 'Erro ao carregar documento';
+    const msg = labels?.error || 'Unable to load document';
     setError(msg);
     onError?.(err.message);
   };
@@ -233,7 +233,7 @@ export const Viewer = ({
         <!doctype html>
         <html>
           <head>
-            <title>${document?.fileName || 'document'}</title>
+            <title>${document?.fileName || labels?.printDocumentTitle || 'Document'}</title>
             <style>
               html, body {
                 margin: 0;
@@ -251,7 +251,7 @@ export const Viewer = ({
             </style>
           </head>
           <body>
-            <img src="${fileUrl.url}" alt="${document?.fileName || 'document'}" />
+            <img src="${fileUrl.url}" alt="${document?.fileName || labels?.defaultDocumentName || 'document'}" />
           </body>
         </html>
       `);
@@ -287,7 +287,7 @@ export const Viewer = ({
 
   const handleToggleSidebar = () => setShowSidebar(prev => !prev);
 
-  const getUnsupportedFileMessage = () => labels?.unsupportedFile || labels?.error || 'Tipo de arquivo não suportado';
+  const getUnsupportedFileMessage = () => labels?.unsupportedFile || labels?.error || 'Unsupported file type';
 
   const setUnsupportedFileError = () => {
     const msg = getUnsupportedFileMessage();
@@ -461,7 +461,7 @@ export const Viewer = ({
                   file={fileSelected}
                   onLoadSuccess={onPdfLoadSuccess}
                   onLoadError={onPdfLoadError}
-                  loading={<div>{labels?.loading || 'Carregando documento...'}</div>}
+                  loading={<div>{labels?.loading || 'Loading document...'}</div>}
                 >
                   <Page
                     pageNumber={pageNumber}
@@ -490,10 +490,10 @@ export const Viewer = ({
                 >
                   <img 
                     src={imageUrl} 
-                    alt={document?.fileName || 'document'} 
+                    alt={document?.fileName || labels?.defaultDocumentName || 'document'} 
                     onLoad={() => onLoad?.()}
                     onError={() => {
-                      const msg = labels?.error || 'Erro ao carregar imagem';
+                      const msg = labels?.error || 'Unable to load image';
                       setError(msg);
                       onError?.(msg);
                     }}

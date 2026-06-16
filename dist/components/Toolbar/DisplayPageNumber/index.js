@@ -19,7 +19,9 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 var DisplayPageNumber = exports.DisplayPageNumber = function DisplayPageNumber(_ref) {
   var totalPages = _ref.totalPages,
     page = _ref.page,
-    onPageChange = _ref.onPageChange;
+    onPageChange = _ref.onPageChange,
+    _ref$ariaLabel = _ref.ariaLabel,
+    ariaLabel = _ref$ariaLabel === void 0 ? 'Current page' : _ref$ariaLabel;
   var _useState = (0, _react.useState)(page.toString()),
     _useState2 = _slicedToArray(_useState, 2),
     val = _useState2[0],
@@ -58,7 +60,7 @@ var DisplayPageNumber = exports.DisplayPageNumber = function DisplayPageNumber(_
           textAlign: 'center',
           padding: 0
         },
-        'aria-label': 'current page'
+        'aria-label': ariaLabel
       }
     }), /*#__PURE__*/(0, _jsxRuntime.jsx)("span", {
       style: {

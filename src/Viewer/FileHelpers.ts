@@ -95,8 +95,7 @@ export const base64ToBlob = (base64: string, mimeType: string): Blob | null => {
 
     const byteArray = new Uint8Array(byteNumbers);
     return new Blob([byteArray], { type: mimeType });
-  } catch (error) {
-    console.error('Invalid base64 string:', error);
+  } catch {
     return null;
   }
 };

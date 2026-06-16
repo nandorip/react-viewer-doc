@@ -19,13 +19,20 @@ export interface Labels {
   print?: string;
   fullscreen?: string;
   unsupportedFile?: string;
+  defaultDocumentName?: string;
+  printDocumentTitle?: string;
+  errorBoundary?: string;
+  currentPage?: string;
 }
+
+export type Locale = 'en-US' | 'pt-BR' | 'es-ES';
 
 export interface ViewerProps {
   document?: DocumentData;
   extraToolbar?: React.ReactNode;
   height?: string | number;
   labels?: Labels;
+  locale?: Locale;
   pdfWorkerSrc?: string;
   onLoad?: () => void;
   onError?: (error: string) => void;

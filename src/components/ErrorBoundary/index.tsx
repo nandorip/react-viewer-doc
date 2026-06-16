@@ -1,12 +1,12 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Alert, Box } from '@mui/material';
+import { Labels } from '../../types';
+import { resolveLabels } from '../../i18n';
 
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
-  labels?: {
-    error?: string;
-  };
+  labels?: Labels;
 }
 
 interface State {
@@ -32,7 +32,7 @@ export class ErrorBoundary extends Component<Props, State> {
       return this.props.fallback || (
         <Box sx={{ p: 2 }}>
           <Alert severity="error">
-            {this.props.labels?.error || 'Desculpe, algo deu errado ao carregar o visualizador.'}
+            {resolveLabels(undefined, this.props.labels).errorBoundary}
           </Alert>
         </Box>
       );

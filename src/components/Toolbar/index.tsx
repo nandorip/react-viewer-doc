@@ -15,6 +15,8 @@ import {
 import { ToolbarContainer } from '../../styles';
 import { ToolbarButton } from './ToolbarButton';
 import { DisplayPageNumber } from './DisplayPageNumber';
+import { Labels } from '../../types';
+import { resolveLabels } from '../../i18n';
 
 interface ToolbarProps {
   onZoomIn: () => void;
@@ -37,19 +39,7 @@ interface ToolbarProps {
   pdfPage: number;
   showSidebar?: boolean;
   extra?: React.ReactNode;
-  labels?: {
-    zoomIn?: string;
-    zoomOut?: string;
-    rotate?: string;
-    reset?: string;
-    nextPage?: string;
-    prevPage?: string;
-    download?: string;
-    openInNew?: string;
-    print?: string;
-    fullscreen?: string;
-    thumbnails?: string;
-  };
+  labels?: Labels;
 }
 
 export const Toolbar = ({
@@ -74,12 +64,15 @@ export const Toolbar = ({
   showSidebar,
   extra,
   labels,
-}: ToolbarProps) => (
+}: ToolbarProps) => {
+  const resolvedLabels = resolveLabels(undefined, labels);
+
+  return (
   <ToolbarContainer>
     <Grid container spacing={1} sx={{ alignItems: 'center', justifyContent: 'center' }}>
       {onToggleSidebar && (
         <Grid>
-          <Tooltip title={labels?.thumbnails || 'Ver Miniaturas'}>
+          <Tooltip title={resolvedLabels.thumbnails}>
             <span><ToolbarButton icon={<ViewList color={showSidebar ? 'primary' : 'inherit'} />} onClick={onToggleSidebar} /></span>
           </Tooltip>
         </Grid>
@@ -92,12 +85,12 @@ export const Toolbar = ({
       {!hideZoom && (
         <>
           <Grid>
-            <Tooltip title={labels?.zoomIn || 'Aumentar Zoom'}>
+            <Tooltip title={resolvedLabels.zoomIn}>
               <span><ToolbarButton icon={<Add />} onClick={onZoomIn} /></span>
             </Tooltip>
           </Grid>
           <Grid>
-            <Tooltip title={labels?.zoomOut || 'Diminuir Zoom'}>
+            <Tooltip title={resolvedLabels.zoomOut}>
               <span><ToolbarButton icon={<Remove />} onClick={onZoomOut} /></span>
             </Tooltip>
           </Grid>
@@ -105,14 +98,14 @@ export const Toolbar = ({
       )}
       {!hideRotate && (
         <Grid>
-          <Tooltip title={labels?.rotate || 'Girar'}>
+          <Tooltip title={resolvedLabels.rotate}>
             <span><ToolbarButton icon={<Refresh />} onClick={onRotate} /></span>
           </Tooltip>
         </Grid>
       )}
       {!hideReset && (
         <Grid>
-          <Tooltip title={labels?.reset || 'Resetar'}>
+          <Tooltip title={resolvedLabels.reset}>
             <span><ToolbarButton icon={<SettingsBackupRestore />} onClick={onReset} /></span>
           </Tooltip>
         </Grid>
@@ -120,15 +113,15 @@ export const Toolbar = ({
       {!hideMovePage && (
         <>
           <Grid>
-            <Tooltip title={labels?.prevPage || 'Página Anterior'}>
+            <Tooltip title={resolvedLabels.prevPage}>
               <span><ToolbarButton icon={<ChevronLeft />} onClick={onPrevPage} /></span>
             </Tooltip>
           </Grid>
           <Grid>
-            <DisplayPageNumber totalPages={pdfPages} page={pdfPage} onPageChange={onPageChange} />
+            <DisplayPageNumber totalPages={pdfPages} page={pdfPage} onPageChange={onPageChange} ariaLabel={resolvedLabels.currentPage} />
           </Grid>
           <Grid>
-            <Tooltip title={labels?.nextPage || 'Próxima Página'}>
+            <Tooltip title={resolvedLabels.nextPage}>
               <span><ToolbarButton icon={<ChevronRight />} onClick={onNextChange} /></span>
             </Tooltip>
           </Grid>
@@ -136,32 +129,33 @@ export const Toolbar = ({
       )}
       {onDownload && (
         <Grid>
-          <Tooltip title={labels?.download || 'Download'}>
+          <Tooltip title={resolvedLabels.download}>
             <span><ToolbarButton icon={<Download />} onClick={onDownload} /></span>
           </Tooltip>
         </Grid>
       )}
       {onPrint && (
         <Grid>
-          <Tooltip title={labels?.print || 'Imprimir'}>
+          <Tooltip title={resolvedLabels.print}>
             <span><ToolbarButton icon={<Print />} onClick={onPrint} /></span>
           </Tooltip>
         </Grid>
       )}
       {onNewPage && (
         <Grid>
-          <Tooltip title={labels?.openInNew || 'Abrir em nova aba'}>
+          <Tooltip title={resolvedLabels.openInNew}>
             <span><ToolbarButton icon={<OpenInNew />} onClick={onNewPage} /></span>
           </Tooltip>
         </Grid>
       )}
       {onFullscreen && (
         <Grid>
-          <Tooltip title={labels?.fullscreen || 'Tela Cheia'}>
+          <Tooltip title={resolvedLabels.fullscreen}>
             <span><ToolbarButton icon={<Fullscreen />} onClick={onFullscreen} /></span>
           </Tooltip>
         </Grid>
       )}
     </Grid>
   </ToolbarContainer>
-);
+  );
+};

@@ -95,8 +95,7 @@ var base64ToBlob = exports.base64ToBlob = function base64ToBlob(base64, mimeType
     return new Blob([byteArray], {
       type: mimeType
     });
-  } catch (error) {
-    console.error('Invalid base64 string:', error);
+  } catch (_unused2) {
     return null;
   }
 };

@@ -96,8 +96,11 @@ describe('FileHelpers', () => {
 
     it('should return null for invalid base64', () => {
       const invalidBase64 = 'not valid base64!@#$';
+      const spy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
       const blob = base64ToBlob(invalidBase64, 'text/plain');
       expect(blob).toBeNull();
+      expect(spy).not.toHaveBeenCalled();
+      spy.mockRestore();
     });
   });
 });

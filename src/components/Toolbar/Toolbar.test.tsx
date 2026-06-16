@@ -64,4 +64,11 @@ describe('Toolbar', () => {
     render(<Toolbar {...mockProps} extra={<div data-testid="extra-content">Extra</div>} />);
     expect(screen.getByTestId('extra-content')).toBeInTheDocument();
   });
+
+  it('uses localized labels', async () => {
+    render(<Toolbar {...mockProps} labels={{ nextPage: 'Siguiente pagina', currentPage: 'Pagina actual' }} />);
+
+    expect(screen.getByLabelText('Pagina actual')).toBeInTheDocument();
+    expect(await screen.findByLabelText('Siguiente pagina')).toBeInTheDocument();
+  });
 });

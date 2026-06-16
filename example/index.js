@@ -36,13 +36,14 @@ function App() {
       <p>Select an image or PDF from your machine.</p>
 
       <input type="file" accept="image/*,.pdf" onChange={onFileChange} />
+      <div style={{ marginTop: '12px', fontSize: '14px', color: '#333' }}>
+        {document ? `Selected file: ${document.fileName}` : 'No file selected'}
+      </div>
 
       <div style={{ marginTop: '20px' }}>
         <ReactDocumentViewer 
           document={document} 
           height={600}
-          onLoad={() => console.log('Document loaded!')}
-          onError={(err) => console.error('Error loading document:', err)}
           labels={{
             download: 'Baixar arquivo',
             print: 'Imprimir documento',

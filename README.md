@@ -38,6 +38,7 @@ function App() {
           fileData: 'JVBERi0xLjQK...', // base64 string
           fileName: 'document.pdf'
         }}
+        locale="en-US"
         pdfWorkerSrc="/pdf.worker.min.mjs"
         labels={{
           download: 'Download PDF',
@@ -81,27 +82,53 @@ function App() {
 | `height` | `string \| number` (optional) | Height of the viewer container (default: `600px`). |
 | `extraToolbar` | `ReactNode` (optional) | Custom components to be added to the left side of the toolbar. |
 | `labels` | `object` (optional) | Custom text for buttons and status messages. |
+| `locale` | `'en-US' \| 'pt-BR' \| 'es-ES'` (optional) | Built-in label set to use (default: `en-US`). |
 | `pdfWorkerSrc` | `string` (optional) | Custom PDF.js worker URL. Defaults to a versioned unpkg URL. |
 | `onLoad` | `function` (optional) | Callback function called when the document is successfully loaded. |
 | `onError` | `function` (optional) | Callback function called when an error occurs during loading. |
 
+### Internationalization
+
+Use `locale` for built-in translations and `labels` to override any individual text.
+
+```tsx
+<ReactDocumentViewer
+  locale="pt-BR"
+  labels={{
+    reset: 'Centralizar',
+    unsupportedFile: 'Arquivo nao suportado'
+  }}
+/>
+```
+
+Built-in locales:
+
+- `en-US`
+- `pt-BR`
+- `es-ES`
+
 ### Labels Object
 
-| Key | Default (PT-BR) |
+| Key | Default (`en-US`) |
 | :--- | :--- |
-| `zoomIn` | `Aumentar Zoom` |
-| `zoomOut` | `Diminuir Zoom` |
-| `rotate` | `Girar` |
-| `reset` | `Resetar` |
-| `nextPage` | `Próxima Página` |
-| `prevPage` | `Página Anterior` |
+| `zoomIn` | `Zoom in` |
+| `zoomOut` | `Zoom out` |
+| `rotate` | `Rotate` |
+| `reset` | `Reset` |
+| `nextPage` | `Next page` |
+| `prevPage` | `Previous page` |
 | `download` | `Download` |
-| `print` | `Imprimir` |
-| `openInNew` | `Abrir em nova aba` |
-| `fullscreen` | `Tela Cheia` |
-| `loading` | `Carregando documento...` |
-| `error` | `Erro ao carregar documento` |
-| `unsupportedFile` | `Tipo de arquivo não suportado` |
+| `print` | `Print` |
+| `openInNew` | `Open in new tab` |
+| `fullscreen` | `Fullscreen` |
+| `loading` | `Loading document...` |
+| `error` | `Unable to load document` |
+| `unsupportedFile` | `Unsupported file type` |
+| `thumbnails` | `Thumbnails` |
+| `defaultDocumentName` | `document` |
+| `printDocumentTitle` | `Document` |
+| `errorBoundary` | `Sorry, something went wrong while loading the viewer.` |
+| `currentPage` | `Current page` |
 
 ## Keyboard Shortcuts
 
