@@ -1,4 +1,4 @@
-import { Labels } from '../../types';
+import { Labels, ViewerTheme } from '../../types';
 interface ToolbarProps {
     onZoomIn: () => void;
     onZoomOut: () => void;
@@ -21,6 +21,7 @@ interface ToolbarProps {
     showSidebar?: boolean;
     extra?: React.ReactNode;
     labels?: Labels;
+    theme?: ViewerTheme;
 }
-export declare const Toolbar: ({ onZoomIn, onZoomOut, onRotate, onReset, onNextChange, onPrevPage, onPageChange, onNewPage, onDownload, onPrint, onFullscreen, onToggleSidebar, hideZoom, hideRotate, hideReset, hideMovePage, pdfPages, pdfPage, showSidebar, extra, labels, }: ToolbarProps) => import("react/jsx-runtime").JSX.Element;
+export declare const Toolbar: ({ onZoomIn, onZoomOut, onRotate, onReset, onNextChange, onPrevPage, onPageChange, onNewPage, onDownload, onPrint, onFullscreen, onToggleSidebar, hideZoom, hideRotate, hideReset, hideMovePage, pdfPages, pdfPage, showSidebar, extra, labels, theme, }: ToolbarProps) => import("react/jsx-runtime").JSX.Element;
 export {};

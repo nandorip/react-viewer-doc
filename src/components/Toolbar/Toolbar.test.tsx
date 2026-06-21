@@ -69,6 +69,6 @@ describe('Toolbar', () => {
     render(<Toolbar {...mockProps} labels={{ nextPage: 'Siguiente pagina', currentPage: 'Pagina actual' }} />);
 
     expect(screen.getByLabelText('Pagina actual')).toBeInTheDocument();
-    expect(await screen.findByLabelText('Siguiente pagina')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Siguiente pagina' })).toBeInTheDocument();
   });
 });

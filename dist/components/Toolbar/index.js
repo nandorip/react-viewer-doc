@@ -32,26 +32,39 @@ var Toolbar = exports.Toolbar = function Toolbar(_ref) {
     pdfPage = _ref.pdfPage,
     showSidebar = _ref.showSidebar,
     extra = _ref.extra,
-    labels = _ref.labels;
+    labels = _ref.labels,
+    _ref$theme = _ref.theme,
+    theme = _ref$theme === void 0 ? 'light' : _ref$theme;
   var resolvedLabels = labels !== null && labels !== void 0 ? labels : (0, _i18n.resolveLabels)(_i18n.DEFAULT_LOCALE);
   return /*#__PURE__*/(0, _jsxRuntime.jsx)(_styles.ToolbarContainer, {
+    theme: theme,
     children: /*#__PURE__*/(0, _jsxRuntime.jsxs)(_material.Grid, {
       container: true,
-      spacing: 1,
+      spacing: {
+        xs: 0.25,
+        sm: 1
+      },
       sx: {
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        flexWrap: 'wrap',
+        rowGap: {
+          xs: 0.25,
+          sm: 0.5
+        },
+        width: '100%',
+        maxWidth: '100%'
       },
       children: [onToggleSidebar && /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
         children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Tooltip, {
           title: resolvedLabels.thumbnails,
-          children: /*#__PURE__*/(0, _jsxRuntime.jsx)("span", {
-            children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
-              icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.ViewList, {
-                color: showSidebar ? 'primary' : 'inherit'
-              }),
-              onClick: onToggleSidebar
-            })
+          describeChild: true,
+          children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
+            icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.ViewList, {
+              color: showSidebar ? 'primary' : 'inherit'
+            }),
+            onClick: onToggleSidebar,
+            ariaLabel: resolvedLabels.thumbnails
           })
         })
       }), extra && /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
@@ -60,53 +73,53 @@ var Toolbar = exports.Toolbar = function Toolbar(_ref) {
         children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
           children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Tooltip, {
             title: resolvedLabels.zoomIn,
-            children: /*#__PURE__*/(0, _jsxRuntime.jsx)("span", {
-              children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
-                icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.Add, {}),
-                onClick: onZoomIn
-              })
+            describeChild: true,
+            children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
+              icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.Add, {}),
+              onClick: onZoomIn,
+              ariaLabel: resolvedLabels.zoomIn
             })
           })
         }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
           children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Tooltip, {
             title: resolvedLabels.zoomOut,
-            children: /*#__PURE__*/(0, _jsxRuntime.jsx)("span", {
-              children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
-                icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.Remove, {}),
-                onClick: onZoomOut
-              })
+            describeChild: true,
+            children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
+              icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.Remove, {}),
+              onClick: onZoomOut,
+              ariaLabel: resolvedLabels.zoomOut
             })
           })
         })]
       }), !hideRotate && /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
         children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Tooltip, {
           title: resolvedLabels.rotate,
-          children: /*#__PURE__*/(0, _jsxRuntime.jsx)("span", {
-            children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
-              icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.Refresh, {}),
-              onClick: onRotate
-            })
+          describeChild: true,
+          children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
+            icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.Refresh, {}),
+            onClick: onRotate,
+            ariaLabel: resolvedLabels.rotate
           })
         })
       }), !hideReset && /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
         children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Tooltip, {
           title: resolvedLabels.reset,
-          children: /*#__PURE__*/(0, _jsxRuntime.jsx)("span", {
-            children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
-              icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.SettingsBackupRestore, {}),
-              onClick: onReset
-            })
+          describeChild: true,
+          children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
+            icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.SettingsBackupRestore, {}),
+            onClick: onReset,
+            ariaLabel: resolvedLabels.reset
           })
         })
       }), !hideMovePage && /*#__PURE__*/(0, _jsxRuntime.jsxs)(_jsxRuntime.Fragment, {
         children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
           children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Tooltip, {
             title: resolvedLabels.prevPage,
-            children: /*#__PURE__*/(0, _jsxRuntime.jsx)("span", {
-              children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
-                icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.ChevronLeft, {}),
-                onClick: onPrevPage
-              })
+            describeChild: true,
+            children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
+              icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.ChevronLeft, {}),
+              onClick: onPrevPage,
+              ariaLabel: resolvedLabels.prevPage
             })
           })
         }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
@@ -114,57 +127,58 @@ var Toolbar = exports.Toolbar = function Toolbar(_ref) {
             totalPages: pdfPages,
             page: pdfPage,
             onPageChange: onPageChange,
-            ariaLabel: resolvedLabels.currentPage
+            ariaLabel: resolvedLabels.currentPage,
+            theme: theme
           })
         }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
           children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Tooltip, {
             title: resolvedLabels.nextPage,
-            children: /*#__PURE__*/(0, _jsxRuntime.jsx)("span", {
-              children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
-                icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.ChevronRight, {}),
-                onClick: onNextChange
-              })
+            describeChild: true,
+            children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
+              icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.ChevronRight, {}),
+              onClick: onNextChange,
+              ariaLabel: resolvedLabels.nextPage
             })
           })
         })]
       }), onDownload && /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
         children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Tooltip, {
           title: resolvedLabels.download,
-          children: /*#__PURE__*/(0, _jsxRuntime.jsx)("span", {
-            children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
-              icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.Download, {}),
-              onClick: onDownload
-            })
+          describeChild: true,
+          children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
+            icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.Download, {}),
+            onClick: onDownload,
+            ariaLabel: resolvedLabels.download
           })
         })
       }), onPrint && /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
         children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Tooltip, {
           title: resolvedLabels.print,
-          children: /*#__PURE__*/(0, _jsxRuntime.jsx)("span", {
-            children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
-              icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.Print, {}),
-              onClick: onPrint
-            })
+          describeChild: true,
+          children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
+            icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.Print, {}),
+            onClick: onPrint,
+            ariaLabel: resolvedLabels.print
           })
         })
       }), onNewPage && /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
         children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Tooltip, {
           title: resolvedLabels.openInNew,
-          children: /*#__PURE__*/(0, _jsxRuntime.jsx)("span", {
-            children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
-              icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.OpenInNew, {}),
-              onClick: onNewPage
-            })
+          describeChild: true,
+          children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
+            icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.OpenInNew, {}),
+            onClick: onNewPage,
+            ariaLabel: resolvedLabels.openInNew
           })
         })
       }), onFullscreen && /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
         children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Tooltip, {
           title: resolvedLabels.fullscreen,
-          children: /*#__PURE__*/(0, _jsxRuntime.jsx)("span", {
-            children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
-              icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.Fullscreen, {}),
-              onClick: onFullscreen
-            })
+          describeChild: true,
+          children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
+            icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.Fullscreen, {}),
+            onClick: onFullscreen,
+            ariaLabel: resolvedLabels.fullscreen
           })
         })
       })]

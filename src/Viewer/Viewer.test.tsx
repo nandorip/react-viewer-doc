@@ -64,6 +64,16 @@ describe('Viewer', () => {
     expect(screen.queryByText('/ 0')).not.toBeInTheDocument();
   });
 
+  it('renders SVG correctly', () => {
+    const document = {
+      fileName: 'icon.svg',
+      fileUri: 'http://example.com/icon.svg',
+    };
+    render(<Viewer document={document} />);
+    expect(screen.getByTestId('mock-pan-viewer')).toBeInTheDocument();
+    expect(screen.getByAltText('icon.svg')).toHaveAttribute('src', 'http://example.com/icon.svg');
+  });
+
   it('renders image correctly', () => {
     const document = {
       fileName: 'test.jpg',
@@ -131,7 +141,7 @@ describe('Viewer', () => {
     // Mas no caso da imagem, a rotação é passada via styled-components prop
     // O mock do PanViewer não mostra a rotação, mas a img dentro do ImageContainer sim.
     const img = screen.getByAltText('test.jpg');
-    expect(img).toHaveStyle('transform: rotate(90deg) scale(1)');
+    expect(img).toHaveStyle('transform: rotate(90deg)');
   });
 
   it('resets state on reset button click', () => {
@@ -148,10 +158,10 @@ describe('Viewer', () => {
     fireEvent.click(rotateBtn);
 
     const img = screen.getByAltText('test.jpg');
-    expect(img).toHaveStyle('transform: rotate(90deg) scale(1.1)');
+    expect(img).toHaveStyle('transform: rotate(90deg)');
 
     fireEvent.click(resetBtn);
-    expect(screen.getByAltText('test.jpg')).toHaveStyle('transform: rotate(0deg) scale(1)');
+    expect(screen.getByAltText('test.jpg')).toHaveStyle('transform: rotate(0deg)');
   });
 
   it('centers image on reset button click', () => {
@@ -310,7 +320,7 @@ describe('Viewer', () => {
 
     expect(screen.getByText('Unsupported file type')).toBeInTheDocument();
     expect(onError).toHaveBeenCalledWith('Unsupported file type');
-    expect(screen.getByTestId('AddIcon')).toBeInTheDocument();
+    expect(screen.queryByTestId('AddIcon')).not.toBeInTheDocument();
   });
 
   it('accepts extension-less URLs when fileName has an extension', () => {
@@ -324,6 +334,21 @@ describe('Viewer', () => {
     );
 
     expect(screen.queryByText(/Unsupported/i)).not.toBeInTheDocument();
+  });
+
+  it('falls back to fileData when fileUri is empty', () => {
+    jest.spyOn(URL, 'createObjectURL').mockReturnValue('blob:http://localhost/image');
+    render(
+      <Viewer
+        document={{
+          fileName: 'fallback.png',
+          fileUri: '',
+          fileData: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
+        }}
+      />
+    );
+
+    expect(screen.getByAltText('fallback.png')).toBeInTheDocument();
   });
 
   it('falls back to fileData when fileUri type detection fails', () => {

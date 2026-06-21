@@ -1,7 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Alert, Box } from '@mui/material';
 import { Labels } from '../../types';
-import { resolveLabels } from '../../i18n';
+import { DEFAULT_LOCALE, resolveLabels } from '../../i18n';
 
 interface Props {
   children: ReactNode;
@@ -32,7 +32,7 @@ export class ErrorBoundary extends Component<Props, State> {
       return this.props.fallback || (
         <Box sx={{ p: 2 }}>
           <Alert severity="error">
-            {resolveLabels(undefined, this.props.labels).errorBoundary}
+            {resolveLabels(DEFAULT_LOCALE, this.props.labels).errorBoundary}
           </Alert>
         </Box>
       );

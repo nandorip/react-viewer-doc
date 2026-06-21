@@ -10,6 +10,7 @@ export const ReactDocumentViewer = ({
   height,
   labels,
   locale = DEFAULT_LOCALE,
+  theme = 'light',
   pdfWorkerSrc,
   onLoad,
   onError
@@ -21,13 +22,14 @@ export const ReactDocumentViewer = ({
 
   return (
   <ErrorBoundary labels={resolvedLabels}>
-    <Container>
+    <Container theme={theme}>
       <Viewer 
         document={document} 
         extraToolbar={extraToolbar} 
         height={height} 
         labels={resolvedLabels}
         locale={locale}
+        theme={theme}
         pdfWorkerSrc={pdfWorkerSrc}
         onLoad={onLoad}
         onError={onError}

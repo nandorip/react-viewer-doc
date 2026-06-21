@@ -16,6 +16,8 @@ var ReactDocumentViewer = exports.ReactDocumentViewer = function ReactDocumentVi
     labels = _ref.labels,
     _ref$locale = _ref.locale,
     locale = _ref$locale === void 0 ? _i18n.DEFAULT_LOCALE : _ref$locale,
+    _ref$theme = _ref.theme,
+    theme = _ref$theme === void 0 ? 'light' : _ref$theme,
     pdfWorkerSrc = _ref.pdfWorkerSrc,
     onLoad = _ref.onLoad,
     onError = _ref.onError;
@@ -25,12 +27,14 @@ var ReactDocumentViewer = exports.ReactDocumentViewer = function ReactDocumentVi
   return /*#__PURE__*/(0, _jsxRuntime.jsx)(_components.ErrorBoundary, {
     labels: resolvedLabels,
     children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_components.Container, {
+      theme: theme,
       children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_Viewer.Viewer, {
         document: document,
         extraToolbar: extraToolbar,
         height: height,
         labels: resolvedLabels,
         locale: locale,
+        theme: theme,
         pdfWorkerSrc: pdfWorkerSrc,
         onLoad: onLoad,
         onError: onError

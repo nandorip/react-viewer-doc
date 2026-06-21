@@ -15,7 +15,7 @@ import {
 import { ToolbarContainer } from '../../styles';
 import { ToolbarButton } from './ToolbarButton';
 import { DisplayPageNumber } from './DisplayPageNumber';
-import { Labels } from '../../types';
+import { Labels, ViewerTheme } from '../../types';
 import { DEFAULT_LOCALE, resolveLabels } from '../../i18n';
 
 interface ToolbarProps {
@@ -40,6 +40,7 @@ interface ToolbarProps {
   showSidebar?: boolean;
   extra?: React.ReactNode;
   labels?: Labels;
+  theme?: ViewerTheme;
 }
 
 export const Toolbar = ({
@@ -64,11 +65,12 @@ export const Toolbar = ({
   showSidebar,
   extra,
   labels,
+  theme = 'light',
 }: ToolbarProps) => {
   const resolvedLabels = labels ?? resolveLabels(DEFAULT_LOCALE);
 
   return (
-  <ToolbarContainer>
+  <ToolbarContainer theme={theme}>
     <Grid
       container
       spacing={{ xs: 0.25, sm: 1 }}
@@ -83,8 +85,8 @@ export const Toolbar = ({
     >
       {onToggleSidebar && (
         <Grid>
-          <Tooltip title={resolvedLabels.thumbnails}>
-            <span><ToolbarButton icon={<ViewList color={showSidebar ? 'primary' : 'inherit'} />} onClick={onToggleSidebar} /></span>
+          <Tooltip title={resolvedLabels.thumbnails} describeChild>
+            <ToolbarButton icon={<ViewList color={showSidebar ? 'primary' : 'inherit'} />} onClick={onToggleSidebar} ariaLabel={resolvedLabels.thumbnails} />
           </Tooltip>
         </Grid>
       )}
@@ -96,73 +98,73 @@ export const Toolbar = ({
       {!hideZoom && (
         <>
           <Grid>
-            <Tooltip title={resolvedLabels.zoomIn}>
-              <span><ToolbarButton icon={<Add />} onClick={onZoomIn} /></span>
+            <Tooltip title={resolvedLabels.zoomIn} describeChild>
+              <ToolbarButton icon={<Add />} onClick={onZoomIn} ariaLabel={resolvedLabels.zoomIn} />
             </Tooltip>
           </Grid>
           <Grid>
-            <Tooltip title={resolvedLabels.zoomOut}>
-              <span><ToolbarButton icon={<Remove />} onClick={onZoomOut} /></span>
+            <Tooltip title={resolvedLabels.zoomOut} describeChild>
+              <ToolbarButton icon={<Remove />} onClick={onZoomOut} ariaLabel={resolvedLabels.zoomOut} />
             </Tooltip>
           </Grid>
         </>
       )}
       {!hideRotate && (
         <Grid>
-          <Tooltip title={resolvedLabels.rotate}>
-            <span><ToolbarButton icon={<Refresh />} onClick={onRotate} /></span>
+          <Tooltip title={resolvedLabels.rotate} describeChild>
+            <ToolbarButton icon={<Refresh />} onClick={onRotate} ariaLabel={resolvedLabels.rotate} />
           </Tooltip>
         </Grid>
       )}
       {!hideReset && (
         <Grid>
-          <Tooltip title={resolvedLabels.reset}>
-            <span><ToolbarButton icon={<SettingsBackupRestore />} onClick={onReset} /></span>
+          <Tooltip title={resolvedLabels.reset} describeChild>
+            <ToolbarButton icon={<SettingsBackupRestore />} onClick={onReset} ariaLabel={resolvedLabels.reset} />
           </Tooltip>
         </Grid>
       )}
       {!hideMovePage && (
         <>
           <Grid>
-            <Tooltip title={resolvedLabels.prevPage}>
-              <span><ToolbarButton icon={<ChevronLeft />} onClick={onPrevPage} /></span>
+            <Tooltip title={resolvedLabels.prevPage} describeChild>
+              <ToolbarButton icon={<ChevronLeft />} onClick={onPrevPage} ariaLabel={resolvedLabels.prevPage} />
             </Tooltip>
           </Grid>
           <Grid>
-            <DisplayPageNumber totalPages={pdfPages} page={pdfPage} onPageChange={onPageChange} ariaLabel={resolvedLabels.currentPage} />
+            <DisplayPageNumber totalPages={pdfPages} page={pdfPage} onPageChange={onPageChange} ariaLabel={resolvedLabels.currentPage} theme={theme} />
           </Grid>
           <Grid>
-            <Tooltip title={resolvedLabels.nextPage}>
-              <span><ToolbarButton icon={<ChevronRight />} onClick={onNextChange} /></span>
+            <Tooltip title={resolvedLabels.nextPage} describeChild>
+              <ToolbarButton icon={<ChevronRight />} onClick={onNextChange} ariaLabel={resolvedLabels.nextPage} />
             </Tooltip>
           </Grid>
         </>
       )}
       {onDownload && (
         <Grid>
-          <Tooltip title={resolvedLabels.download}>
-            <span><ToolbarButton icon={<Download />} onClick={onDownload} /></span>
+          <Tooltip title={resolvedLabels.download} describeChild>
+            <ToolbarButton icon={<Download />} onClick={onDownload} ariaLabel={resolvedLabels.download} />
           </Tooltip>
         </Grid>
       )}
       {onPrint && (
         <Grid>
-          <Tooltip title={resolvedLabels.print}>
-            <span><ToolbarButton icon={<Print />} onClick={onPrint} /></span>
+          <Tooltip title={resolvedLabels.print} describeChild>
+            <ToolbarButton icon={<Print />} onClick={onPrint} ariaLabel={resolvedLabels.print} />
           </Tooltip>
         </Grid>
       )}
       {onNewPage && (
         <Grid>
-          <Tooltip title={resolvedLabels.openInNew}>
-            <span><ToolbarButton icon={<OpenInNew />} onClick={onNewPage} /></span>
+          <Tooltip title={resolvedLabels.openInNew} describeChild>
+            <ToolbarButton icon={<OpenInNew />} onClick={onNewPage} ariaLabel={resolvedLabels.openInNew} />
           </Tooltip>
         </Grid>
       )}
       {onFullscreen && (
         <Grid>
-          <Tooltip title={resolvedLabels.fullscreen}>
-            <span><ToolbarButton icon={<Fullscreen />} onClick={onFullscreen} /></span>
+          <Tooltip title={resolvedLabels.fullscreen} describeChild>
+            <ToolbarButton icon={<Fullscreen />} onClick={onFullscreen} ariaLabel={resolvedLabels.fullscreen} />
           </Tooltip>
         </Grid>
       )}

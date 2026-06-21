@@ -27,5 +27,18 @@ Object.defineProperty(exports, "resolveLabels", {
     return _i18n.resolveLabels;
   }
 });
+Object.defineProperty(exports, "resolveThemeTokens", {
+  enumerable: true,
+  get: function get() {
+    return _theme.resolveThemeTokens;
+  }
+});
+Object.defineProperty(exports, "themeTokens", {
+  enumerable: true,
+  get: function get() {
+    return _theme.themeTokens;
+  }
+});
 var _ReactDocumentViewer = require("./ReactDocumentViewer");
 var _i18n = require("./i18n");
+var _theme = require("./theme");

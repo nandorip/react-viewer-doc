@@ -1,15 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { InputBase } from '@mui/material';
 import { DisplayPage } from '../../../styles';
+import { ViewerTheme } from '../../../types';
 
 interface Props {
   totalPages: number;
   page: number;
   onPageChange: (page: number) => void;
   ariaLabel?: string;
+  theme?: ViewerTheme;
 }
 
-export const DisplayPageNumber = ({ totalPages, page, onPageChange, ariaLabel = 'Current page' }: Props) => {
+export const DisplayPageNumber = ({
+  totalPages,
+  page,
+  onPageChange,
+  ariaLabel = 'Current page',
+  theme = 'light',
+}: Props) => {
   const [val, setVal] = useState(page.toString());
 
   useEffect(() => {
@@ -32,7 +40,7 @@ export const DisplayPageNumber = ({ totalPages, page, onPageChange, ariaLabel = 
   };
 
   return (
-    <DisplayPage>
+    <DisplayPage theme={theme}>
       <InputBase 
         value={val} 
         onChange={e => setVal(e.target.value)}

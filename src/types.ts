@@ -28,12 +28,15 @@ export interface Labels {
 
 export type Locale = 'en-US' | 'pt-BR' | 'es-ES';
 
+export type ViewerTheme = 'light' | 'dark';
+
 export interface ViewerProps {
   document?: DocumentData;
   extraToolbar?: React.ReactNode;
   height?: string | number;
   labels?: Labels;
   locale?: Locale;
+  theme?: ViewerTheme;
   pdfWorkerSrc?: string;
   onLoad?: () => void;
   onError?: (error: string) => void;

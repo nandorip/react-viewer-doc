@@ -41,8 +41,24 @@ export const FileTypes = {
   jpeg: 'image/jpeg',
   gif: 'image/gif',
   webp: 'image/webp',
+  svg: 'image/svg+xml',
+  tiff: 'image/tiff',
+  tif: 'image/tiff',
   csv: 'text/csv',
 };
+
+const IMAGE_BASE64_PREFIXES = ['/', 'i', 'R', 'U', 'P', 'S', 'T'] as const;
+
+const isSvgDataUri = (value: string) => value.includes('image/svg+xml');
+
+const isTiffDataUri = (value: string) =>
+  value.includes('image/tiff') || value.includes('image/tif');
+
+const isSvgBase64Content = (content: string) =>
+  content.startsWith('PHN2') || content.startsWith('PD94');
+
+const isTiffBase64Content = (content: string) =>
+  content.startsWith('SUkq') || content.startsWith('TU0');
 
 export const FileExtension = {
   NONE: 0,
@@ -59,7 +75,9 @@ export const getFileTypeFromFile = (data: string) => {
     if (parts.length > 1) {
       const mimePart = parts[0];
       if (mimePart.includes('application/pdf')) return FileExtension.PDF;
-      if (mimePart.includes('image/')) return FileExtension.IMAGE;
+      if (isSvgDataUri(mimePart) || isTiffDataUri(mimePart) || mimePart.includes('image/')) {
+        return FileExtension.IMAGE;
+      }
       content = parts[1];
     }
   }
@@ -68,8 +86,14 @@ export const getFileTypeFromFile = (data: string) => {
 
   if (trimmed.startsWith('JVBERi')) return FileExtension.PDF;
 
+  if (isSvgBase64Content(trimmed) || isTiffBase64Content(trimmed)) {
+    return FileExtension.IMAGE;
+  }
+
   const firstChar = trimmed.charAt(0);
-  if (['/', 'i', 'R', 'U'].includes(firstChar)) return FileExtension.IMAGE;
+  if (IMAGE_BASE64_PREFIXES.includes(firstChar as typeof IMAGE_BASE64_PREFIXES[number])) {
+    return FileExtension.IMAGE;
+  }
 
   return FileExtension.NONE;
 };
@@ -82,6 +106,8 @@ export const getMimeTypeFromBase64 = (base64: string): string => {
   const content = base64.trim();
 
   if (content.startsWith('JVBERi')) return 'application/pdf';
+  if (isSvgBase64Content(content)) return FileTypes.svg;
+  if (isTiffBase64Content(content)) return FileTypes.tiff;
 
   switch (content.charAt(0)) {
     case 'i': return 'image/png';
@@ -144,8 +170,12 @@ export const resolveExtension = (fileUri: string, fileName?: string): string => 
 export const getMimeTypeFromExtension = (extension: string): string | undefined => {
   const type = FileTypes[extension as keyof typeof FileTypes];
   if (!type || type === FileTypes.csv) return undefined;
+  if (extension === 'tif') return FileTypes.tiff;
   return type;
 };
+
+export const isImageMime = (mime?: string): boolean =>
+  Boolean(mime?.startsWith('image/'));
 
 export interface BuiltFile {
   file: Blob | string;
@@ -206,10 +236,10 @@ export const resolveDownloadFileName = (doc?: DocumentData): string => {
   return 'download';
 };
 
-export const revokeBlobUrlWhenClosed = (url: string, childWindow: Window | null) => {
+export const revokeBlobUrlWhenClosed = (url: string, childWindow: Window | null): (() => void) => {
   if (!childWindow) {
     URL.revokeObjectURL(url);
-    return;
+    return () => undefined;
   }
 
   const interval = window.setInterval(() => {
@@ -218,4 +248,6 @@ export const revokeBlobUrlWhenClosed = (url: string, childWindow: Window | null)
       window.clearInterval(interval);
     }
   }, 500);
+
+  return () => window.clearInterval(interval);
 };

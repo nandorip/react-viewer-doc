@@ -42,6 +42,14 @@ describe('FileHelpers', () => {
       expect(getFileTypeFromFile('UklGR')).toBe(FileExtension.IMAGE);
     });
 
+    it('should return IMAGE for SVG base64', () => {
+      expect(getFileTypeFromFile('PHN2ZyB4bWxucz0i')).toBe(FileExtension.IMAGE);
+    });
+
+    it('should return IMAGE for TIFF base64', () => {
+      expect(getFileTypeFromFile('SUkqAA')).toBe(FileExtension.IMAGE);
+    });
+
     it('should return IMAGE for image data URI', () => {
       expect(getFileTypeFromFile('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==')).toBe(FileExtension.IMAGE);
     });
@@ -54,6 +62,8 @@ describe('FileHelpers', () => {
   describe('getMimeTypeFromBase64', () => {
     it('should detect correctly from content prefix', () => {
       expect(getMimeTypeFromBase64('JVBERi0xLjQK')).toBe('application/pdf');
+      expect(getMimeTypeFromBase64('PHN2ZyB4bWxucz0i')).toBe('image/svg+xml');
+      expect(getMimeTypeFromBase64('SUkqAA')).toBe('image/tiff');
       expect(getMimeTypeFromBase64('i')).toBe('image/png');
       expect(getMimeTypeFromBase64('/')).toBe('image/jpeg');
       expect(getMimeTypeFromBase64('R')).toBe('image/gif');
@@ -100,6 +110,9 @@ describe('FileHelpers', () => {
     it('should map supported extensions to mime types', () => {
       expect(getMimeTypeFromExtension('pdf')).toBe('application/pdf');
       expect(getMimeTypeFromExtension('jpg')).toBe('image/jpeg');
+      expect(getMimeTypeFromExtension('svg')).toBe('image/svg+xml');
+      expect(getMimeTypeFromExtension('tiff')).toBe('image/tiff');
+      expect(getMimeTypeFromExtension('tif')).toBe('image/tiff');
     });
 
     it('should return undefined for unsupported extensions', () => {

@@ -5,11 +5,12 @@ import { ReactDocumentViewer } from './ReactDocumentViewer';
 
 // Mock do Viewer para testar apenas o componente ReactDocumentViewer
 jest.mock('./Viewer', () => ({
-  Viewer: ({ document, labels, locale }: any) => (
+  Viewer: ({ document, labels, locale, theme }: any) => (
     <div data-testid="mock-viewer">
       Viewer for {document?.fileName || 'no file'}
       {labels?.reset && <span>{labels.reset}</span>}
       {locale && <span>{locale}</span>}
+      {theme && <span>{theme}</span>}
     </div>
   ),
 }));
@@ -25,6 +26,11 @@ describe('ReactDocumentViewer', () => {
     const doc = { fileName: 'test.pdf' };
     render(<ReactDocumentViewer document={doc} />);
     expect(screen.getByText(/Viewer for test.pdf/)).toBeInTheDocument();
+  });
+
+  it('passes theme prop correctly', () => {
+    render(<ReactDocumentViewer theme="dark" />);
+    expect(screen.getByText('dark')).toBeInTheDocument();
   });
 
   it('resolves labels from locale and allows overrides', () => {

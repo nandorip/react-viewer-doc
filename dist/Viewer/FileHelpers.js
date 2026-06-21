@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.revokeBlobUrlWhenClosed = exports.resolveOpenableUrl = exports.resolveExtension = exports.resolveDownloadFileName = exports.isValidUrl = exports.getMimeTypeFromExtension = exports.getMimeTypeFromBase64 = exports.getFileTypeFromFile = exports.getExtension = exports.escapeHtml = exports.downloadFile = exports.buildFileFromBase64 = exports.base64ToBlob = exports.FileTypes = exports.FileExtension = void 0;
+exports.revokeBlobUrlWhenClosed = exports.resolveOpenableUrl = exports.resolveExtension = exports.resolveDownloadFileName = exports.isValidUrl = exports.isImageMime = exports.getMimeTypeFromExtension = exports.getMimeTypeFromBase64 = exports.getFileTypeFromFile = exports.getExtension = exports.escapeHtml = exports.downloadFile = exports.buildFileFromBase64 = exports.base64ToBlob = exports.FileTypes = exports.FileExtension = void 0;
 /* eslint-disable no-plusplus */
 
 var isValidUrl = exports.isValidUrl = function isValidUrl(url) {
@@ -36,7 +36,23 @@ var FileTypes = exports.FileTypes = {
   jpeg: 'image/jpeg',
   gif: 'image/gif',
   webp: 'image/webp',
+  svg: 'image/svg+xml',
+  tiff: 'image/tiff',
+  tif: 'image/tiff',
   csv: 'text/csv'
+};
+var IMAGE_BASE64_PREFIXES = ['/', 'i', 'R', 'U', 'P', 'S', 'T'];
+var isSvgDataUri = function isSvgDataUri(value) {
+  return value.includes('image/svg+xml');
+};
+var isTiffDataUri = function isTiffDataUri(value) {
+  return value.includes('image/tiff') || value.includes('image/tif');
+};
+var isSvgBase64Content = function isSvgBase64Content(content) {
+  return content.startsWith('PHN2') || content.startsWith('PD94');
+};
+var isTiffBase64Content = function isTiffBase64Content(content) {
+  return content.startsWith('SUkq') || content.startsWith('TU0');
 };
 var FileExtension = exports.FileExtension = {
   NONE: 0,
@@ -51,14 +67,21 @@ var getFileTypeFromFile = exports.getFileTypeFromFile = function getFileTypeFrom
     if (parts.length > 1) {
       var mimePart = parts[0];
       if (mimePart.includes('application/pdf')) return FileExtension.PDF;
-      if (mimePart.includes('image/')) return FileExtension.IMAGE;
+      if (isSvgDataUri(mimePart) || isTiffDataUri(mimePart) || mimePart.includes('image/')) {
+        return FileExtension.IMAGE;
+      }
       content = parts[1];
     }
   }
   var trimmed = content.trim();
   if (trimmed.startsWith('JVBERi')) return FileExtension.PDF;
+  if (isSvgBase64Content(trimmed) || isTiffBase64Content(trimmed)) {
+    return FileExtension.IMAGE;
+  }
   var firstChar = trimmed.charAt(0);
-  if (['/', 'i', 'R', 'U'].includes(firstChar)) return FileExtension.IMAGE;
+  if (IMAGE_BASE64_PREFIXES.includes(firstChar)) {
+    return FileExtension.IMAGE;
+  }
   return FileExtension.NONE;
 };
 var getMimeTypeFromBase64 = exports.getMimeTypeFromBase64 = function getMimeTypeFromBase64(base64) {
@@ -67,6 +90,8 @@ var getMimeTypeFromBase64 = exports.getMimeTypeFromBase64 = function getMimeType
   }
   var content = base64.trim();
   if (content.startsWith('JVBERi')) return 'application/pdf';
+  if (isSvgBase64Content(content)) return FileTypes.svg;
+  if (isTiffBase64Content(content)) return FileTypes.tiff;
   switch (content.charAt(0)) {
     case 'i':
       return 'image/png';
@@ -127,7 +152,11 @@ var resolveExtension = exports.resolveExtension = function resolveExtension(file
 var getMimeTypeFromExtension = exports.getMimeTypeFromExtension = function getMimeTypeFromExtension(extension) {
   var type = FileTypes[extension];
   if (!type || type === FileTypes.csv) return undefined;
+  if (extension === 'tif') return FileTypes.tiff;
   return type;
+};
+var isImageMime = exports.isImageMime = function isImageMime(mime) {
+  return Boolean(mime === null || mime === void 0 ? void 0 : mime.startsWith('image/'));
 };
 var buildFileFromBase64 = exports.buildFileFromBase64 = function buildFileFromBase64(fileBase64) {
   var content = fileBase64;
@@ -182,7 +211,9 @@ var resolveDownloadFileName = exports.resolveDownloadFileName = function resolve
 var revokeBlobUrlWhenClosed = exports.revokeBlobUrlWhenClosed = function revokeBlobUrlWhenClosed(url, childWindow) {
   if (!childWindow) {
     URL.revokeObjectURL(url);
-    return;
+    return function () {
+      return undefined;
+    };
   }
   var interval = window.setInterval(function () {
     if (childWindow.closed) {
@@ -190,4 +221,7 @@ var revokeBlobUrlWhenClosed = exports.revokeBlobUrlWhenClosed = function revokeB
       window.clearInterval(interval);
     }
   }, 500);
+  return function () {
+    return window.clearInterval(interval);
+  };
 };

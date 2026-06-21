@@ -9,6 +9,9 @@ export declare const FileTypes: {
     jpeg: string;
     gif: string;
     webp: string;
+    svg: string;
+    tiff: string;
+    tif: string;
     csv: string;
 };
 export declare const FileExtension: {
@@ -22,6 +25,7 @@ export declare const base64ToBlob: (base64: string, mimeType: string) => Blob | 
 export declare const getExtension: (file: string) => string;
 export declare const resolveExtension: (fileUri: string, fileName?: string) => string;
 export declare const getMimeTypeFromExtension: (extension: string) => string | undefined;
+export declare const isImageMime: (mime?: string) => boolean;
 export interface BuiltFile {
     file: Blob | string;
     mime: string;
@@ -29,4 +33,4 @@ export interface BuiltFile {
 export declare const buildFileFromBase64: (fileBase64: string) => BuiltFile | null;
 export declare const downloadFile: (file: Blob | string, fileName: string) => void;
 export declare const resolveDownloadFileName: (doc?: DocumentData) => string;
-export declare const revokeBlobUrlWhenClosed: (url: string, childWindow: Window | null) => void;
+export declare const revokeBlobUrlWhenClosed: (url: string, childWindow: Window | null) => (() => void);

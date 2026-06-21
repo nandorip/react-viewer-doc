@@ -21,7 +21,9 @@ var DisplayPageNumber = exports.DisplayPageNumber = function DisplayPageNumber(_
     page = _ref.page,
     onPageChange = _ref.onPageChange,
     _ref$ariaLabel = _ref.ariaLabel,
-    ariaLabel = _ref$ariaLabel === void 0 ? 'Current page' : _ref$ariaLabel;
+    ariaLabel = _ref$ariaLabel === void 0 ? 'Current page' : _ref$ariaLabel,
+    _ref$theme = _ref.theme,
+    theme = _ref$theme === void 0 ? 'light' : _ref$theme;
   var _useState = (0, _react.useState)(page.toString()),
     _useState2 = _slicedToArray(_useState, 2),
     val = _useState2[0],
@@ -43,6 +45,7 @@ var DisplayPageNumber = exports.DisplayPageNumber = function DisplayPageNumber(_
     }
   };
   return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_styles.DisplayPage, {
+    theme: theme,
     children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_material.InputBase, {
       value: val,
       onChange: function onChange(e) {
@@ -51,9 +54,15 @@ var DisplayPageNumber = exports.DisplayPageNumber = function DisplayPageNumber(_
       onBlur: handleBlur,
       onKeyDown: handleKeyDown,
       sx: {
-        width: '30px',
+        width: {
+          xs: '24px',
+          sm: '30px'
+        },
         color: 'inherit',
-        fontSize: '14px'
+        fontSize: {
+          xs: '12px',
+          sm: '14px'
+        }
       },
       inputProps: {
         style: {
@@ -64,7 +73,7 @@ var DisplayPageNumber = exports.DisplayPageNumber = function DisplayPageNumber(_
       }
     }), /*#__PURE__*/(0, _jsxRuntime.jsx)("span", {
       style: {
-        fontSize: '14px',
+        fontSize: 'inherit',
         marginLeft: '4px'
       },
       children: "/ ".concat(totalPages)

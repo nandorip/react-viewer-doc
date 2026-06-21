@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { PanViewer } from 'react-image-pan-zoom-rotate';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { ErrorViewer, Toolbar } from '../components';
+import { LazyPdfThumbnail } from '../components/LazyPdfThumbnail';
 import {
   buildFileFromBase64,
   FileTypes,
@@ -12,21 +13,23 @@ import {
   resolveDownloadFileName,
   revokeBlobUrlWhenClosed,
 } from './FileHelpers';
+import { isTiffMime } from './TiffHelpers';
 import { useElementWidth } from '../hooks/useElementWidth';
+import { useTiffImage } from '../hooks/useTiffImage';
 import { ViewerProps } from '../types';
 import {
   ImageContainer,
   DocumentContainer,
+  LoadingMessage,
   MainContent,
   PdfViewerRoot,
   SidebarContainer,
-  ThumbnailItem,
 } from '../styles';
 
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
-const DEFAULT_PDF_WORKER_SRC = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+const DEFAULT_PDF_WORKER_SRC = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 const ZOOM_SENSITIVITY = 0.1;
 const MAX_ZOOM = 5;
@@ -46,6 +49,7 @@ export const Viewer = ({
   extraToolbar,
   height,
   labels,
+  theme = 'light',
   pdfWorkerSrc,
   onLoad,
   onError
@@ -95,6 +99,27 @@ export const Viewer = ({
   pageNumberRef.current = pageNumber;
   const numPagesRef = useRef(numPages);
   numPagesRef.current = numPages;
+  const isTiff = isTiffMime(fileType);
+  const tiffSource = isTiff ? fileSelected : null;
+  const {
+    imageUrl: tiffImageUrl,
+    pageCount: tiffPageCount,
+    loading: tiffLoading,
+  } = useTiffImage({
+    source: tiffSource,
+    pageNumber,
+    onLoad,
+    onError: (message) => {
+      setError(labelsRef.current?.error || 'Unable to load document');
+      onErrorRef.current?.(message);
+    },
+  });
+  const totalPages = fileType === FileTypes.pdf ? numPages : (isTiff ? tiffPageCount : 0);
+  const supportsPagination = fileType === FileTypes.pdf || (isTiff && tiffPageCount > 1);
+  const totalPagesRef = useRef(totalPages);
+  totalPagesRef.current = totalPages;
+  const supportsPaginationRef = useRef(supportsPagination);
+  supportsPaginationRef.current = supportsPagination;
 
   const handleZoom = useCallback((num: number) => setZoom(limits(num)), []);
 
@@ -102,7 +127,7 @@ export const Viewer = ({
   const handleZoomOut = () => handleZoom(zoomRef.current - ZOOM_SENSITIVITY);
 
   const handleNextPageRef = useRef(() => {
-    if (pageNumberRef.current < numPagesRef.current) {
+    if (pageNumberRef.current < totalPagesRef.current) {
       setPageNumber(pageNumberRef.current + 1);
     }
   });
@@ -196,8 +221,8 @@ export const Viewer = ({
         }
       }
 
-      if (fileTypeRef.current === FileTypes.pdf) {
-        if (e.key === 'ArrowRight' && pageNumberRef.current < numPagesRef.current) {
+      if (supportsPaginationRef.current) {
+        if (e.key === 'ArrowRight' && pageNumberRef.current < totalPagesRef.current) {
           setPageNumber(pageNumberRef.current + 1);
         }
         if (e.key === 'ArrowLeft' && pageNumberRef.current > 1) {
@@ -361,7 +386,7 @@ export const Viewer = ({
 
     resetDocumentState();
 
-    if (doc.fileUri !== undefined) {
+    if (doc.fileUri) {
       if (doc.fileUri.startsWith('data:')) {
         if (applyFileFromBase64(doc.fileUri)) return;
       } else if (applyFileFromUrl(doc.fileUri, doc.fileName)) {
@@ -397,6 +422,11 @@ export const Viewer = ({
   }, [initData]);
 
   useEffect(() => {
+    if (isTiffMime(fileType)) {
+      setImageUrl(undefined);
+      return undefined;
+    }
+
     if (fileSelected instanceof Blob && fileType !== FileTypes.pdf) {
       const url = URL.createObjectURL(fileSelected);
       setImageUrl(url);
@@ -405,9 +435,12 @@ export const Viewer = ({
     if (typeof fileSelected === 'string') {
       setImageUrl(fileSelected);
     }
+    return undefined;
   }, [fileSelected, fileType]);
 
-  const showToolbar = Boolean(document) || Boolean(fileSelected);
+  const displayImageUrl = isTiff ? tiffImageUrl : imageUrl;
+
+  const showToolbar = !error && (Boolean(document) || Boolean(fileSelected));
 
   return (
     <>
@@ -426,11 +459,12 @@ export const Viewer = ({
           onFullscreen={handleFullscreen}
           onToggleSidebar={fileType === FileTypes.pdf ? handleToggleSidebar : undefined}
           showSidebar={showSidebar}
-          hideMovePage={fileType !== FileTypes.pdf}
-          pdfPages={numPages}
+          hideMovePage={!supportsPagination}
+          pdfPages={totalPages}
           pdfPage={pageNumber}
           extra={extraToolbar}
           labels={labels}
+          theme={theme}
         />
       )}
 
@@ -450,67 +484,70 @@ export const Viewer = ({
                 file={fileSelected}
                 onLoadSuccess={onPdfLoadSuccess}
                 onLoadError={onPdfLoadError}
-                loading={<div>{labels?.loading || 'Loading document...'}</div>}
+                loading={<LoadingMessage theme={theme}>{labels?.loading || 'Loading document...'}</LoadingMessage>}
               >
                 {showSidebar && numPages > 0 && (
-                  <SidebarContainer visible={showSidebar}>
-                    {Array.from(new Array(numPages), (el, index) => (
-                      <ThumbnailItem
+                  <SidebarContainer visible={showSidebar} theme={theme}>
+                    {Array.from(new Array(numPages), (_, index) => (
+                      <LazyPdfThumbnail
                         key={`thumb_${index + 1}`}
+                        pageNumber={index + 1}
                         active={pageNumber === index + 1}
-                        onClick={() => setPageNumber(index + 1)}
-                      >
-                        <Page
-                          pageNumber={index + 1}
-                          width={thumbnailWidth}
-                          renderTextLayer={false}
-                          renderAnnotationLayer={false}
-                          onLoadError={onThumbnailLoadError}
-                        />
-                        <div style={{ fontSize: '12px' }}>{index + 1}</div>
-                      </ThumbnailItem>
+                        width={thumbnailWidth}
+                        theme={theme}
+                        loadingLabel={labels?.loading || 'Loading document...'}
+                        onSelect={setPageNumber}
+                        onLoadError={onThumbnailLoadError}
+                      />
                     ))}
                   </SidebarContainer>
                 )}
 
-                <DocumentContainer ref={attachViewerContainerRef} height={height} data-testid="document-container">
+                <DocumentContainer ref={attachViewerContainerRef} height={height} theme={theme} data-testid="document-container">
                   <Page
                     pageNumber={pageNumber}
                     {...(pdfPageWidth ? { width: pdfPageWidth } : { scale: zoom })}
                     rotate={rotation}
                     renderTextLayer={true}
                     renderAnnotationLayer={true}
+                    loading={<LoadingMessage theme={theme}>{labels?.loading || 'Loading document...'}</LoadingMessage>}
                   />
                 </DocumentContainer>
               </Document>
             </PdfViewerRoot>
           ) : fileSelected ? (
             <ImageContainer
-              zoom={zoom}
               rotation={rotation}
               ref={attachViewerContainerRef}
               height={height}
+              theme={theme}
               data-testid="image-container"
             >
-              <PanViewer
-                key={viewerResetKey}
-                zoom={zoom}
-                setZoom={() => false}
-                pandx={dx}
-                pandy={dy}
-                onPan={onPan}
-              >
-                <img
-                  src={imageUrl}
-                  alt={document?.fileName || labels?.defaultDocumentName || 'document'}
-                  onLoad={() => onLoad?.()}
-                  onError={() => {
-                    const msg = labels?.error || 'Unable to load image';
-                    setError(msg);
-                    onError?.(msg);
-                  }}
-                />
-              </PanViewer>
+              {isTiff && tiffLoading && !displayImageUrl ? (
+                <LoadingMessage theme={theme}>{labels?.loading || 'Loading document...'}</LoadingMessage>
+              ) : (
+                <PanViewer
+                  key={viewerResetKey}
+                  zoom={zoom}
+                  setZoom={() => false}
+                  pandx={dx}
+                  pandy={dy}
+                  onPan={onPan}
+                >
+                  <img
+                    src={displayImageUrl}
+                    alt={document?.fileName || labels?.defaultDocumentName || 'document'}
+                    onLoad={() => {
+                      if (!isTiff) onLoad?.();
+                    }}
+                    onError={() => {
+                      const msg = labels?.error || 'Unable to load image';
+                      setError(msg);
+                      onError?.(msg);
+                    }}
+                  />
+                </PanViewer>
+              )}
             </ImageContainer>
           ) : null}
         </MainContent>
