@@ -1,7 +1,7 @@
 {
   "name": "react-document-viewer",
   "version": "0.1.0",
-  "description": "A React component for document viewing (image and PDF).",
+  "description": "React document viewer for PDF and images with pan, zoom, rotate and full i18n support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -39,10 +39,21 @@
   "keywords": [
     "react",
     "react-component",
-    "document",
+    "document-viewer",
+    "pdf-viewer",
+    "image-viewer",
+    "react-pdf",
+    "file-viewer",
     "viewer",
     "pdf",
-    "image"
+    "image",
+    "typescript",
+    "mui",
+    "emotion",
+    "zoom",
+    "pan",
+    "rotate",
+    "i18n"
   ],
   "author": "Fernando Pires Reherman <nandorip@live.com>",
   "license": "MIT",
@@ -54,10 +65,6 @@
     "dist",
     "README.md",
     "LICENSE"
-  ],
-  "sideEffects": [
-    "dist/**/*.css",
-    "src/**/*.css"
   ],
   "peerDependencies": {
     "@emotion/react": "^11.0.0",

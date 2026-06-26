@@ -21,12 +21,6 @@ Object.defineProperty(exports, "ErrorViewer", {
     return _ErrorViewer.ErrorViewer;
   }
 });
-Object.defineProperty(exports, "LazyPdfThumbnail", {
-  enumerable: true,
-  get: function get() {
-    return _LazyPdfThumbnail.LazyPdfThumbnail;
-  }
-});
 Object.defineProperty(exports, "Toolbar", {
   enumerable: true,
   get: function get() {
@@ -37,4 +31,3 @@ var _Container = require("./Container");
 var _Toolbar = require("./Toolbar");
 var _ErrorViewer = require("./ErrorViewer");
 var _ErrorBoundary = require("./ErrorBoundary");
-var _LazyPdfThumbnail = require("./LazyPdfThumbnail");

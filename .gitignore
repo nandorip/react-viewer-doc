@@ -15,6 +15,11 @@ yarn-error.log*
 pnpm-debug.log*
 test_output.txt
 
+# Environment
+.env
+.env.local
+.env.*.local
+
 # Local editor and tool state
 .vs
 .junie
@@ -24,3 +29,6 @@ Thumbs.db
 # Package manager cache
 .npm
 .pnpm-store
+.turbo
+.cache
+*.lockb

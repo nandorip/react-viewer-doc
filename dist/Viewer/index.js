@@ -9,6 +9,7 @@ var _react = require("react");
 var _reactImagePanZoomRotate = require("react-image-pan-zoom-rotate");
 var _reactPdf = require("react-pdf");
 var _components = require("../components");
+var _LazyPdfThumbnail = require("../components/LazyPdfThumbnail");
 var _FileHelpers = require("./FileHelpers");
 var _TiffHelpers = require("./TiffHelpers");
 var _useElementWidth2 = require("../hooks/useElementWidth");
@@ -475,7 +476,7 @@ var Viewer = exports.Viewer = function Viewer(_ref) {
             visible: showSidebar,
             theme: theme,
             children: Array.from(new Array(numPages), function (_, index) {
-              return /*#__PURE__*/(0, _jsxRuntime.jsx)(_components.LazyPdfThumbnail, {
+              return /*#__PURE__*/(0, _jsxRuntime.jsx)(_LazyPdfThumbnail.LazyPdfThumbnail, {
                 pageNumber: index + 1,
                 active: pageNumber === index + 1,
                 width: thumbnailWidth,

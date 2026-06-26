@@ -1,58 +1,23 @@
 # react-document-viewer
 
-A versatile React component for viewing documents, supporting both images (JPG, PNG) and PDF files. Features include zooming, rotating, and panning for images, plus full PDF navigation.
+A versatile React component for viewing documents with support for PDF, images (JPG, PNG, GIF, WebP, TIFF), and SVG files.
 
-## Features
+## ✨ Features
 
-- 📄 **PDF Support**: View PDF files from URLs or base64 strings.
-- 🖼️ **Image Support**: View JPG, JPEG, PNG, GIF, and WebP files with pan, zoom, and rotate.
-- 🔗 **Flexible Data**: Support for `fileUri` (URL or Data URI) and `fileData` (pure base64).
-- 🛠️ **Customizable**: Add extra buttons to the toolbar with `extraToolbar`.
-- 🌍 **Internationalization**: Customizable labels for all buttons and messages.
-- ⌨️ **Accessibility**: Keyboard shortcuts (Ctrl +/- for zoom, Arrows for PDF pages) and ARIA support.
-- 💾 **Actions**: Built-in Download, Print, and Fullscreen support.
-- 💻 **TypeScript**: Built with TypeScript for better developer experience.
-- 🎨 **MUI Integration**: Uses Material UI v6+ for a modern and accessible interface.
+- 📄 **PDF Support** — View PDFs from URLs or base64 with full navigation
+- 🖼️ **Image Support** — JPG, PNG, GIF, WebP, TIFF, SVG with pan, zoom, rotate
+- 🔗 **Flexible Input** — `fileUri` (URL/data URI) or `fileData` (base64)
+- 🛠️ **Toolbar Actions** — Download, Print, Fullscreen, Thumbnails
+- 🌐 **i18n** — Built-in locales (en-US, pt-BR, es-ES) + custom labels
+- ⌨️ **Keyboard Shortcuts** — Ctrl +/- for zoom, arrows for PDF pages
+- 🎨 **MUI Interface** — Modern Material Design components
+- 💻 **TypeScript** — Full type definitions included
 
-## Installation
+## Quick Start
 
 ```bash
 npm install react-document-viewer
 ```
-
-Note: This package requires `@mui/material`, `@mui/icons-material`, `@emotion/react`, and `@emotion/styled` as peer dependencies.
-It also expects `react` and `react-dom` to be installed by your application.
-
-## Usage
-
-### Viewing a PDF via Base64 with Custom Labels
-
-```tsx
-import { ReactDocumentViewer } from 'react-document-viewer';
-
-function App() {
-  return (
-    <div style={{ height: '500px' }}>
-      <ReactDocumentViewer
-        document={{
-          fileData: 'JVBERi0xLjQK...', // base64 string
-          fileName: 'document.pdf'
-        }}
-        locale="en-US"
-        pdfWorkerSrc="/pdf.worker.min.mjs"
-        labels={{
-          download: 'Download PDF',
-          print: 'Print Document',
-          loading: 'Preparing viewer...'
-        }}
-        onLoad={() => console.log('Ready!')}
-      />
-    </div>
-  );
-}
-```
-
-### Viewing an Image via URL
 
 ```tsx
 import { ReactDocumentViewer } from 'react-document-viewer';
@@ -61,154 +26,154 @@ function App() {
   return (
     <ReactDocumentViewer
       document={{
-        fileUri: 'https://example.com/image.jpg',
-        fileName: 'nature.jpg'
+        fileUri: 'https://example.com/document.pdf',
+        fileName: 'document.pdf'
       }}
-      height="80vh"
-      extraToolbar={<button onClick={() => alert('Custom Action')}>Custom</button>}
+      height="600px"
     />
+  );
+}
+```
+
+## Installation
+
+```bash
+npm install react-document-viewer
+```
+
+**Peer dependencies required:**
+
+```bash
+npm install @mui/material @mui/icons-material @emotion/react @emotion/styled react react-dom
+```
+
+## Usage
+
+### PDF from Base64
+
+```tsx
+<ReactDocumentViewer
+  document={{
+    fileData: 'JVBERi0xLjQK...',
+    fileName: 'report.pdf'
+  }}
+  locale="en-US"
+  labels={{
+    download: 'Download PDF',
+    loading: 'Preparing viewer...'
+  }}
+  onLoad={() => console.log('Document loaded')}
+  onError={(err) => console.error(err)}
+/>
+```
+
+### Image from URL
+
+```tsx
+<ReactDocumentViewer
+  document={{
+    fileUri: 'https://example.com/photo.jpg',
+    fileName: 'photo.jpg'
+  }}
+  height="80vh"
+/>
+```
+
+### Local File Upload
+
+```tsx
+import { useState } from 'react';
+
+function FileUploader() {
+  const [doc, setDoc] = useState();
+
+  const handleFile = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+      const [, data] = String(reader.result).split(',');
+      setDoc({ fileName: file.name, fileData: data });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <>
+      <input type="file" onChange={handleFile} />
+      {doc && <ReactDocumentViewer document={doc} />}
+    </>
   );
 }
 ```
 
 ## Props
 
-| Prop | Type | Description |
-| :--- | :--- | :--- |
-| `document` | `object` | The document to display. |
-| `document.fileData` | `string` (optional) | Base64 encoded file content. |
-| `document.fileUri` | `string` (optional) | URL or Data URI of the file. |
-| `document.fileName` | `string` | Name of the file (used for extension detection). |
-| `height` | `string \| number` (optional) | Height of the viewer container (default: `600px`). |
-| `extraToolbar` | `ReactNode` (optional) | Custom components to be added to the left side of the toolbar. |
-| `labels` | `object` (optional) | Custom text for buttons and status messages. |
-| `locale` | `'en-US' \| 'pt-BR' \| 'es-ES'` (optional) | Built-in label set to use (default: `en-US`). |
-| `pdfWorkerSrc` | `string` (optional) | Custom PDF.js worker URL. Defaults to a versioned unpkg URL. |
-| `onLoad` | `function` (optional) | Callback function called when the document is successfully loaded. |
-| `onError` | `function` (optional) | Callback function called when an error occurs during loading. |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `document` | `object` | — | **Required.** Document to display |
+| `document.fileData` | `string` | — | Base64 encoded file |
+| `document.fileUri` | `string` | — | URL or Data URI |
+| `document.fileName` | `string` | — | File name for extension detection |
+| `height` | `string \| number` | `600px` | Viewer height |
+| `locale` | `'en-US' \| 'pt-BR' \| 'es-ES'` | `'en-US'` | Built-in translations |
+| `labels` | `object` | — | Override any label text |
+| `extraToolbar` | `ReactNode` | — | Custom buttons in toolbar |
+| `pdfWorkerSrc` | `string` | unpkg CDN | Custom PDF.js worker URL |
+| `onLoad` | `() => void` | — | Document loaded callback |
+| `onError` | `(error: string) => void` | — | Error callback |
 
-### Internationalization
-
-Use `locale` for built-in translations and `labels` to override any individual text.
+## Labels
 
 ```tsx
 <ReactDocumentViewer
-  locale="pt-BR"
+  document={doc}
   labels={{
-    reset: 'Centralizar',
-    unsupportedFile: 'Arquivo nao suportado'
+    zoomIn: 'Aumentar',
+    zoomOut: 'Diminuir',
+    rotate: 'Girar',
+    reset: 'Resetar',
+    download: 'Baixar',
+    print: 'Imprimir',
+    fullscreen: 'Tela cheia',
+    thumbnails: 'Miniaturas',
+    loading: 'Carregando...',
+    error: 'Erro ao carregar'
   }}
 />
 ```
 
-Built-in locales:
-
-- `en-US`
-- `pt-BR`
-- `es-ES`
-
-### Labels Object
-
-| Key | Default (`en-US`) |
-| :--- | :--- |
-| `zoomIn` | `Zoom in` |
-| `zoomOut` | `Zoom out` |
-| `rotate` | `Rotate` |
-| `reset` | `Reset` |
-| `nextPage` | `Next page` |
-| `prevPage` | `Previous page` |
-| `download` | `Download` |
-| `print` | `Print` |
-| `openInNew` | `Open in new tab` |
-| `fullscreen` | `Fullscreen` |
-| `loading` | `Loading document...` |
-| `error` | `Unable to load document` |
-| `unsupportedFile` | `Unsupported file type` |
-| `thumbnails` | `Thumbnails` |
-| `defaultDocumentName` | `document` |
-| `printDocumentTitle` | `Document` |
-| `errorBoundary` | `Sorry, something went wrong while loading the viewer.` |
-| `currentPage` | `Current page` |
-| `retry` | `Retry` |
-
 ## Keyboard Shortcuts
 
 | Shortcut | Action |
-| :--- | :--- |
-| `Ctrl` + `+` / `=` | Zoom In |
+|----------|--------|
+| `Ctrl` + `+` | Zoom In |
 | `Ctrl` + `-` | Zoom Out |
-| `Arrow Right` | Next PDF Page |
-| `Arrow Left` | Previous PDF Page |
+| `→` | Next PDF Page |
+| `←` | Previous PDF Page |
 
 ## Development
 
-Install dependencies and start the local demo (copies the PDF.js worker automatically):
-
 ```bash
+# Install dependencies
 npm install
+
+# Start demo server
 npm run dev
-```
 
-Open [http://localhost:3001](http://localhost:3001) to view the demo. The example imports `react-document-viewer` the same way a consumer app would.
+# Run tests
+npm test
 
-Useful scripts:
-
-| Script | Purpose |
-| :--- | :--- |
-| `npm run dev` | Start the demo against `src/` |
-| `npm run start:dist` | Build `dist/` and run the demo against the compiled package |
-| `npm test -- --runInBand` | Run the test suite |
-| `npm run build:lib` | Build JavaScript + TypeScript declarations in `dist/` |
-| `npm run pack:check` | Dry-run `npm pack` and list published files |
-| `npm run publish:prepare` | Test, build, and dry-run pack in one step |
-
-### Test the package locally in another app
-
-Build and create a global link:
-
-```bash
-npm run link:local
-```
-
-In your consuming app:
-
-```bash
-npm link react-document-viewer
-```
-
-Or install from a tarball without publishing:
-
-```bash
-npm run pack:local
-npm install /absolute/path/to/react-document-viewer-0.1.0.tgz
-```
-
-## Build
-
-```bash
+# Build for publishing
 npm run build:lib
 ```
 
-This generates transpiled JavaScript and TypeScript definitions in `dist/`.
+## Browser Support
 
-## Publishing
-
-1. Log in to npm: `npm login`
-2. Verify the package contents: `npm run publish:prepare`
-3. Publish: `npm publish`
-
-`prepack` rebuilds `dist/` automatically. `prepublishOnly` runs tests and rebuilds before publish.
-
-For a dry-run preview only:
-
-```bash
-npm run pack:check
-```
-
-## Notes
-
-- PDF rendering depends on the PDF.js worker. By default this package uses a versioned unpkg worker URL; pass `pdfWorkerSrc` if your application requires a local asset, strict CSP, or offline support.
-- Remote documents must be served with browser-compatible CORS headers.
+Requires ES2020+ features. Tested on:
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
 
 ## License
 
