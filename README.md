@@ -1,4 +1,4 @@
-# react-document-viewer
+# react-viewer-doc
 
 A versatile React component for viewing documents with support for PDF, images (JPG, PNG, GIF, WebP, TIFF), and SVG files.
 
@@ -17,11 +17,11 @@ A versatile React component for viewing documents with support for PDF, images (
 ## Quick Start
 
 ```bash
-npm install react-document-viewer
+npm install react-viewer-doc
 ```
 
 ```tsx
-import { ReactDocumentViewer } from 'react-document-viewer';
+import { ReactDocumentViewer } from 'react-viewer-doc';
 
 function App() {
   return (
@@ -39,7 +39,7 @@ function App() {
 ## Installation
 
 ```bash
-npm install react-document-viewer
+npm install react-viewer-doc
 ```
 
 **Peer dependencies required:**
@@ -162,7 +162,7 @@ When `renderToolbar` is provided, the default MUI toolbar is not rendered.
 Use `useViewerCore` for state and actions, and `ViewerCanvas` to render the document without the built-in toolbar:
 
 ```tsx
-import { useViewerCore, ViewerCanvas } from 'react-document-viewer';
+import { useViewerCore, ViewerCanvas } from 'react-viewer-doc';
 
 function MyViewer({ doc }) {
   const viewer = useViewerCore({

@@ -33,7 +33,7 @@ module.exports = (env = {}) => {
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx'],
       alias: {
-        'react-document-viewer': path.resolve(
+        'react-viewer-doc': path.resolve(
           __dirname,
           useDist ? 'dist' : 'src',
         ),

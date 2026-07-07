@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ReactDocumentViewer, useViewerCore, ViewerCanvas } from 'react-document-viewer';
+import { ReactDocumentViewer, useViewerCore, ViewerCanvas } from 'react-viewer-doc';
 
 const SAMPLES = [
   {
@@ -243,7 +243,7 @@ function App() {
             }}>DV</div>
             <div>
               <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em' }}>
-                react-document-viewer
+                react-viewer-doc
               </div>
               <div style={{ fontSize: 11, color: t.textMuted, marginTop: -1 }}>
                 React component · PDF & Image viewer
@@ -550,7 +550,7 @@ function App() {
 />
 
 // 3. Headless — full control with hook + canvas
-import { useViewerCore, ViewerCanvas } from 'react-document-viewer';
+import { useViewerCore, ViewerCanvas } from 'react-viewer-doc';
 
 function MyViewer({ doc }) {
   const viewer = useViewerCore({ document: doc });
@@ -577,7 +577,7 @@ function MyViewer({ doc }) {
           marginTop: 40, padding: '20px 0', borderTop: `1px solid ${t.border}`,
           textAlign: 'center', fontSize: 12, color: t.textDim,
         }}>
-          react-document-viewer · MIT License · Built with React, MUI, and pdf.js
+          react-viewer-doc · MIT License · Built with React, MUI, and pdf.js
         </footer>
       </main>
     </div>
