@@ -10,7 +10,8 @@ A versatile React component for viewing documents with support for PDF, images (
 - 🛠️ **Toolbar Actions** — Download, Print, Fullscreen, Thumbnails
 - 🌐 **i18n** — Built-in locales (en-US, pt-BR, es-ES) + custom labels
 - ⌨️ **Keyboard Shortcuts** — Ctrl +/- for zoom, arrows for PDF pages
-- 🎨 **MUI Interface** — Modern Material Design components
+- 🎨 **MUI Interface** — Modern Material Design components with light/dark theme
+- 🧩 **Headless API** — `useViewerCore` hook + `ViewerCanvas` for full UI control
 - 💻 **TypeScript** — Full type definitions included
 
 ## Quick Start
@@ -110,17 +111,99 @@ function FileUploader() {
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `document` | `object` | — | **Required.** Document to display |
+| `document` | `object` | — | Document to display |
 | `document.fileData` | `string` | — | Base64 encoded file |
 | `document.fileUri` | `string` | — | URL or Data URI |
 | `document.fileName` | `string` | — | File name for extension detection |
-| `height` | `string \| number` | `600px` | Viewer height |
+| `height` | `string \| number` | `clamp(280px, 60vh, 600px)` | Viewer height |
 | `locale` | `'en-US' \| 'pt-BR' \| 'es-ES'` | `'en-US'` | Built-in translations |
 | `labels` | `object` | — | Override any label text |
-| `extraToolbar` | `ReactNode` | — | Custom buttons in toolbar |
+| `theme` | `'light' \| 'dark'` | `'light'` | Viewer color theme |
+| `extraToolbar` | `ReactNode \| (actions) => ReactNode` | — | Extra buttons in the default toolbar |
+| `renderToolbar` | `(actions) => ReactNode` | — | Replace the entire toolbar |
 | `pdfWorkerSrc` | `string` | unpkg CDN | Custom PDF.js worker URL |
 | `onLoad` | `() => void` | — | Document loaded callback |
 | `onError` | `(error: string) => void` | — | Error callback |
+
+## Custom Toolbar
+
+### Add buttons to the default toolbar
+
+```tsx
+<ReactDocumentViewer
+  document={doc}
+  extraToolbar={(actions) => (
+    <button onClick={actions.download}>Download</button>
+  )}
+/>
+```
+
+`extraToolbar` accepts a React node or a function that receives `ToolbarActions` (`zoomIn`, `zoomOut`, `rotate`, `reset`, `nextPage`, `prevPage`, `setPageNumber`, `download`, `print`, `openInNew`, `toggleFullscreen`, `toggleSidebar`, `getZoom`, `getPageNumber`, `getTotalPages`, `isPdf`).
+
+### Replace the entire toolbar
+
+```tsx
+<ReactDocumentViewer
+  document={doc}
+  renderToolbar={(actions) => (
+    <div>
+      <button onClick={actions.zoomIn}>+</button>
+      <button onClick={actions.zoomOut}>-</button>
+      <button onClick={actions.download}>Download</button>
+    </div>
+  )}
+/>
+```
+
+When `renderToolbar` is provided, the default MUI toolbar is not rendered.
+
+## Headless API
+
+Use `useViewerCore` for state and actions, and `ViewerCanvas` to render the document without the built-in toolbar:
+
+```tsx
+import { useViewerCore, ViewerCanvas } from 'react-document-viewer';
+
+function MyViewer({ doc }) {
+  const viewer = useViewerCore({
+    document: doc,
+    theme: 'dark',
+    onLoad: () => console.log('loaded'),
+    onError: (err) => console.error(err),
+  });
+
+  return (
+    <div>
+      <MyCustomToolbar
+        zoom={viewer.state.zoom}
+        onZoomIn={viewer.actions.zoomIn}
+        onDownload={viewer.actions.handleDownload}
+      />
+      <ViewerCanvas
+        state={viewer.state}
+        actions={viewer.actions}
+        theme="dark"
+        height="600px"
+      />
+    </div>
+  );
+}
+```
+
+`ViewerCanvas` imports the required `react-pdf` CSS internally. No extra stylesheet setup is needed for consumers.
+
+## PDF Worker
+
+By default, the PDF.js worker is loaded from unpkg CDN. For production apps, host the worker locally and pass its URL:
+
+```tsx
+<ReactDocumentViewer
+  document={doc}
+  pdfWorkerSrc="/pdf.worker.min.mjs"
+/>
+```
+
+Copy the worker from `node_modules/pdfjs-dist/build/pdf.worker.min.mjs` to your public folder.
 
 ## Labels
 

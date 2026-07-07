@@ -3,5 +3,5 @@ interface ErrorViewerProps {
     onRetry?: () => void;
     retryLabel?: string;
 }
-export declare const ErrorViewer: ({ message, onRetry, retryLabel }: ErrorViewerProps) => import("react/jsx-runtime").JSX.Element;
+export declare const ErrorViewer: ({ message, onRetry, retryLabel }: ErrorViewerProps) => import("react").JSX.Element;
 export {};

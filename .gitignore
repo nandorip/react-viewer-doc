@@ -23,6 +23,8 @@ test_output.txt
 # Local editor and tool state
 .vs
 .junie
+agent-tools
+terminals/
 .DS_Store
 Thumbs.db
 

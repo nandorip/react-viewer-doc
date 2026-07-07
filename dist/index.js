@@ -15,6 +15,12 @@ Object.defineProperty(exports, "ReactDocumentViewer", {
     return _ReactDocumentViewer.ReactDocumentViewer;
   }
 });
+Object.defineProperty(exports, "ViewerCanvas", {
+  enumerable: true,
+  get: function get() {
+    return _ViewerCanvas.ViewerCanvas;
+  }
+});
 Object.defineProperty(exports, "localeLabels", {
   enumerable: true,
   get: function get() {
@@ -39,6 +45,14 @@ Object.defineProperty(exports, "themeTokens", {
     return _theme.themeTokens;
   }
 });
+Object.defineProperty(exports, "useViewerCore", {
+  enumerable: true,
+  get: function get() {
+    return _useViewerCore.useViewerCore;
+  }
+});
 var _ReactDocumentViewer = require("./ReactDocumentViewer");
+var _ViewerCanvas = require("./components/ViewerCanvas");
+var _useViewerCore = require("./hooks/useViewerCore");
 var _i18n = require("./i18n");
 var _theme = require("./theme");

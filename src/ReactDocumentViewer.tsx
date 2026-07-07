@@ -7,13 +7,14 @@ import { DEFAULT_LOCALE, resolveLabels } from './i18n';
 export const ReactDocumentViewer = ({
   document,
   extraToolbar,
+  renderToolbar,
   height,
   labels,
   locale = DEFAULT_LOCALE,
   theme = 'light',
   pdfWorkerSrc,
   onLoad,
-  onError
+  onError,
 }: ViewerProps) => {
   const resolvedLabels = useMemo(
     () => resolveLabels(locale, labels),
@@ -21,20 +22,21 @@ export const ReactDocumentViewer = ({
   );
 
   return (
-  <ErrorBoundary labels={resolvedLabels}>
-    <Container theme={theme}>
-      <Viewer 
-        document={document} 
-        extraToolbar={extraToolbar} 
-        height={height} 
-        labels={resolvedLabels}
-        locale={locale}
-        theme={theme}
-        pdfWorkerSrc={pdfWorkerSrc}
-        onLoad={onLoad}
-        onError={onError}
-      />
-    </Container>
-  </ErrorBoundary>
+    <ErrorBoundary labels={resolvedLabels}>
+      <Container theme={theme}>
+        <Viewer
+          document={document}
+          extraToolbar={extraToolbar}
+          renderToolbar={renderToolbar}
+          height={height}
+          labels={resolvedLabels}
+          locale={locale}
+          theme={theme}
+          pdfWorkerSrc={pdfWorkerSrc}
+          onLoad={onLoad}
+          onError={onError}
+        />
+      </Container>
+    </ErrorBoundary>
   );
 };

@@ -12,6 +12,7 @@ var _jsxRuntime = require("react/jsx-runtime");
 var ReactDocumentViewer = exports.ReactDocumentViewer = function ReactDocumentViewer(_ref) {
   var document = _ref.document,
     extraToolbar = _ref.extraToolbar,
+    renderToolbar = _ref.renderToolbar,
     height = _ref.height,
     labels = _ref.labels,
     _ref$locale = _ref.locale,
@@ -31,6 +32,7 @@ var ReactDocumentViewer = exports.ReactDocumentViewer = function ReactDocumentVi
       children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_Viewer.Viewer, {
         document: document,
         extraToolbar: extraToolbar,
+        renderToolbar: renderToolbar,
         height: height,
         labels: resolvedLabels,
         locale: locale,

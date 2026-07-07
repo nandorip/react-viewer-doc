@@ -451,4 +451,66 @@ describe('Viewer', () => {
 
     expect(pdfjs.GlobalWorkerOptions.workerSrc).toBe('/pdf.worker.min.mjs');
   });
+
+  it('renders a custom toolbar via renderToolbar', () => {
+    const document = {
+      fileName: 'test.jpg',
+      fileUri: 'http://example.com/test.jpg',
+    };
+    render(
+      <Viewer
+        document={document}
+        renderToolbar={(actions) => (
+          <div data-testid="custom-toolbar">
+            <button type="button" onClick={actions.zoomIn}>Custom Zoom</button>
+            <span data-testid="custom-zoom">{actions.getZoom()}</span>
+          </div>
+        )}
+      />
+    );
+
+    expect(screen.getByTestId('custom-toolbar')).toBeInTheDocument();
+    expect(screen.queryByTestId('AddIcon')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Custom Zoom'));
+    expect(screen.getByTestId('custom-zoom')).toHaveTextContent('1.1');
+  });
+
+  it('renders extraToolbar as a function with toolbar actions', () => {
+    const document = {
+      fileName: 'test.jpg',
+      fileUri: 'http://example.com/test.jpg',
+    };
+    render(
+      <Viewer
+        document={document}
+        extraToolbar={(actions) => (
+          <button type="button" data-testid="extra-download" onClick={actions.download}>
+            Extra
+          </button>
+        )}
+      />
+    );
+
+    expect(screen.getByTestId('extra-download')).toBeInTheDocument();
+    expect(screen.getByTestId('AddIcon')).toBeInTheDocument();
+  });
+
+  it('ignores out-of-range page numbers from setPageNumber', async () => {
+    const document = {
+      fileName: 'test.pdf',
+      fileUri: 'http://example.com/test.pdf',
+    };
+    render(<Viewer document={document} />);
+    expect(await screen.findByDisplayValue('1')).toBeInTheDocument();
+
+    const nextBtn = screen.getByTestId('ChevronRightIcon').closest('button')!;
+    fireEvent.click(nextBtn);
+    expect(screen.getByDisplayValue('2')).toBeInTheDocument();
+
+    const pageInput = screen.getByDisplayValue('2');
+    fireEvent.change(pageInput, { target: { value: '99' } });
+    fireEvent.blur(pageInput);
+    expect(screen.getByDisplayValue('2')).toBeInTheDocument();
+  });
 });

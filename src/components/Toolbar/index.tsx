@@ -15,7 +15,7 @@ import {
 import { ToolbarContainer } from '../../styles';
 import { ToolbarButton } from './ToolbarButton';
 import { DisplayPageNumber } from './DisplayPageNumber';
-import { Labels, ViewerTheme } from '../../types';
+import { Labels, ViewerTheme, ToolbarActions } from '../../types';
 import { DEFAULT_LOCALE, resolveLabels } from '../../i18n';
 
 interface ToolbarProps {
@@ -38,9 +38,10 @@ interface ToolbarProps {
   pdfPages: number;
   pdfPage: number;
   showSidebar?: boolean;
-  extra?: React.ReactNode;
+  extra?: React.ReactNode | ((actions: ToolbarActions) => React.ReactNode);
   labels?: Labels;
   theme?: ViewerTheme;
+  toolbarActions?: ToolbarActions;
 }
 
 export const Toolbar = ({
@@ -66,8 +67,10 @@ export const Toolbar = ({
   extra,
   labels,
   theme = 'light',
+  toolbarActions,
 }: ToolbarProps) => {
   const resolvedLabels = labels ?? resolveLabels(DEFAULT_LOCALE);
+  const resolvedExtra = typeof extra === 'function' ? extra(toolbarActions!) : extra;
 
   return (
   <ToolbarContainer theme={theme}>
@@ -90,9 +93,9 @@ export const Toolbar = ({
           </Tooltip>
         </Grid>
       )}
-      {extra && (
+      {resolvedExtra && (
         <Grid>
-          {extra}
+          {resolvedExtra}
         </Grid>
       )}
       {!hideZoom && (

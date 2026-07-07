@@ -34,8 +34,10 @@ var Toolbar = exports.Toolbar = function Toolbar(_ref) {
     extra = _ref.extra,
     labels = _ref.labels,
     _ref$theme = _ref.theme,
-    theme = _ref$theme === void 0 ? 'light' : _ref$theme;
+    theme = _ref$theme === void 0 ? 'light' : _ref$theme,
+    toolbarActions = _ref.toolbarActions;
   var resolvedLabels = labels !== null && labels !== void 0 ? labels : (0, _i18n.resolveLabels)(_i18n.DEFAULT_LOCALE);
+  var resolvedExtra = typeof extra === 'function' ? extra(toolbarActions) : extra;
   return /*#__PURE__*/(0, _jsxRuntime.jsx)(_styles.ToolbarContainer, {
     theme: theme,
     children: /*#__PURE__*/(0, _jsxRuntime.jsxs)(_material.Grid, {
@@ -67,8 +69,8 @@ var Toolbar = exports.Toolbar = function Toolbar(_ref) {
             ariaLabel: resolvedLabels.thumbnails
           })
         })
-      }), extra && /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
-        children: extra
+      }), resolvedExtra && /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
+        children: resolvedExtra
       }), !hideZoom && /*#__PURE__*/(0, _jsxRuntime.jsxs)(_jsxRuntime.Fragment, {
         children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
           children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Tooltip, {
