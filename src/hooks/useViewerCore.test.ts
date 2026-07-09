@@ -18,6 +18,10 @@ jest.mock('./useTiffImage', () => ({
   }),
 }));
 
+jest.mock('./useElementWidth', () => ({
+  useElementWidth: () => ({ ref: jest.fn(), width: 800, element: { current: null } }),
+}));
+
 const imageDocument: DocumentData = {
   fileName: 'photo.jpg',
   fileUri: 'http://example.com/photo.jpg',
@@ -84,6 +88,16 @@ describe('useViewerCore', () => {
 
     act(() => result.current.actions.zoomOut());
     expect(result.current.state.zoom).toBe(1);
+  });
+
+  it('updates pdf page width when zooming a PDF', () => {
+    const { result } = renderHook(() => useViewerCore({ document: pdfDocument }));
+
+    const baseWidth = 800 - 32;
+    expect(result.current.state.pdfPageWidth).toBe(baseWidth);
+
+    act(() => result.current.actions.zoomIn());
+    expect(result.current.state.pdfPageWidth).toBe(Math.floor(baseWidth * 1.1));
   });
 
   it('resets view state', () => {

@@ -192,7 +192,6 @@ export const DocumentContainer = styled.div<{ height?: string | number } & Theme
   color: ${props => resolveThemeTokens(props.theme).textMuted};
 
   canvas {
-    max-width: 100% !important;
     height: auto !important;
     box-shadow: 0 4px 8px ${props => resolveThemeTokens(props.theme).pdfShadow};
     margin-bottom: 16px;

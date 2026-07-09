@@ -19,9 +19,9 @@ jest.mock('react-pdf', () => ({
     }, [onLoadSuccess]);
     return <div data-testid="mock-pdf-document">{children}</div>;
   },
-  Page: ({ pageNumber, scale, rotate }: any) => (
-    <div data-testid="mock-pdf-page">
-      Page: {pageNumber}, Scale: {scale}, Rotate: {rotate}
+  Page: ({ pageNumber, scale, width, rotate }: any) => (
+    <div data-testid="mock-pdf-page" data-width={width} data-scale={scale}>
+      Page: {pageNumber}, Scale: {scale}, Width: {width}, Rotate: {rotate}
     </div>
   ),
 }));
