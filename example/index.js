@@ -37,6 +37,12 @@ const SAMPLES = [
   },
 ];
 
+const DEMO_DOCUMENTS = SAMPLES.map((sample) => ({
+  id: sample.id,
+  fileName: sample.fileName,
+  fileUri: sample.fileUri,
+}));
+
 const THEME = {
   light: {
     bg: '#f8f9fa',
@@ -103,6 +109,7 @@ function ViewModeSelector({ mode, onChange, t }) {
     { key: 'default', label: 'Standard', desc: 'extraToolbar' },
     { key: 'custom', label: 'Custom Toolbar', desc: 'renderToolbar' },
     { key: 'headless', label: 'Headless', desc: 'useViewerCore' },
+    { key: 'documents', label: 'Documents', desc: 'documents[]' },
   ];
   return (
     <div style={{ display: 'flex', gap: 6, marginTop: 14 }}>
@@ -180,9 +187,13 @@ function App() {
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [fileInfo, setFileInfo] = useState(null);
   const [viewMode, setViewMode] = useState('default');
+  const [documents, setDocuments] = useState(null);
+  const [documentIndex, setDocumentIndex] = useState(0);
 
   const handleFile = useCallback((file) => {
     if (!file) return;
+    setDocuments(null);
+    setViewMode((mode) => (mode === 'documents' ? 'default' : mode));
     setFileInfo({ name: file.name, size: file.size, type: file.type });
     const reader = new FileReader();
     reader.onload = () => {
@@ -199,12 +210,34 @@ function App() {
   }, [handleFile]);
 
   const loadSample = useCallback((sample) => {
+    setDocuments(null);
+    setViewMode((mode) => (mode === 'documents' ? 'default' : mode));
     setFileInfo({ name: sample.fileName, type: sample.id === 'pdf' ? 'pdf' : 'image', size: 0 });
     setDoc({ fileName: sample.fileName, fileUri: sample.fileUri });
   }, []);
 
+  const loadDocumentBundle = useCallback(() => {
+    setDoc(null);
+    setDocuments(DEMO_DOCUMENTS);
+    setDocumentIndex(0);
+    setViewMode('documents');
+    setFileInfo({
+      name: `Bundle (${DEMO_DOCUMENTS.length} files)`,
+      type: 'bundle',
+      size: 0,
+      activeFile: DEMO_DOCUMENTS[0].fileName,
+    });
+  }, []);
+
+  const handleDocumentChange = useCallback((index, activeDoc) => {
+    setDocumentIndex(index);
+    setFileInfo((prev) => (prev ? { ...prev, activeFile: activeDoc.fileName } : prev));
+  }, []);
+
   const handleUrlLoad = useCallback(() => {
     if (!urlInput.trim()) return;
+    setDocuments(null);
+    setViewMode((mode) => (mode === 'documents' ? 'default' : mode));
     const fileName = urlInput.split('/').pop() || 'document.pdf';
     setFileInfo({ name: fileName, type: 'remote', size: 0 });
     setDoc({ fileName, fileUri: urlInput.trim() });
@@ -218,7 +251,14 @@ function App() {
     fullscreen: 'Fullscreen',
     thumbnails: 'Thumbnails',
     loading: 'Loading document...',
+    documents: 'Documents',
+    nextDocument: 'Next document',
+    prevDocument: 'Previous document',
+    currentDocument: 'Current document',
   };
+
+  const hasDocuments = documents && documents.length > 0;
+  const showViewer = Boolean(doc) || hasDocuments;
 
   return (
     <div style={{ minHeight: '100vh', background: t.bg, color: t.text, transition: 'all 0.3s' }}>
@@ -350,6 +390,24 @@ function App() {
             Sample documents
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
+            <button
+              className="fade-in"
+              onClick={loadDocumentBundle}
+              style={{
+                padding: '16px', borderRadius: 12,
+                border: viewMode === 'documents' && hasDocuments ? `2px solid ${t.accent}` : `1px solid ${t.border}`,
+                background: viewMode === 'documents' && hasDocuments ? t.accentLight : t.surface,
+                cursor: 'pointer', textAlign: 'left',
+                transition: 'all 0.15s',
+                boxShadow: t.shadow,
+              }}
+            >
+              <div style={{ fontSize: 28, marginBottom: 8 }}>📚</div>
+              <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 2 }}>All Samples</div>
+              <div style={{ fontSize: 11, color: t.accent, fontWeight: 500 }}>
+                {DEMO_DOCUMENTS.length} files · documents[]
+              </div>
+            </button>
             {SAMPLES.map((s) => {
               const active = doc?.fileName === s.fileName;
               return (
@@ -378,22 +436,27 @@ function App() {
         </section>
 
         {/* File Info */}
-        {doc && fileInfo && (
+        {showViewer && fileInfo && (
           <div className="fade-in" style={{
             marginTop: 18, padding: '12px 16px', borderRadius: 10,
             background: t.surface, border: `1px solid ${t.border}`,
             display: 'flex', alignItems: 'center', gap: 10, fontSize: 13,
             boxShadow: t.shadow,
           }}>
-            <span>{FileIcon({ type: fileInfo.type || doc.fileName?.split('.').pop() })}</span>
+            <span>{FileIcon({ type: fileInfo.type || doc?.fileName?.split('.').pop() || 'bundle' })}</span>
             <span style={{ fontWeight: 500, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {fileInfo.name || doc.fileName}
+              {fileInfo.activeFile || fileInfo.name || doc?.fileName}
             </span>
+            {hasDocuments && (
+              <span style={{ color: t.textMuted }}>
+                {documentIndex + 1} / {documents.length}
+              </span>
+            )}
             {fileInfo.size > 0 && (
               <span style={{ color: t.textMuted }}>{formatFileSize(fileInfo.size)}</span>
             )}
             <button
-              onClick={() => { setDoc(null); setFileInfo(null); }}
+              onClick={() => { setDoc(null); setDocuments(null); setFileInfo(null); setDocumentIndex(0); }}
               style={{
                 background: 'none', border: `1px solid ${t.border}`, borderRadius: 6,
                 padding: '4px 10px', cursor: 'pointer', fontSize: 12, color: t.textMuted,
@@ -410,7 +473,7 @@ function App() {
           marginTop: 10, borderRadius: 16, overflow: 'hidden',
           boxShadow: t.shadowLg,
         }}>
-          {!doc ? (
+          {!showViewer ? (
             <div style={{
               height: 340, borderRadius: 16,
               border: `1px solid ${t.border}`,
@@ -432,6 +495,44 @@ function App() {
                 Supports PDF, images, TIFF and SVG
               </div>
             </div>
+          ) : viewMode === 'documents' && hasDocuments ? (
+            <ReactDocumentViewer
+              documents={documents}
+              documentIndex={documentIndex}
+              onDocumentChange={handleDocumentChange}
+              theme={dark ? 'dark' : 'light'}
+              locale="en-US"
+              height="clamp(340px, 68vh, 720px)"
+              extraToolbar={(actions) => (
+                <>
+                  <button
+                    onClick={() => actions.prevDocument?.()}
+                    title="Previous document"
+                    style={{ padding: '4px 8px', borderRadius: 4, border: `1px solid ${t.border}`, background: t.surface, cursor: 'pointer', fontSize: 12 }}
+                  >
+                    ◀ Doc
+                  </button>
+                  <button
+                    onClick={() => actions.nextDocument?.()}
+                    title="Next document"
+                    style={{ padding: '4px 8px', borderRadius: 4, border: `1px solid ${t.border}`, background: t.surface, cursor: 'pointer', fontSize: 12 }}
+                  >
+                    Doc ▶
+                  </button>
+                  <button
+                    onClick={() => alert(
+                      `Document: ${actions.getCurrentDocument?.()?.fileName}\n`
+                      + `Index: ${(actions.getDocumentIndex?.() ?? 0) + 1}/${actions.getDocumentCount?.() ?? 0}`,
+                    )}
+                    title="Document info"
+                    style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #6366f1', background: 'transparent', color: '#6366f1', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
+                  >
+                    ℹ️ Doc Info
+                  </button>
+                </>
+              )}
+              labels={labels}
+            />
           ) : viewMode === 'default' ? (
             <ReactDocumentViewer
               document={doc}
@@ -501,6 +602,7 @@ function App() {
               { icon: '🔄', label: 'renderToolbar', desc: 'Fully replace the toolbar — function(actions) => ReactNode' },
               { icon: '🎣', label: 'useViewerCore', desc: 'Headless hook — all state + actions, render your own UI' },
               { icon: '🖼️', label: 'ViewerCanvas', desc: 'Renders document only (no toolbar) — pairs with useViewerCore' },
+              { icon: '📚', label: 'documents', desc: 'Native file list with sidebar + prev/next toolbar navigation' },
             ].map((f) => (
               <div key={f.label} className="fade-in" style={{
                 padding: '14px', borderRadius: 10,
@@ -529,7 +631,17 @@ function App() {
               background: dark ? '#0d1117' : '#f8f9fa',
               color: dark ? '#e1e4e8' : '#24292e',
               overflowX: 'auto',
-            }}>{`// 1. Add custom buttons to default toolbar (existing API)
+            }}>{`// 1. Multiple documents with native list + navigation
+<ReactDocumentViewer
+  documents={[
+    { id: '1', fileName: 'contrato.pdf', fileData: 'JVBERi0xLjQK...' },
+    { id: '2', fileName: 'foto.jpg', fileUri: 'https://example.com/foto.jpg' },
+    { id: '3', fileName: 'logo.png', fileData: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB...' },
+  ]}
+  onDocumentChange={(index, doc) => console.log(index, doc.fileName)}
+/>
+
+// 2. Add custom buttons to default toolbar
 <ReactDocumentViewer
   document={doc}
   extraToolbar={(actions) => (
@@ -537,7 +649,7 @@ function App() {
   )}
 />
 
-// 2. Replace the entire toolbar
+// 3. Replace the entire toolbar
 <ReactDocumentViewer
   document={doc}
   renderToolbar={(actions) => (
@@ -549,7 +661,7 @@ function App() {
   )}
 />
 
-// 3. Headless — full control with hook + canvas
+// 4. Headless — full control with hook + canvas
 import { useViewerCore, ViewerCanvas } from 'react-viewer-doc';
 
 function MyViewer({ doc }) {
