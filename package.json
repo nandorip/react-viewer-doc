@@ -1,6 +1,6 @@
 {
   "name": "react-viewer-doc",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "React document viewer for PDF and images with pan, zoom, rotate and full i18n support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
