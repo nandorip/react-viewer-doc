@@ -23,6 +23,10 @@ export const localeLabels: Record<Locale, Required<Labels>> = {
     errorBoundary: 'Sorry, something went wrong while loading the viewer.',
     currentPage: 'Current page',
     retry: 'Retry',
+    documents: 'Documents',
+    nextDocument: 'Next document',
+    prevDocument: 'Previous document',
+    currentDocument: 'Current document',
   },
   'pt-BR': {
     zoomIn: 'Aumentar zoom',
@@ -44,6 +48,10 @@ export const localeLabels: Record<Locale, Required<Labels>> = {
     errorBoundary: 'Desculpe, algo deu errado ao carregar o visualizador.',
     currentPage: 'Página atual',
     retry: 'Tentar novamente',
+    documents: 'Documentos',
+    nextDocument: 'Próximo documento',
+    prevDocument: 'Documento anterior',
+    currentDocument: 'Documento atual',
   },
   'es-ES': {
     zoomIn: 'Aumentar zoom',
@@ -65,6 +73,10 @@ export const localeLabels: Record<Locale, Required<Labels>> = {
     errorBoundary: 'Lo sentimos, algo salió mal al cargar el visor.',
     currentPage: 'Página actual',
     retry: 'Reintentar',
+    documents: 'Documentos',
+    nextDocument: 'Documento siguiente',
+    prevDocument: 'Documento anterior',
+    currentDocument: 'Documento actual',
   },
 };
 

@@ -285,3 +285,73 @@ export const LoadingMessage = styled.div<ThemedProps>`
   min-height: 120px;
   color: ${props => resolveThemeTokens(props.theme).textMuted};
 `;
+
+export const ViewerWithDocumentList = styled.div`
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+`;
+
+export const DocumentListContainer = styled.div<ThemedProps>`
+  flex: 0 0 220px;
+  display: flex;
+  flex-direction: column;
+  background-color: ${props => resolveThemeTokens(props.theme).sidebarBg};
+  border-right: 1px solid ${props => resolveThemeTokens(props.theme).sidebarBorder};
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  ${MOBILE} {
+    flex: 0 0 160px;
+  }
+`;
+
+export const DocumentListHeader = styled.div<ThemedProps>`
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: ${props => resolveThemeTokens(props.theme).textMuted};
+  border-bottom: 1px solid ${props => resolveThemeTokens(props.theme).sidebarBorder};
+`;
+
+export const DocumentListItem = styled.button<{ active: boolean } & ThemedProps>`
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-bottom: 1px solid ${props => resolveThemeTokens(props.theme).sidebarBorder};
+  background-color: ${props =>
+    props.active
+      ? resolveThemeTokens(props.theme).thumbnailActive
+      : 'transparent'};
+  color: ${props => resolveThemeTokens(props.theme).textMuted};
+  text-align: left;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1.35;
+  word-break: break-word;
+
+  &:hover {
+    background-color: ${props => resolveThemeTokens(props.theme).thumbnailHover};
+  }
+`;
+
+export const DisplayDocument = styled.div<ThemedProps>`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: ${props => resolveThemeTokens(props.theme).textMuted};
+  font-size: 13px;
+  max-width: 180px;
+
+  span:first-of-type {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 120px;
+  }
+`;

@@ -80,6 +80,38 @@ npm install @mui/material @mui/icons-material @emotion/react @emotion/styled rea
 />
 ```
 
+### Multiple documents (list)
+
+```tsx
+<ReactDocumentViewer
+  documents={[
+    {
+      id: '1',
+      fileName: 'contrato.pdf',
+      fileData: 'JVBERi0xLjQK...',
+    },
+    {
+      id: '2',
+      fileName: 'foto.jpg',
+      fileUri: 'https://example.com/foto.jpg',
+    },
+    {
+      id: '3',
+      fileName: 'logo.png',
+      fileData: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB...',
+    },
+  ]}
+  locale="pt-BR"
+  onDocumentChange={(index, doc) => console.log(index, doc.fileName)}
+/>
+```
+
+When `documents` has more than one item, the viewer shows:
+- A **sidebar list** to pick the active file
+- **Previous / next document** controls in the toolbar
+
+Use `showDocumentList={false}` to hide the sidebar and keep only the toolbar navigation.
+
 ### Local File Upload
 
 ```tsx
@@ -115,6 +147,11 @@ function FileUploader() {
 | `document.fileData` | `string` | — | Base64 encoded file |
 | `document.fileUri` | `string` | — | URL or Data URI |
 | `document.fileName` | `string` | — | File name for extension detection |
+| `documents` | `DocumentData[]` | — | List of documents to browse |
+| `documentIndex` | `number` | `0` | Controlled active document index |
+| `defaultDocumentIndex` | `number` | `0` | Initial index when uncontrolled |
+| `onDocumentChange` | `(index, doc) => void` | — | Fired when the active document changes |
+| `showDocumentList` | `boolean` | `true` | Sidebar list when multiple documents |
 | `height` | `string \| number` | `clamp(280px, 60vh, 600px)` | Viewer height |
 | `locale` | `'en-US' \| 'pt-BR' \| 'es-ES'` | `'en-US'` | Built-in translations |
 | `labels` | `object` | — | Override any label text |

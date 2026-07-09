@@ -6,6 +6,8 @@ import {
   Fullscreen,
   ChevronLeft,
   ChevronRight,
+  NavigateBefore,
+  NavigateNext,
   OpenInNew,
   Download,
   Print,
@@ -15,6 +17,7 @@ import {
 import { ToolbarContainer } from '../../styles';
 import { ToolbarButton } from './ToolbarButton';
 import { DisplayPageNumber } from './DisplayPageNumber';
+import { DisplayDocumentIndex } from './DisplayDocumentIndex';
 import { Labels, ViewerTheme, ToolbarActions } from '../../types';
 import { DEFAULT_LOCALE, resolveLabels } from '../../i18n';
 
@@ -35,6 +38,12 @@ interface ToolbarProps {
   hideRotate?: boolean;
   hideReset?: boolean;
   hideMovePage?: boolean;
+  hideDocumentNav?: boolean;
+  onPrevDocument?: () => void;
+  onNextDocument?: () => void;
+  documentIndex?: number;
+  documentCount?: number;
+  currentDocumentName?: string;
   pdfPages: number;
   pdfPage: number;
   showSidebar?: boolean;
@@ -61,6 +70,12 @@ export const Toolbar = ({
   hideRotate,
   hideReset,
   hideMovePage,
+  hideDocumentNav,
+  onPrevDocument,
+  onNextDocument,
+  documentIndex = 0,
+  documentCount = 0,
+  currentDocumentName,
   pdfPages,
   pdfPage,
   showSidebar,
@@ -97,6 +112,29 @@ export const Toolbar = ({
         <Grid>
           {resolvedExtra}
         </Grid>
+      )}
+      {!hideDocumentNav && onPrevDocument && onNextDocument && documentCount > 1 && (
+        <>
+          <Grid>
+            <Tooltip title={resolvedLabels.prevDocument} describeChild>
+              <ToolbarButton icon={<NavigateBefore />} onClick={onPrevDocument} ariaLabel={resolvedLabels.prevDocument} />
+            </Tooltip>
+          </Grid>
+          <Grid>
+            <DisplayDocumentIndex
+              index={documentIndex}
+              total={documentCount}
+              fileName={currentDocumentName ?? resolvedLabels.defaultDocumentName ?? 'document'}
+              ariaLabel={resolvedLabels.currentDocument}
+              theme={theme}
+            />
+          </Grid>
+          <Grid>
+            <Tooltip title={resolvedLabels.nextDocument} describeChild>
+              <ToolbarButton icon={<NavigateNext />} onClick={onNextDocument} ariaLabel={resolvedLabels.nextDocument} />
+            </Tooltip>
+          </Grid>
+        </>
       )}
       {!hideZoom && (
         <>

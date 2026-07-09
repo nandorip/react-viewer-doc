@@ -1,12 +1,20 @@
 import { useMemo } from 'react';
 import { Toolbar } from '../components';
+import { DocumentList } from '../components/DocumentList';
 import { ViewerCanvas } from '../components/ViewerCanvas';
+import { useDocumentList } from '../hooks/useDocumentList';
 import { useViewerCore } from '../hooks/useViewerCore';
 import { ViewerProps, ToolbarActions } from '../types';
+import { ViewerWithDocumentList } from '../styles';
 import { FileTypes } from './FileHelpers';
 
 export const Viewer = ({
   document,
+  documents,
+  documentIndex,
+  defaultDocumentIndex,
+  onDocumentChange,
+  showDocumentList = true,
   extraToolbar,
   renderToolbar,
   height,
@@ -16,10 +24,33 @@ export const Viewer = ({
   onLoad,
   onError,
 }: ViewerProps) => {
-  const viewer = useViewerCore({ document, labels, theme, pdfWorkerSrc, onLoad, onError });
+  const resolvedDocuments = useMemo(() => {
+    if (documents && documents.length > 0) return documents;
+    if (document) return [document];
+    return [];
+  }, [documents, document?.fileName, document?.fileUri, document?.fileData]);
+
+  const documentList = useDocumentList({
+    documents: resolvedDocuments,
+    documentIndex,
+    defaultDocumentIndex,
+    onDocumentChange,
+  });
+
+  const activeDocument = documentList.activeDocument;
+
+  const viewer = useViewerCore({
+    document: activeDocument,
+    labels,
+    theme,
+    pdfWorkerSrc,
+    onLoad,
+    onError,
+  });
   const { state, actions } = viewer;
 
-  const showToolbar = !state.error && (Boolean(document) || Boolean(state.fileSelected));
+  const showToolbar = !state.error && (resolvedDocuments.length > 0 || Boolean(state.fileSelected));
+  const showList = showDocumentList && documentList.hasMultiple;
 
   const toolbarActions = useMemo<ToolbarActions>(() => ({
     zoomIn: actions.zoomIn,
@@ -38,7 +69,32 @@ export const Viewer = ({
     getPageNumber: () => state.pageNumber,
     getTotalPages: () => state.totalPages,
     isPdf: () => state.fileType === FileTypes.pdf,
-  }), [actions, state.zoom, state.pageNumber, state.totalPages, state.fileType]);
+    nextDocument: documentList.hasMultiple ? documentList.nextDocument : undefined,
+    prevDocument: documentList.hasMultiple ? documentList.prevDocument : undefined,
+    setDocumentIndex: documentList.hasMultiple ? documentList.setDocumentIndex : undefined,
+    getDocumentIndex: () => documentList.activeIndex,
+    getDocumentCount: () => resolvedDocuments.length,
+    getCurrentDocument: () => activeDocument,
+  }), [
+    actions,
+    state.zoom,
+    state.pageNumber,
+    state.totalPages,
+    state.fileType,
+    documentList,
+    resolvedDocuments.length,
+    activeDocument,
+  ]);
+
+  const viewerCanvas = (
+    <ViewerCanvas
+      state={state}
+      actions={actions}
+      labels={labels}
+      theme={theme}
+      height={height}
+    />
+  );
 
   return (
     <>
@@ -58,6 +114,11 @@ export const Viewer = ({
           onPrint={actions.handlePrint}
           onFullscreen={actions.toggleFullscreen}
           onToggleSidebar={state.fileType === FileTypes.pdf ? actions.toggleSidebar : undefined}
+          onPrevDocument={documentList.hasMultiple ? documentList.prevDocument : undefined}
+          onNextDocument={documentList.hasMultiple ? documentList.nextDocument : undefined}
+          documentIndex={documentList.activeIndex}
+          documentCount={resolvedDocuments.length}
+          currentDocumentName={activeDocument?.fileName}
           showSidebar={state.showSidebar}
           hideMovePage={!state.supportsPagination}
           pdfPages={state.totalPages}
@@ -69,13 +130,20 @@ export const Viewer = ({
         />
       ))}
 
-      <ViewerCanvas
-        state={state}
-        actions={actions}
-        labels={labels}
-        theme={theme}
-        height={height}
-      />
+      {showList ? (
+        <ViewerWithDocumentList>
+          <DocumentList
+            documents={resolvedDocuments}
+            activeIndex={documentList.activeIndex}
+            onSelect={documentList.setDocumentIndex}
+            labels={labels}
+            theme={theme}
+          />
+          {viewerCanvas}
+        </ViewerWithDocumentList>
+      ) : (
+        viewerCanvas
+      )}
     </>
   );
 };

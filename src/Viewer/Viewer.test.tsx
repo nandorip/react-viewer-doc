@@ -496,6 +496,45 @@ describe('Viewer', () => {
     expect(screen.getByTestId('AddIcon')).toBeInTheDocument();
   });
 
+  it('renders a document list and switches between documents', async () => {
+    const documents = [
+      { id: 'img-1', fileName: 'first.jpg', fileUri: 'http://example.com/first.jpg' },
+      { id: 'img-2', fileName: 'second.jpg', fileUri: 'http://example.com/second.jpg' },
+    ];
+    const onDocumentChange = jest.fn();
+
+    render(
+      <Viewer
+        documents={documents}
+        onDocumentChange={onDocumentChange}
+        locale="en-US"
+      />,
+    );
+
+    expect(screen.getByTestId('document-list')).toBeInTheDocument();
+    expect(screen.getByAltText('first.jpg')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Current document: second.jpg/i }));
+    expect(screen.getByAltText('second.jpg')).toBeInTheDocument();
+    expect(onDocumentChange).toHaveBeenCalledWith(1, documents[1]);
+  });
+
+  it('navigates documents from toolbar controls', () => {
+    const documents = [
+      { fileName: 'first.jpg', fileUri: 'http://example.com/first.jpg' },
+      { fileName: 'second.jpg', fileUri: 'http://example.com/second.jpg' },
+    ];
+
+    render(<Viewer documents={documents} />);
+
+    expect(screen.getByAltText('first.jpg')).toBeInTheDocument();
+
+    const nextDocumentBtn = screen.getByTestId('NavigateNextIcon').closest('button')!;
+    fireEvent.click(nextDocumentBtn);
+
+    expect(screen.getByAltText('second.jpg')).toBeInTheDocument();
+  });
+
   it('ignores out-of-range page numbers from setPageNumber', async () => {
     const document = {
       fileName: 'test.pdf',

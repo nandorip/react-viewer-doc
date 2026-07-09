@@ -6,6 +6,11 @@ import { DEFAULT_LOCALE, resolveLabels } from './i18n';
 
 export const ReactDocumentViewer = ({
   document,
+  documents,
+  documentIndex,
+  defaultDocumentIndex,
+  onDocumentChange,
+  showDocumentList,
   extraToolbar,
   renderToolbar,
   height,
@@ -26,6 +31,11 @@ export const ReactDocumentViewer = ({
       <Container theme={theme}>
         <Viewer
           document={document}
+          documents={documents}
+          documentIndex={documentIndex}
+          defaultDocumentIndex={defaultDocumentIndex}
+          onDocumentChange={onDocumentChange}
+          showDocumentList={showDocumentList}
           extraToolbar={extraToolbar}
           renderToolbar={renderToolbar}
           height={height}

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 export interface DocumentData {
+  id?: string;
   fileData?: string;
   fileUri?: string;
   fileName: string;
@@ -26,6 +27,10 @@ export interface Labels {
   errorBoundary?: string;
   currentPage?: string;
   retry?: string;
+  documents?: string;
+  nextDocument?: string;
+  prevDocument?: string;
+  currentDocument?: string;
 }
 
 export type Locale = 'en-US' | 'pt-BR' | 'es-ES';
@@ -49,6 +54,12 @@ export interface ToolbarActions {
   getPageNumber: () => number;
   getTotalPages: () => number;
   isPdf: () => boolean;
+  nextDocument?: () => void;
+  prevDocument?: () => void;
+  setDocumentIndex?: (index: number) => void;
+  getDocumentIndex?: () => number;
+  getDocumentCount?: () => number;
+  getCurrentDocument?: () => DocumentData | undefined;
 }
 
 export interface ViewerCoreState {
@@ -116,6 +127,11 @@ export interface ViewerCoreInput {
 }
 
 export interface ViewerProps extends ViewerCoreInput {
+  documents?: DocumentData[];
+  documentIndex?: number;
+  defaultDocumentIndex?: number;
+  onDocumentChange?: (index: number, document: DocumentData) => void;
+  showDocumentList?: boolean;
   extraToolbar?: ReactNode | ((actions: ToolbarActions) => ReactNode);
   renderToolbar?: (actions: ToolbarActions) => ReactNode;
   height?: string | number;
