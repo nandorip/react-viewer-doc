@@ -45,6 +45,12 @@ Object.defineProperty(exports, "themeTokens", {
     return _theme.themeTokens;
   }
 });
+Object.defineProperty(exports, "useDocumentList", {
+  enumerable: true,
+  get: function get() {
+    return _useDocumentList.useDocumentList;
+  }
+});
 Object.defineProperty(exports, "useViewerCore", {
   enumerable: true,
   get: function get() {
@@ -54,5 +60,6 @@ Object.defineProperty(exports, "useViewerCore", {
 var _ReactDocumentViewer = require("./ReactDocumentViewer");
 var _ViewerCanvas = require("./components/ViewerCanvas");
 var _useViewerCore = require("./hooks/useViewerCore");
+var _useDocumentList = require("./hooks/useDocumentList");
 var _i18n = require("./i18n");
 var _theme = require("./theme");

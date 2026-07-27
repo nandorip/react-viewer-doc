@@ -3,10 +3,10 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.ToolbarFooter = exports.ToolbarContainer = exports.ThumbnailPlaceholder = exports.ThumbnailItem = exports.SidebarContainer = exports.SelectContainer = exports.PdfViewerRoot = exports.MainContent = exports.LoadingMessage = exports.ImageContainer = exports.DocumentContainer = exports.DisplayPage = exports.ContainerDiv = exports.ButtonContainer = void 0;
+exports.ViewerWithDocumentList = exports.ToolbarFooter = exports.ToolbarContainer = exports.ThumbnailPlaceholder = exports.ThumbnailItem = exports.SidebarContainer = exports.SelectContainer = exports.PdfViewerRoot = exports.MainContent = exports.LoadingMessage = exports.ImageContainer = exports.DocumentListItem = exports.DocumentListHeader = exports.DocumentListContainer = exports.DocumentContainer = exports.DisplayPage = exports.DisplayDocument = exports.ContainerDiv = exports.ButtonContainer = void 0;
 var _styled = _interopRequireDefault(require("@emotion/styled"));
 var _theme = require("./theme");
-var _templateObject, _templateObject2, _templateObject3, _templateObject4, _templateObject5, _templateObject6, _templateObject7, _templateObject8, _templateObject9, _templateObject0, _templateObject1, _templateObject10, _templateObject11, _templateObject12;
+var _templateObject, _templateObject2, _templateObject3, _templateObject4, _templateObject5, _templateObject6, _templateObject7, _templateObject8, _templateObject9, _templateObject0, _templateObject1, _templateObject10, _templateObject11, _templateObject12, _templateObject13, _templateObject14, _templateObject15, _templateObject16, _templateObject17;
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _taggedTemplateLiteral(e, t) { return t || (t = e.slice(0)), Object.freeze(Object.defineProperties(e, { raw: { value: Object.freeze(t) } })); }
 var MOBILE = '@media (max-width: 768px)';
@@ -60,7 +60,7 @@ var ToolbarContainer = exports.ToolbarContainer = _styled["default"].div(_templa
 var ToolbarFooter = exports.ToolbarFooter = _styled["default"].div(_templateObject8 || (_templateObject8 = _taggedTemplateLiteral(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  height: 40px;\n  width: 100%;\n  text-align: center;\n"])));
 var SelectContainer = exports.SelectContainer = _styled["default"].div(_templateObject9 || (_templateObject9 = _taggedTemplateLiteral(["\n  width: 40%;\n"])));
 var ButtonContainer = exports.ButtonContainer = _styled["default"].div(_templateObject0 || (_templateObject0 = _taggedTemplateLiteral(["\n  display: flex;\n  align-items: center;\n  gap: 16px;\n"])));
-var DocumentContainer = exports.DocumentContainer = _styled["default"].div(_templateObject1 || (_templateObject1 = _taggedTemplateLiteral(["\n  display: flex;\n  flex: 1;\n  justify-content: center;\n  align-items: flex-start;\n  width: 100%;\n  min-width: 0;\n  min-height: 240px;\n  height: ", ";\n  padding: 16px;\n  overflow: auto;\n  background-color: ", ";\n  border-radius: 0 0 12px 12px;\n  -webkit-overflow-scrolling: touch;\n  color: ", ";\n\n  canvas {\n    max-width: 100% !important;\n    height: auto !important;\n    box-shadow: 0 4px 8px ", ";\n    margin-bottom: 16px;\n  }\n\n  ", " {\n    padding: 8px;\n    border-radius: 0 0 8px 8px;\n    height: ", ";\n  }\n"])), function (props) {
+var DocumentContainer = exports.DocumentContainer = _styled["default"].div(_templateObject1 || (_templateObject1 = _taggedTemplateLiteral(["\n  display: flex;\n  flex: 1;\n  justify-content: center;\n  align-items: flex-start;\n  width: 100%;\n  min-width: 0;\n  min-height: 240px;\n  height: ", ";\n  padding: 16px;\n  overflow: auto;\n  background-color: ", ";\n  border-radius: 0 0 12px 12px;\n  -webkit-overflow-scrolling: touch;\n  color: ", ";\n\n  canvas {\n    height: auto !important;\n    box-shadow: 0 4px 8px ", ";\n    margin-bottom: 16px;\n  }\n\n  ", " {\n    padding: 8px;\n    border-radius: 0 0 8px 8px;\n    height: ", ";\n  }\n"])), function (props) {
   return resolveViewerHeight(props.height);
 }, function (props) {
   return (0, _theme.resolveThemeTokens)(props.theme).pdfViewerBg;
@@ -102,5 +102,28 @@ var DisplayPage = exports.DisplayPage = _styled["default"].div(_templateObject11
   return (0, _theme.resolveThemeTokens)(props.theme).pageIndicatorBg;
 }, SMALL);
 var LoadingMessage = exports.LoadingMessage = _styled["default"].div(_templateObject12 || (_templateObject12 = _taggedTemplateLiteral(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  width: 100%;\n  height: 100%;\n  min-height: 120px;\n  color: ", ";\n"])), function (props) {
+  return (0, _theme.resolveThemeTokens)(props.theme).textMuted;
+});
+var ViewerWithDocumentList = exports.ViewerWithDocumentList = _styled["default"].div(_templateObject13 || (_templateObject13 = _taggedTemplateLiteral(["\n  display: flex;\n  flex: 1;\n  min-height: 0;\n  min-width: 0;\n  overflow: hidden;\n"])));
+var DocumentListContainer = exports.DocumentListContainer = _styled["default"].div(_templateObject14 || (_templateObject14 = _taggedTemplateLiteral(["\n  flex: 0 0 220px;\n  display: flex;\n  flex-direction: column;\n  background-color: ", ";\n  border-right: 1px solid ", ";\n  overflow-y: auto;\n  overflow-x: hidden;\n\n  ", " {\n    flex: 0 0 160px;\n  }\n"])), function (props) {
+  return (0, _theme.resolveThemeTokens)(props.theme).sidebarBg;
+}, function (props) {
+  return (0, _theme.resolveThemeTokens)(props.theme).sidebarBorder;
+}, MOBILE);
+var DocumentListHeader = exports.DocumentListHeader = _styled["default"].div(_templateObject15 || (_templateObject15 = _taggedTemplateLiteral(["\n  padding: 10px 12px;\n  font-size: 12px;\n  font-weight: 600;\n  text-transform: uppercase;\n  letter-spacing: 0.04em;\n  color: ", ";\n  border-bottom: 1px solid ", ";\n"])), function (props) {
+  return (0, _theme.resolveThemeTokens)(props.theme).textMuted;
+}, function (props) {
+  return (0, _theme.resolveThemeTokens)(props.theme).sidebarBorder;
+});
+var DocumentListItem = exports.DocumentListItem = _styled["default"].button(_templateObject16 || (_templateObject16 = _taggedTemplateLiteral(["\n  display: block;\n  width: 100%;\n  padding: 10px 12px;\n  border: none;\n  border-bottom: 1px solid ", ";\n  background-color: ", ";\n  color: ", ";\n  text-align: left;\n  cursor: pointer;\n  font-size: 13px;\n  line-height: 1.35;\n  word-break: break-word;\n\n  &:hover {\n    background-color: ", ";\n  }\n"])), function (props) {
+  return (0, _theme.resolveThemeTokens)(props.theme).sidebarBorder;
+}, function (props) {
+  return props.active ? (0, _theme.resolveThemeTokens)(props.theme).thumbnailActive : 'transparent';
+}, function (props) {
+  return (0, _theme.resolveThemeTokens)(props.theme).textMuted;
+}, function (props) {
+  return (0, _theme.resolveThemeTokens)(props.theme).thumbnailHover;
+});
+var DisplayDocument = exports.DisplayDocument = _styled["default"].div(_templateObject17 || (_templateObject17 = _taggedTemplateLiteral(["\n  display: flex;\n  align-items: center;\n  gap: 4px;\n  color: ", ";\n  font-size: 13px;\n  max-width: 180px;\n\n  span:first-of-type {\n    overflow: hidden;\n    text-overflow: ellipsis;\n    white-space: nowrap;\n    max-width: 120px;\n  }\n"])), function (props) {
   return (0, _theme.resolveThemeTokens)(props.theme).textMuted;
 });

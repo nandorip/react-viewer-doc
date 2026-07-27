@@ -16,6 +16,12 @@ interface ToolbarProps {
     hideRotate?: boolean;
     hideReset?: boolean;
     hideMovePage?: boolean;
+    hideDocumentNav?: boolean;
+    onPrevDocument?: () => void;
+    onNextDocument?: () => void;
+    documentIndex?: number;
+    documentCount?: number;
+    currentDocumentName?: string;
     pdfPages: number;
     pdfPage: number;
     showSidebar?: boolean;
@@ -24,5 +30,5 @@ interface ToolbarProps {
     theme?: ViewerTheme;
     toolbarActions?: ToolbarActions;
 }
-export declare const Toolbar: ({ onZoomIn, onZoomOut, onRotate, onReset, onNextChange, onPrevPage, onPageChange, onNewPage, onDownload, onPrint, onFullscreen, onToggleSidebar, hideZoom, hideRotate, hideReset, hideMovePage, pdfPages, pdfPage, showSidebar, extra, labels, theme, toolbarActions, }: ToolbarProps) => import("react").JSX.Element;
+export declare const Toolbar: ({ onZoomIn, onZoomOut, onRotate, onReset, onNextChange, onPrevPage, onPageChange, onNewPage, onDownload, onPrint, onFullscreen, onToggleSidebar, hideZoom, hideRotate, hideReset, hideMovePage, hideDocumentNav, onPrevDocument, onNextDocument, documentIndex, documentCount, currentDocumentName, pdfPages, pdfPage, showSidebar, extra, labels, theme, toolbarActions, }: ToolbarProps) => import("react").JSX.Element;
 export {};

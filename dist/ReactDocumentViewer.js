@@ -11,6 +11,11 @@ var _i18n = require("./i18n");
 var _jsxRuntime = require("react/jsx-runtime");
 var ReactDocumentViewer = exports.ReactDocumentViewer = function ReactDocumentViewer(_ref) {
   var document = _ref.document,
+    documents = _ref.documents,
+    documentIndex = _ref.documentIndex,
+    defaultDocumentIndex = _ref.defaultDocumentIndex,
+    onDocumentChange = _ref.onDocumentChange,
+    showDocumentList = _ref.showDocumentList,
     extraToolbar = _ref.extraToolbar,
     renderToolbar = _ref.renderToolbar,
     height = _ref.height,
@@ -31,6 +36,11 @@ var ReactDocumentViewer = exports.ReactDocumentViewer = function ReactDocumentVi
       theme: theme,
       children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_Viewer.Viewer, {
         document: document,
+        documents: documents,
+        documentIndex: documentIndex,
+        defaultDocumentIndex: defaultDocumentIndex,
+        onDocumentChange: onDocumentChange,
+        showDocumentList: showDocumentList,
         extraToolbar: extraToolbar,
         renderToolbar: renderToolbar,
         height: height,

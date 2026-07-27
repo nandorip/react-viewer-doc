@@ -9,9 +9,11 @@ var _iconsMaterial = require("@mui/icons-material");
 var _styles = require("../../styles");
 var _ToolbarButton = require("./ToolbarButton");
 var _DisplayPageNumber = require("./DisplayPageNumber");
+var _DisplayDocumentIndex = require("./DisplayDocumentIndex");
 var _i18n = require("../../i18n");
 var _jsxRuntime = require("react/jsx-runtime");
 var Toolbar = exports.Toolbar = function Toolbar(_ref) {
+  var _ref2;
   var onZoomIn = _ref.onZoomIn,
     onZoomOut = _ref.onZoomOut,
     onRotate = _ref.onRotate,
@@ -28,6 +30,14 @@ var Toolbar = exports.Toolbar = function Toolbar(_ref) {
     hideRotate = _ref.hideRotate,
     hideReset = _ref.hideReset,
     hideMovePage = _ref.hideMovePage,
+    hideDocumentNav = _ref.hideDocumentNav,
+    onPrevDocument = _ref.onPrevDocument,
+    onNextDocument = _ref.onNextDocument,
+    _ref$documentIndex = _ref.documentIndex,
+    documentIndex = _ref$documentIndex === void 0 ? 0 : _ref$documentIndex,
+    _ref$documentCount = _ref.documentCount,
+    documentCount = _ref$documentCount === void 0 ? 0 : _ref$documentCount,
+    currentDocumentName = _ref.currentDocumentName,
     pdfPages = _ref.pdfPages,
     pdfPage = _ref.pdfPage,
     showSidebar = _ref.showSidebar,
@@ -71,6 +81,36 @@ var Toolbar = exports.Toolbar = function Toolbar(_ref) {
         })
       }), resolvedExtra && /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
         children: resolvedExtra
+      }), !hideDocumentNav && onPrevDocument && onNextDocument && documentCount > 1 && /*#__PURE__*/(0, _jsxRuntime.jsxs)(_jsxRuntime.Fragment, {
+        children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
+          children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Tooltip, {
+            title: resolvedLabels.prevDocument,
+            describeChild: true,
+            children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
+              icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.NavigateBefore, {}),
+              onClick: onPrevDocument,
+              ariaLabel: resolvedLabels.prevDocument
+            })
+          })
+        }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
+          children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_DisplayDocumentIndex.DisplayDocumentIndex, {
+            index: documentIndex,
+            total: documentCount,
+            fileName: (_ref2 = currentDocumentName !== null && currentDocumentName !== void 0 ? currentDocumentName : resolvedLabels.defaultDocumentName) !== null && _ref2 !== void 0 ? _ref2 : 'document',
+            ariaLabel: resolvedLabels.currentDocument,
+            theme: theme
+          })
+        }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
+          children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Tooltip, {
+            title: resolvedLabels.nextDocument,
+            describeChild: true,
+            children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_ToolbarButton.ToolbarButton, {
+              icon: /*#__PURE__*/(0, _jsxRuntime.jsx)(_iconsMaterial.NavigateNext, {}),
+              onClick: onNextDocument,
+              ariaLabel: resolvedLabels.nextDocument
+            })
+          })
+        })]
       }), !hideZoom && /*#__PURE__*/(0, _jsxRuntime.jsxs)(_jsxRuntime.Fragment, {
         children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Grid, {
           children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_material.Tooltip, {
