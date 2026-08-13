@@ -1,6 +1,6 @@
 {
   "name": "react-viewer-doc",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "React document viewer for PDF and images with pan, zoom, rotate and full i18n support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,6 +17,7 @@
     "start": "webpack serve --mode development",
     "start:dist": "npm run build:lib && webpack serve --mode development --env dist",
     "build": "webpack --mode production",
+    "build:demo": "node scripts/copy-pdf-worker.cjs && webpack --mode production && node scripts/copy-pdf-worker.cjs example/dist",
     "clean": "node scripts/clean-dist.cjs",
     "transpile": "babel src -d dist --extensions \".ts,.tsx\" --ignore \"src/**/*.test.ts\",\"src/**/*.test.tsx\",\"src/**/*.test.js\"",
     "build:types": "tsc --project tsconfig.json",

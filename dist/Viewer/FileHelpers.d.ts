@@ -1,7 +1,8 @@
 import { DocumentData } from '../types';
+export declare const isAllowedDocumentMime: (mime?: string) => boolean;
 export declare const isValidUrl: (url: string) => boolean;
+export declare const isSafeDocumentUri: (url: string) => boolean;
 export declare const resolveOpenableUrl: (url: string) => string | null;
-export declare const escapeHtml: (value: string) => string;
 export declare const FileTypes: {
     pdf: string;
     png: string;

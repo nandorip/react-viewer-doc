@@ -3,14 +3,30 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.revokeBlobUrlWhenClosed = exports.resolveOpenableUrl = exports.resolveExtension = exports.resolveDownloadFileName = exports.isValidUrl = exports.isImageMime = exports.getMimeTypeFromExtension = exports.getMimeTypeFromBase64 = exports.getFileTypeFromFile = exports.getExtension = exports.escapeHtml = exports.downloadFile = exports.buildFileFromBase64 = exports.base64ToBlob = exports.FileTypes = exports.FileExtension = void 0;
+exports.revokeBlobUrlWhenClosed = exports.resolveOpenableUrl = exports.resolveExtension = exports.resolveDownloadFileName = exports.isValidUrl = exports.isSafeDocumentUri = exports.isImageMime = exports.isAllowedDocumentMime = exports.getMimeTypeFromExtension = exports.getMimeTypeFromBase64 = exports.getFileTypeFromFile = exports.getExtension = exports.downloadFile = exports.buildFileFromBase64 = exports.base64ToBlob = exports.FileTypes = exports.FileExtension = void 0;
 /* eslint-disable no-plusplus */
 
+var ALLOWED_URL_PROTOCOLS = ['http:', 'https:', 'blob:', 'data:'];
+var SAFE_DOCUMENT_URI_PROTOCOLS = ['http:', 'https:', 'blob:'];
+var ALLOWED_DOCUMENT_MIMES = new Set(['application/pdf', 'image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml', 'image/tiff', 'image/tif']);
+var isAllowedDocumentMime = exports.isAllowedDocumentMime = function isAllowedDocumentMime(mime) {
+  return Boolean(mime && ALLOWED_DOCUMENT_MIMES.has(mime.toLowerCase()));
+};
 var isValidUrl = exports.isValidUrl = function isValidUrl(url) {
   try {
     var parsed = new URL(url);
-    return ['http:', 'https:', 'blob:', 'data:'].includes(parsed.protocol);
+    return ALLOWED_URL_PROTOCOLS.includes(parsed.protocol);
   } catch (_unused) {
+    return false;
+  }
+};
+var isSafeDocumentUri = exports.isSafeDocumentUri = function isSafeDocumentUri(url) {
+  if (!url) return false;
+  try {
+    var base = typeof window !== 'undefined' ? window.location.href : 'https://invalid.local/';
+    var parsed = new URL(url, base);
+    return SAFE_DOCUMENT_URI_PROTOCOLS.includes(parsed.protocol);
+  } catch (_unused2) {
     return false;
   }
 };
@@ -19,15 +35,13 @@ var resolveOpenableUrl = exports.resolveOpenableUrl = function resolveOpenableUr
   if (isValidUrl(url)) return url;
   try {
     if (typeof window !== 'undefined') {
-      return new URL(url, window.location.href).href;
+      var resolved = new URL(url, window.location.href).href;
+      return isValidUrl(resolved) ? resolved : null;
     }
-  } catch (_unused2) {
+  } catch (_unused3) {
     return null;
   }
   return null;
-};
-var escapeHtml = exports.escapeHtml = function escapeHtml(value) {
-  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 };
 var FileTypes = exports.FileTypes = {
   pdf: 'application/pdf',
@@ -41,7 +55,7 @@ var FileTypes = exports.FileTypes = {
   tif: 'image/tiff',
   csv: 'text/csv'
 };
-var IMAGE_BASE64_PREFIXES = ['/', 'i', 'R', 'U', 'P', 'S', 'T'];
+var IMAGE_BASE64_PREFIXES = ['/', 'i', 'R', 'U'];
 var isSvgDataUri = function isSvgDataUri(value) {
   return value.includes('image/svg+xml');
 };
@@ -66,11 +80,12 @@ var getFileTypeFromFile = exports.getFileTypeFromFile = function getFileTypeFrom
     var parts = data.split(',');
     if (parts.length > 1) {
       var mimePart = parts[0];
-      if (mimePart.includes('application/pdf')) return FileExtension.PDF;
-      if (isSvgDataUri(mimePart) || isTiffDataUri(mimePart) || mimePart.includes('image/')) {
+      var mime = mimePart.slice(5).split(';')[0].trim().toLowerCase();
+      if (mime === 'application/pdf') return FileExtension.PDF;
+      if (isAllowedDocumentMime(mime) && (isSvgDataUri(mimePart) || isTiffDataUri(mimePart) || mime.startsWith('image/'))) {
         return FileExtension.IMAGE;
       }
-      content = parts[1];
+      return FileExtension.NONE;
     }
   }
   var trimmed = content.trim();
@@ -86,7 +101,10 @@ var getFileTypeFromFile = exports.getFileTypeFromFile = function getFileTypeFrom
 };
 var getMimeTypeFromBase64 = exports.getMimeTypeFromBase64 = function getMimeTypeFromBase64(base64) {
   if (base64.startsWith('data:')) {
-    return base64.split(';')[0].split(':')[1];
+    var _base64$split$0$split;
+    var mime = (_base64$split$0$split = base64.split(';')[0].split(':')[1]) === null || _base64$split$0$split === void 0 ? void 0 : _base64$split$0$split.trim().toLowerCase();
+    if (isAllowedDocumentMime(mime)) return mime;
+    return 'application/octet-stream';
   }
   var content = base64.trim();
   if (content.startsWith('JVBERi')) return 'application/pdf';
@@ -123,7 +141,7 @@ var base64ToBlob = exports.base64ToBlob = function base64ToBlob(base64, mimeType
     return new Blob([byteArray], {
       type: mimeType
     });
-  } catch (_unused3) {
+  } catch (_unused4) {
     return null;
   }
 };
@@ -135,7 +153,7 @@ var getExtension = exports.getExtension = function getExtension(file) {
     if (file.includes('://')) {
       path = new URL(file).pathname;
     }
-  } catch (_unused4) {
+  } catch (_unused5) {
     path = file;
   }
   var pathWithoutQuery = path.split('?')[0];

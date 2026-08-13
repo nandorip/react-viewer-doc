@@ -30,8 +30,13 @@ var ReactDocumentViewer = exports.ReactDocumentViewer = function ReactDocumentVi
   var resolvedLabels = (0, _react.useMemo)(function () {
     return (0, _i18n.resolveLabels)(locale, labels);
   }, [locale, labels]);
+  var errorResetKey = [document === null || document === void 0 ? void 0 : document.id, document === null || document === void 0 ? void 0 : document.fileName, document === null || document === void 0 ? void 0 : document.fileUri, document === null || document === void 0 ? void 0 : document.fileData, documents === null || documents === void 0 ? void 0 : documents.map(function (item) {
+    var _item$id;
+    return (_item$id = item.id) !== null && _item$id !== void 0 ? _item$id : item.fileName;
+  }).join('|'), documentIndex].join('::');
   return /*#__PURE__*/(0, _jsxRuntime.jsx)(_components.ErrorBoundary, {
     labels: resolvedLabels,
+    resetKey: errorResetKey,
     children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_components.Container, {
       theme: theme,
       children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_Viewer.Viewer, {

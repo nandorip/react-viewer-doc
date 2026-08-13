@@ -514,7 +514,7 @@ describe('Viewer', () => {
     expect(screen.getByTestId('document-list')).toBeInTheDocument();
     expect(screen.getByAltText('first.jpg')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /Current document: second.jpg/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'second.jpg' }));
     expect(screen.getByAltText('second.jpg')).toBeInTheDocument();
     expect(onDocumentChange).toHaveBeenCalledWith(1, documents[1]);
   });

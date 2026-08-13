@@ -31,7 +31,7 @@ export const DocumentList = ({
         active={index === activeIndex}
         theme={theme}
         onClick={() => onSelect(index)}
-        aria-label={`${labels?.currentDocument || 'Current document'}: ${doc.fileName}`}
+        aria-label={doc.fileName}
         aria-current={index === activeIndex ? 'true' : undefined}
       >
         {doc.fileName}

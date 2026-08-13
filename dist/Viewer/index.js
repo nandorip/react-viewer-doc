@@ -101,7 +101,10 @@ var Viewer = exports.Viewer = function Viewer(_ref) {
     theme: theme,
     height: height
   });
-  return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_jsxRuntime.Fragment, {
+  return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_styles.ViewerRoot, {
+    ref: actions.attachViewerRootRef,
+    tabIndex: 0,
+    "data-testid": "viewer-root",
     children: [showToolbar && (renderToolbar ? renderToolbar(toolbarActions) : /*#__PURE__*/(0, _jsxRuntime.jsx)(_components.Toolbar, {
       onRotate: actions.rotate,
       onZoomIn: actions.zoomIn,

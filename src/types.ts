@@ -103,6 +103,7 @@ export interface ViewerCoreActions {
   toggleSidebar: () => void;
   handleRetry: () => void;
   attachViewerContainerRef: (el: HTMLDivElement | null) => void;
+  attachViewerRootRef: (el: HTMLDivElement | null) => void;
   onPdfLoadSuccess: (data: { numPages: number }) => void;
   onPdfLoadError: (err: Error) => void;
   onThumbnailLoadError: (err: Error) => void;

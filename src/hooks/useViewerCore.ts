@@ -9,6 +9,7 @@ import {
   resolveOpenableUrl,
   resolveDownloadFileName,
   revokeBlobUrlWhenClosed,
+  isSafeDocumentUri,
 } from '../Viewer/FileHelpers';
 import { isTiffMime } from '../Viewer/TiffHelpers';
 import { useElementWidth } from './useElementWidth';
@@ -153,12 +154,20 @@ export function useViewerCore(input: ViewerCoreInput): ViewerCoreResult {
     setState(prev => ({ ...prev, pageNumber: page }));
   }, []);
 
+  useEffect(() => {
+    if (totalPages > 0 && pageNumberRef.current > totalPages) {
+      setState(prev => ({ ...prev, pageNumber: Math.min(prev.pageNumber, totalPages) }));
+    }
+  }, [totalPages]);
+
   const onPan = useCallback((x: number, y: number) => {
     setState(prev => ({ ...prev, dx: x, dy: y }));
   }, []);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const removeWheelListenerRef = useRef<(() => void) | null>(null);
+  const removeKeyListenerRef = useRef<(() => void) | null>(null);
   const { ref: measureContainerRef, width: containerWidth } = useElementWidth<HTMLDivElement>();
 
   const attachContainerRef = useCallback((element: HTMLDivElement | null) => {
@@ -186,20 +195,13 @@ export function useViewerCore(input: ViewerCoreInput): ViewerCoreResult {
     measureContainerRef(element);
   }, [attachContainerRef, measureContainerRef]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return;
-    const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
-    const handleViewportChange = (event: MediaQueryListEvent | MediaQueryList) => {
-      if (event.matches) {
-        setState(prev => ({ ...prev, showSidebar: false }));
-      }
-    };
-    handleViewportChange(mediaQuery);
-    mediaQuery.addEventListener('change', handleViewportChange);
-    return () => mediaQuery.removeEventListener('change', handleViewportChange);
-  }, []);
+  const attachViewerRootRef = useCallback((element: HTMLDivElement | null) => {
+    removeKeyListenerRef.current?.();
+    removeKeyListenerRef.current = null;
+    rootRef.current = element;
 
-  useEffect(() => {
+    if (!element) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isEditableTarget(e.target)) return;
 
@@ -215,22 +217,47 @@ export function useViewerCore(input: ViewerCoreInput): ViewerCoreResult {
 
       if (supportsPaginationRef.current) {
         if (e.key === 'ArrowRight' && pageNumberRef.current < totalPagesRef.current) {
+          e.preventDefault();
           setState(prev => ({ ...prev, pageNumber: prev.pageNumber + 1 }));
         }
         if (e.key === 'ArrowLeft' && pageNumberRef.current > 1) {
+          e.preventDefault();
           setState(prev => ({ ...prev, pageNumber: prev.pageNumber - 1 }));
         }
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      removeWheelListenerRef.current?.();
-    };
+    element.addEventListener('keydown', handleKeyDown);
+    removeKeyListenerRef.current = () => element.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
+    const handleViewportChange = (event: MediaQueryListEvent | MediaQueryList) => {
+      if (event.matches) {
+        setState(prev => ({ ...prev, showSidebar: false }));
+      }
+    };
+    handleViewportChange(mediaQuery);
+    mediaQuery.addEventListener('change', handleViewportChange);
+    return () => mediaQuery.removeEventListener('change', handleViewportChange);
+  }, []);
+
+  useEffect(() => () => {
+    removeWheelListenerRef.current?.();
+    removeKeyListenerRef.current?.();
+  }, []);
+
+  const displayImageUrlRef = useRef<string | undefined>(undefined);
+
   const createOpenableFileUrl = useCallback(() => {
+    if (isTiffMime(fileTypeRef.current)) {
+      const displayUrl = displayImageUrlRef.current;
+      if (!displayUrl) return null;
+      return { url: displayUrl, shouldRevoke: false };
+    }
+
     const fileSelected = fileSelectedRef.current;
     if (!fileSelected) return null;
     if (fileSelected instanceof Blob) {
@@ -245,6 +272,7 @@ export function useViewerCore(input: ViewerCoreInput): ViewerCoreResult {
     const fileUrl = createOpenableFileUrl();
     if (!fileUrl) return;
     const openedWindow = window.open(fileUrl.url, '_blank');
+    if (openedWindow) openedWindow.opener = null;
     if (fileUrl.shouldRevoke) revokeBlobUrlWhenClosed(fileUrl.url, openedWindow);
   }, [createOpenableFileUrl]);
 
@@ -295,7 +323,16 @@ export function useViewerCore(input: ViewerCoreInput): ViewerCoreResult {
   }, [document]);
 
   const toggleFullscreen = useCallback(() => {
-    containerRef.current?.requestFullscreen?.();
+    const target = rootRef.current ?? containerRef.current;
+    if (!target) return;
+
+    const active = globalThis.document.fullscreenElement;
+    if (active && (active === target || target.contains(active))) {
+      void globalThis.document.exitFullscreen?.();
+      return;
+    }
+
+    void target.requestFullscreen?.();
   }, []);
 
   const toggleSidebar = useCallback(() => {
@@ -344,6 +381,7 @@ export function useViewerCore(input: ViewerCoreInput): ViewerCoreResult {
   }, []);
 
   const applyFileFromUrl = useCallback((url: string, fileName?: string): boolean => {
+    if (!isSafeDocumentUri(url)) return false;
     const extension = resolveExtension(url, fileName);
     const type = getMimeTypeFromExtension(extension);
     if (!type) return false;
@@ -399,6 +437,7 @@ export function useViewerCore(input: ViewerCoreInput): ViewerCoreResult {
   }, [state.fileSelected, state.fileType]);
 
   const displayImageUrl = isTiff ? tiffImageUrl : state.imageUrl;
+  displayImageUrlRef.current = displayImageUrl;
 
   const pdfBaseWidth = Math.max(0, containerWidth - VIEWER_HORIZONTAL_PADDING);
   const pdfPageWidth = pdfBaseWidth > 0 ? Math.floor(pdfBaseWidth * state.zoom) : undefined;
@@ -434,6 +473,7 @@ export function useViewerCore(input: ViewerCoreInput): ViewerCoreResult {
     toggleSidebar,
     handleRetry,
     attachViewerContainerRef,
+    attachViewerRootRef,
     onPdfLoadSuccess,
     onPdfLoadError,
     onThumbnailLoadError,
@@ -444,7 +484,7 @@ export function useViewerCore(input: ViewerCoreInput): ViewerCoreResult {
     setPageNumber, zoomIn, zoomOut, rotate, resetViewState,
     nextPage, prevPage, handleDownload, handlePrint,
     handleOpenInNew, toggleFullscreen, toggleSidebar, handleRetry,
-    attachViewerContainerRef, onPdfLoadSuccess, onPdfLoadError,
+    attachViewerContainerRef, attachViewerRootRef, onPdfLoadSuccess, onPdfLoadError,
     onThumbnailLoadError, onPan, onImageLoad, onImageError,
   ]);
 

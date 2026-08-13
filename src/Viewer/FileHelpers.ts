@@ -2,10 +2,38 @@
 
 import { DocumentData } from '../types';
 
+const ALLOWED_URL_PROTOCOLS = ['http:', 'https:', 'blob:', 'data:'] as const;
+const SAFE_DOCUMENT_URI_PROTOCOLS = ['http:', 'https:', 'blob:'] as const;
+
+const ALLOWED_DOCUMENT_MIMES = new Set([
+  'application/pdf',
+  'image/png',
+  'image/jpeg',
+  'image/gif',
+  'image/webp',
+  'image/svg+xml',
+  'image/tiff',
+  'image/tif',
+]);
+
+export const isAllowedDocumentMime = (mime?: string): boolean =>
+  Boolean(mime && ALLOWED_DOCUMENT_MIMES.has(mime.toLowerCase()));
+
 export const isValidUrl = (url: string): boolean => {
   try {
     const parsed = new URL(url);
-    return ['http:', 'https:', 'blob:', 'data:'].includes(parsed.protocol);
+    return (ALLOWED_URL_PROTOCOLS as readonly string[]).includes(parsed.protocol);
+  } catch {
+    return false;
+  }
+};
+
+export const isSafeDocumentUri = (url: string): boolean => {
+  if (!url) return false;
+  try {
+    const base = typeof window !== 'undefined' ? window.location.href : 'https://invalid.local/';
+    const parsed = new URL(url, base);
+    return (SAFE_DOCUMENT_URI_PROTOCOLS as readonly string[]).includes(parsed.protocol);
   } catch {
     return false;
   }
@@ -17,7 +45,8 @@ export const resolveOpenableUrl = (url: string): string | null => {
 
   try {
     if (typeof window !== 'undefined') {
-      return new URL(url, window.location.href).href;
+      const resolved = new URL(url, window.location.href).href;
+      return isValidUrl(resolved) ? resolved : null;
     }
   } catch {
     return null;
@@ -25,14 +54,6 @@ export const resolveOpenableUrl = (url: string): string | null => {
 
   return null;
 };
-
-export const escapeHtml = (value: string): string =>
-  value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
 
 export const FileTypes = {
   pdf: 'application/pdf',
@@ -47,7 +68,7 @@ export const FileTypes = {
   csv: 'text/csv',
 };
 
-const IMAGE_BASE64_PREFIXES = ['/', 'i', 'R', 'U', 'P', 'S', 'T'] as const;
+const IMAGE_BASE64_PREFIXES = ['/', 'i', 'R', 'U'] as const;
 
 const isSvgDataUri = (value: string) => value.includes('image/svg+xml');
 
@@ -74,11 +95,12 @@ export const getFileTypeFromFile = (data: string) => {
     const parts = data.split(',');
     if (parts.length > 1) {
       const mimePart = parts[0];
-      if (mimePart.includes('application/pdf')) return FileExtension.PDF;
-      if (isSvgDataUri(mimePart) || isTiffDataUri(mimePart) || mimePart.includes('image/')) {
+      const mime = mimePart.slice(5).split(';')[0].trim().toLowerCase();
+      if (mime === 'application/pdf') return FileExtension.PDF;
+      if (isAllowedDocumentMime(mime) && (isSvgDataUri(mimePart) || isTiffDataUri(mimePart) || mime.startsWith('image/'))) {
         return FileExtension.IMAGE;
       }
-      content = parts[1];
+      return FileExtension.NONE;
     }
   }
 
@@ -100,7 +122,9 @@ export const getFileTypeFromFile = (data: string) => {
 
 export const getMimeTypeFromBase64 = (base64: string): string => {
   if (base64.startsWith('data:')) {
-    return base64.split(';')[0].split(':')[1];
+    const mime = base64.split(';')[0].split(':')[1]?.trim().toLowerCase();
+    if (isAllowedDocumentMime(mime)) return mime;
+    return 'application/octet-stream';
   }
 
   const content = base64.trim();

@@ -48,33 +48,40 @@ export const useTiffImage = ({
 
       setLoading(true);
 
-      const decoded = await decodeTiff(source);
-      if (cancelled) return;
+      try {
+        const decoded = await decodeTiff(source);
+        if (cancelled) return;
 
-      if (!decoded) {
+        if (!decoded) {
+          setLoading(false);
+          onErrorRef.current?.('Unable to decode TIFF image');
+          return;
+        }
+
+        decodedRef.current = decoded;
+        setPageCount(decoded.pageCount);
+
+        const safePage = Math.min(Math.max(pageNumber, 1), decoded.pageCount);
+        const pngBlob = await decoded.renderPage(safePage - 1);
+        if (cancelled) return;
+
+        if (!pngBlob) {
+          setLoading(false);
+          onErrorRef.current?.('Unable to render TIFF page');
+          return;
+        }
+
+        const url = URL.createObjectURL(pngBlob);
+        objectUrlRef.current = url;
+        setImageUrl(url);
         setLoading(false);
+        onLoadRef.current?.();
+      } catch {
+        if (cancelled) return;
+        setLoading(false);
+        setImageUrl(undefined);
         onErrorRef.current?.('Unable to decode TIFF image');
-        return;
       }
-
-      decodedRef.current = decoded;
-      setPageCount(decoded.pageCount);
-
-      const safePage = Math.min(Math.max(pageNumber, 1), decoded.pageCount);
-      const pngBlob = await decoded.renderPage(safePage - 1);
-      if (cancelled) return;
-
-      if (!pngBlob) {
-        setLoading(false);
-        onErrorRef.current?.('Unable to render TIFF page');
-        return;
-      }
-
-      const url = URL.createObjectURL(pngBlob);
-      objectUrlRef.current = url;
-      setImageUrl(url);
-      setLoading(false);
-      onLoadRef.current?.();
     };
 
     loadTiff();
@@ -98,20 +105,27 @@ export const useTiffImage = ({
       }
 
       setLoading(true);
-      const safePage = Math.min(Math.max(pageNumber, 1), decoded.pageCount);
-      const pngBlob = await decoded.renderPage(safePage - 1);
-      if (cancelled) return;
+      try {
+        const safePage = Math.min(Math.max(pageNumber, 1), decoded.pageCount);
+        const pngBlob = await decoded.renderPage(safePage - 1);
+        if (cancelled) return;
 
-      if (!pngBlob) {
+        if (!pngBlob) {
+          setLoading(false);
+          onErrorRef.current?.('Unable to render TIFF page');
+          return;
+        }
+
+        const url = URL.createObjectURL(pngBlob);
+        objectUrlRef.current = url;
+        setImageUrl(url);
         setLoading(false);
+      } catch {
+        if (cancelled) return;
+        setLoading(false);
+        setImageUrl(undefined);
         onErrorRef.current?.('Unable to render TIFF page');
-        return;
       }
-
-      const url = URL.createObjectURL(pngBlob);
-      objectUrlRef.current = url;
-      setImageUrl(url);
-      setLoading(false);
     };
 
     if (decodedRef.current) {

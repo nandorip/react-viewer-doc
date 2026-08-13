@@ -1,18 +1,25 @@
 # react-viewer-doc
 
+[![npm](https://img.shields.io/npm/v/react-viewer-doc.svg)](https://www.npmjs.com/package/react-viewer-doc)
+[![CI](https://github.com/nandorip/react-document-viewer/actions/workflows/ci.yml/badge.svg)](https://github.com/nandorip/react-document-viewer/actions/workflows/ci.yml)
+[![license](https://img.shields.io/npm/l/react-viewer-doc.svg)](./LICENSE)
+
 A versatile React component for viewing documents with support for PDF, images (JPG, PNG, GIF, WebP, TIFF), and SVG files.
 
-## ✨ Features
+**Demo:** [nandorip.github.io/react-document-viewer](https://nandorip.github.io/react-document-viewer/)
 
-- 📄 **PDF Support** — View PDFs from URLs or base64 with full navigation
-- 🖼️ **Image Support** — JPG, PNG, GIF, WebP, TIFF, SVG with pan, zoom, rotate
-- 🔗 **Flexible Input** — `fileUri` (URL/data URI) or `fileData` (base64)
-- 🛠️ **Toolbar Actions** — Download, Print, Fullscreen, Thumbnails
-- 🌐 **i18n** — Built-in locales (en-US, pt-BR, es-ES) + custom labels
-- ⌨️ **Keyboard Shortcuts** — Ctrl +/- for zoom, arrows for PDF pages
-- 🎨 **MUI Interface** — Modern Material Design components with light/dark theme
-- 🧩 **Headless API** — `useViewerCore` hook + `ViewerCanvas` for full UI control
-- 💻 **TypeScript** — Full type definitions included
+## Features
+
+- **PDF Support** — View PDFs from URLs or base64 with full navigation
+- **Image Support** — JPG, PNG, GIF, WebP, TIFF, SVG with pan, zoom, rotate
+- **Flexible Input** — `fileUri` (URL/data URI) or `fileData` (base64)
+- **Multiple documents** — Sidebar list plus previous/next toolbar navigation
+- **Toolbar Actions** — Download, Print, Fullscreen, Thumbnails
+- **i18n** — Built-in locales (en-US, pt-BR, es-ES) + custom labels
+- **Keyboard Shortcuts** — Ctrl +/- for zoom, arrows for PDF/TIFF pages (viewer must be focused)
+- **MUI Interface** — Modern Material Design components with light/dark theme
+- **Headless API** — `useViewerCore` hook + `ViewerCanvas` for full UI control
+- **TypeScript** — Full type definitions included
 
 ## Quick Start
 
@@ -148,8 +155,8 @@ function FileUploader() {
 | `document.fileUri` | `string` | — | URL or Data URI |
 | `document.fileName` | `string` | — | File name for extension detection |
 | `documents` | `DocumentData[]` | — | List of documents to browse |
-| `documentIndex` | `number` | `0` | Controlled active document index |
-| `defaultDocumentIndex` | `number` | `0` | Initial index when uncontrolled |
+| `documentIndex` | `number` | — | Controlled active index. Omit for uncontrolled mode. A non-empty `documents` array takes precedence over `document`. |
+| `defaultDocumentIndex` | `number` | `0` | Initial index when `documentIndex` is omitted |
 | `onDocumentChange` | `(index, doc) => void` | — | Fired when the active document changes |
 | `showDocumentList` | `boolean` | `true` | Sidebar list when multiple documents |
 | `height` | `string \| number` | `clamp(280px, 60vh, 600px)` | Viewer height |
@@ -175,7 +182,7 @@ function FileUploader() {
 />
 ```
 
-`extraToolbar` accepts a React node or a function that receives `ToolbarActions` (`zoomIn`, `zoomOut`, `rotate`, `reset`, `nextPage`, `prevPage`, `setPageNumber`, `download`, `print`, `openInNew`, `toggleFullscreen`, `toggleSidebar`, `getZoom`, `getPageNumber`, `getTotalPages`, `isPdf`).
+`extraToolbar` accepts a React node or a function that receives `ToolbarActions` (`zoomIn`, `zoomOut`, `rotate`, `reset`, `nextPage`, `prevPage`, `setPageNumber`, `download`, `print`, `openInNew`, `toggleFullscreen`, `toggleSidebar`, `getZoom`, `getPageNumber`, `getTotalPages`, `isPdf`, plus optional `nextDocument` / `prevDocument` / `setDocumentIndex` / `getDocumentIndex` / `getDocumentCount` / `getCurrentDocument` when more than one document is loaded).
 
 ### Replace the entire toolbar
 
@@ -231,7 +238,7 @@ function MyViewer({ doc }) {
 
 ## PDF Worker
 
-By default, the PDF.js worker is loaded from unpkg CDN. For production apps, host the worker locally and pass its URL:
+By default, the PDF.js worker is loaded from the unpkg CDN. Host the worker locally in production (CSP, offline, and supply-chain control) and pass its URL:
 
 ```tsx
 <ReactDocumentViewer
@@ -240,7 +247,7 @@ By default, the PDF.js worker is loaded from unpkg CDN. For production apps, hos
 />
 ```
 
-Copy the worker from `node_modules/pdfjs-dist/build/pdf.worker.min.mjs` to your public folder.
+Copy the worker from `node_modules/pdfjs-dist/build/pdf.worker.min.mjs` to your public folder. The demo (`npm run dev`) already copies it to `example/public/pdf.worker.min.mjs`.
 
 ## Labels
 
@@ -264,12 +271,14 @@ Copy the worker from `node_modules/pdfjs-dist/build/pdf.worker.min.mjs` to your 
 
 ## Keyboard Shortcuts
 
+Shortcuts apply only while the viewer is focused (click inside the viewer or tab to it).
+
 | Shortcut | Action |
 |----------|--------|
 | `Ctrl` + `+` | Zoom In |
 | `Ctrl` + `-` | Zoom Out |
-| `→` | Next PDF Page |
-| `←` | Previous PDF Page |
+| `→` | Next PDF / TIFF Page |
+| `←` | Previous PDF / TIFF Page |
 
 ## Development
 
@@ -294,6 +303,10 @@ Requires ES2020+ features. Tested on:
 - Firefox 88+
 - Safari 14+
 - Edge 90+
+
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md).
 
 ## License
 

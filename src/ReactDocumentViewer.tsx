@@ -26,8 +26,17 @@ export const ReactDocumentViewer = ({
     [locale, labels],
   );
 
+  const errorResetKey = [
+    document?.id,
+    document?.fileName,
+    document?.fileUri,
+    document?.fileData,
+    documents?.map((item) => item.id ?? item.fileName).join('|'),
+    documentIndex,
+  ].join('::');
+
   return (
-    <ErrorBoundary labels={resolvedLabels}>
+    <ErrorBoundary labels={resolvedLabels} resetKey={errorResetKey}>
       <Container theme={theme}>
         <Viewer
           document={document}

@@ -2,6 +2,12 @@ import React, { useState, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ReactDocumentViewer, useViewerCore, ViewerCanvas } from 'react-viewer-doc';
 
+const PDF_WORKER_SRC = (() => {
+  const pathName = window.location.pathname;
+  const base = pathName.endsWith('/') ? pathName : pathName.replace(/\/[^/]*$/, '/');
+  return `${window.location.origin}${base}pdf.worker.min.mjs`;
+})();
+
 const SAMPLES = [
   {
     id: 'pdf',
@@ -137,7 +143,7 @@ function HeadlessViewer({ doc, dark, height, labels, t }) {
   const viewer = useViewerCore({
     document: doc,
     theme: dark ? 'dark' : 'light',
-    pdfWorkerSrc: undefined,
+    pdfWorkerSrc: PDF_WORKER_SRC,
   });
 
   return (
@@ -295,7 +301,7 @@ function App() {
               fontSize: 11, fontWeight: 600,
               background: t.accentLight, color: t.accent,
               padding: '3px 10px', borderRadius: 20,
-            }}>v0.3.0</span>
+            }}>v0.3.1</span>
             <button onClick={toggle} style={{
               padding: '8px 14px', borderRadius: 8, border: `1px solid ${t.border}`,
               background: t.surface, color: t.text, cursor: 'pointer',
@@ -500,6 +506,7 @@ function App() {
               documents={documents}
               documentIndex={documentIndex}
               onDocumentChange={handleDocumentChange}
+              pdfWorkerSrc={PDF_WORKER_SRC}
               theme={dark ? 'dark' : 'light'}
               locale="en-US"
               height="clamp(340px, 68vh, 720px)"
@@ -538,6 +545,7 @@ function App() {
               document={doc}
               theme={dark ? 'dark' : 'light'}
               locale="en-US"
+              pdfWorkerSrc={PDF_WORKER_SRC}
               height="clamp(340px, 68vh, 720px)"
               extraToolbar={(actions) => (
                 <>
@@ -564,6 +572,7 @@ function App() {
               document={doc}
               theme={dark ? 'dark' : 'light'}
               locale="en-US"
+              pdfWorkerSrc={PDF_WORKER_SRC}
               height="clamp(340px, 68vh, 720px)"
               renderToolbar={(actions) => (
                 <div style={{

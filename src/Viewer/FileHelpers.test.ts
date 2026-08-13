@@ -4,8 +4,8 @@ import {
   getMimeTypeFromBase64,
   base64ToBlob,
   FileExtension,
-  escapeHtml,
   resolveOpenableUrl,
+  isSafeDocumentUri,
   resolveExtension,
   getMimeTypeFromExtension,
   resolveDownloadFileName,
@@ -57,6 +57,10 @@ describe('FileHelpers', () => {
     it('should return NONE for empty data', () => {
       expect(getFileTypeFromFile('')).toBe(FileExtension.NONE);
     });
+
+    it('should not treat HTML data URIs as images', () => {
+      expect(getFileTypeFromFile('data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==')).toBe(FileExtension.NONE);
+    });
   });
 
   describe('getMimeTypeFromBase64', () => {
@@ -73,7 +77,11 @@ describe('FileHelpers', () => {
 
     it('should extract from data URI', () => {
       expect(getMimeTypeFromBase64('data:image/png;base64,xxx')).toBe('image/png');
-      expect(getMimeTypeFromBase64('data:application/pdf;base64,xxx')).toBe('application/pdf');
+      expect(getMimeTypeFromBase64('data:application/pdf;base64,JVBERi0=')).toBe('application/pdf');
+    });
+
+    it('should reject non-document data URI mime types', () => {
+      expect(getMimeTypeFromBase64('data:text/html;base64,PHNjcmlwdD4=')).toBe('application/octet-stream');
     });
   });
 
@@ -129,11 +137,19 @@ describe('FileHelpers', () => {
     it('should resolve relative URLs against the current location', () => {
       expect(resolveOpenableUrl('/assets/doc.pdf')).toBe(`${window.location.origin}/assets/doc.pdf`);
     });
+
+    it('should reject javascript and other unsafe protocols', () => {
+      expect(resolveOpenableUrl('javascript:alert(1)')).toBeNull();
+      expect(resolveOpenableUrl('vbscript:alert(1)')).toBeNull();
+      expect(resolveOpenableUrl('file:///etc/passwd')).toBeNull();
+    });
   });
 
-  describe('escapeHtml', () => {
-    it('should escape HTML special characters', () => {
-      expect(escapeHtml('<script>"xss"&</script>')).toBe('&lt;script&gt;&quot;xss&quot;&amp;&lt;/script&gt;');
+  describe('isSafeDocumentUri', () => {
+    it('should accept http(s) and blob URIs and reject javascript', () => {
+      expect(isSafeDocumentUri('https://example.com/a.pdf')).toBe(true);
+      expect(isSafeDocumentUri('/assets/doc.pdf')).toBe(true);
+      expect(isSafeDocumentUri('javascript:alert(1)')).toBe(false);
     });
   });
 
@@ -180,6 +196,10 @@ describe('FileHelpers', () => {
       const result = buildFileFromBase64('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==');
       expect(result).not.toBeNull();
       expect(result?.mime).toBe('image/png');
+    });
+
+    it('should reject HTML data URIs', () => {
+      expect(buildFileFromBase64('data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==')).toBeNull();
     });
   });
 });

@@ -43,22 +43,30 @@ export interface DecodedTiff {
 }
 
 export const decodeTiff = async (source: Blob | string): Promise<DecodedTiff | null> => {
-  const buffer = await readSourceAsArrayBuffer(source);
-  if (!buffer) return null;
+  try {
+    const buffer = await readSourceAsArrayBuffer(source);
+    if (!buffer) return null;
 
-  const ifds = UTIF.decode(buffer);
-  if (!ifds.length) return null;
+    const ifds = UTIF.decode(buffer);
+    if (!ifds.length) return null;
 
-  ifds.forEach(ifd => UTIF.decodeImage(buffer, ifd));
+    ifds.forEach(ifd => UTIF.decodeImage(buffer, ifd));
 
-  return {
-    pageCount: ifds.length,
-    renderPage: async (pageIndex: number) => {
-      const ifd = ifds[pageIndex];
-      if (!ifd) return null;
+    return {
+      pageCount: ifds.length,
+      renderPage: async (pageIndex: number) => {
+        try {
+          const ifd = ifds[pageIndex];
+          if (!ifd) return null;
 
-      const rgba = UTIF.toRGBA8(ifd);
-      return rgbaToPngBlob(rgba, ifd.width, ifd.height);
-    },
-  };
+          const rgba = UTIF.toRGBA8(ifd);
+          return rgbaToPngBlob(rgba, ifd.width, ifd.height);
+        } catch {
+          return null;
+        }
+      },
+    };
+  } catch {
+    return null;
+  }
 };

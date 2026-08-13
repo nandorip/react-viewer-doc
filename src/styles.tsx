@@ -32,6 +32,15 @@ export const ContainerDiv = styled.div<ThemedProps>`
   }
 `;
 
+export const ViewerRoot = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  outline: none;
+`;
+
 export const MainContent = styled.div`
   display: flex;
   flex: 1;
@@ -88,7 +97,10 @@ export const SidebarContainer = styled.div<{ visible: boolean } & ThemedProps>`
   }
 `;
 
-export const ThumbnailItem = styled.div<{ active: boolean } & ThemedProps>`
+export const ThumbnailItem = styled.button<{ active: boolean } & ThemedProps>`
+  appearance: none;
+  font: inherit;
+  border: none;
   padding: 8px;
   cursor: pointer;
   background-color: ${props =>

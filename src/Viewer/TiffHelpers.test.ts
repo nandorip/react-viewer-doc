@@ -36,4 +36,17 @@ describe('TiffHelpers', () => {
     expect(typeof decoded?.renderPage).toBe('function');
     expect(mockedUtif.decodeImage).toHaveBeenCalled();
   });
+
+  it('returns null when UTIF throws on malformed bytes', async () => {
+    const mockedUtif = UTIF as jest.Mocked<typeof UTIF>;
+    mockedUtif.decode.mockImplementation(() => {
+      throw new Error('bad tiff');
+    });
+    jest
+      .spyOn(TiffHelpers, 'readSourceAsArrayBuffer')
+      .mockResolvedValue(new ArrayBuffer(8));
+
+    const decoded = await TiffHelpers.decodeTiff(new Blob(['bad'], { type: 'image/tiff' }));
+    expect(decoded).toBeNull();
+  });
 });

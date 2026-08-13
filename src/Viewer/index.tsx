@@ -5,7 +5,7 @@ import { ViewerCanvas } from '../components/ViewerCanvas';
 import { useDocumentList } from '../hooks/useDocumentList';
 import { useViewerCore } from '../hooks/useViewerCore';
 import { ViewerProps, ToolbarActions } from '../types';
-import { ViewerWithDocumentList } from '../styles';
+import { ViewerRoot, ViewerWithDocumentList } from '../styles';
 import { FileTypes } from './FileHelpers';
 
 export const Viewer = ({
@@ -97,7 +97,7 @@ export const Viewer = ({
   );
 
   return (
-    <>
+    <ViewerRoot ref={actions.attachViewerRootRef} tabIndex={0} data-testid="viewer-root">
       {showToolbar && (renderToolbar ? (
         renderToolbar(toolbarActions)
       ) : (
@@ -144,6 +144,6 @@ export const Viewer = ({
       ) : (
         viewerCanvas
       )}
-    </>
+    </ViewerRoot>
   );
 };

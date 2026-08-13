@@ -85,7 +85,9 @@ export const Toolbar = ({
   toolbarActions,
 }: ToolbarProps) => {
   const resolvedLabels = labels ?? resolveLabels(DEFAULT_LOCALE);
-  const resolvedExtra = typeof extra === 'function' ? extra(toolbarActions!) : extra;
+  const resolvedExtra = typeof extra === 'function'
+    ? (toolbarActions ? extra(toolbarActions) : null)
+    : extra;
 
   return (
   <ToolbarContainer theme={theme}>

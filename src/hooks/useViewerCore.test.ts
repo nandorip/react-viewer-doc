@@ -153,6 +153,34 @@ describe('useViewerCore', () => {
     expect(result.current.state.theme).toBe('dark');
   });
 
+  it('rejects javascript fileUri even when fileName looks like a PDF', () => {
+    const onError = jest.fn();
+    const { result } = renderHook(() =>
+      useViewerCore({
+        document: {
+          fileName: 'invoice.pdf',
+          fileUri: 'javascript:alert(document.domain)',
+        },
+        labels: { unsupportedFile: 'Unsupported file type' },
+        onError,
+      }),
+    );
+
+    expect(result.current.state.fileSelected).toBeNull();
+    expect(result.current.state.error).toBe('Unsupported file type');
+    expect(onError).toHaveBeenCalledWith('Unsupported file type');
+  });
+
+  it('clamps page number after total pages become known', () => {
+    const { result } = renderHook(() => useViewerCore({ document: pdfDocument }));
+
+    act(() => result.current.actions.setPageNumber(9));
+    expect(result.current.state.pageNumber).toBe(9);
+
+    act(() => result.current.actions.onPdfLoadSuccess({ numPages: 3 }));
+    expect(result.current.state.pageNumber).toBe(3);
+  });
+
   it('retries loading after handleRetry', () => {
     const onError = jest.fn();
     const { result } = renderHook(() =>

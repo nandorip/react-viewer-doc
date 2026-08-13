@@ -22,16 +22,19 @@ export const LazyPdfThumbnail = ({
   onSelect,
   onLoadError,
 }: LazyPdfThumbnailProps) => {
-  const { ref, isIntersecting } = useIntersectionObserver<HTMLDivElement>({
+  const { ref, isIntersecting } = useIntersectionObserver<HTMLButtonElement>({
     rootMargin: '160px',
   });
 
   return (
     <ThumbnailItem
       ref={ref}
+      type="button"
       active={active}
       theme={theme}
       onClick={() => onSelect(pageNumber)}
+      aria-label={`Page ${pageNumber}`}
+      aria-current={active ? 'page' : undefined}
     >
       {isIntersecting ? (
         <Page

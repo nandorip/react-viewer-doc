@@ -47,7 +47,7 @@ var Toolbar = exports.Toolbar = function Toolbar(_ref) {
     theme = _ref$theme === void 0 ? 'light' : _ref$theme,
     toolbarActions = _ref.toolbarActions;
   var resolvedLabels = labels !== null && labels !== void 0 ? labels : (0, _i18n.resolveLabels)(_i18n.DEFAULT_LOCALE);
-  var resolvedExtra = typeof extra === 'function' ? extra(toolbarActions) : extra;
+  var resolvedExtra = typeof extra === 'function' ? toolbarActions ? extra(toolbarActions) : null : extra;
   return /*#__PURE__*/(0, _jsxRuntime.jsx)(_styles.ToolbarContainer, {
     theme: theme,
     children: /*#__PURE__*/(0, _jsxRuntime.jsxs)(_material.Grid, {
