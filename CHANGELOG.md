@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.4.0] - 2026-08-15
+
+Published as `react-viewer-doc@0.4.0`. Install with `npm install react-viewer-doc`.
+
+### Changed
+
+- Public component is now `ReactViewerDoc`. `ReactDocumentViewer` remains as a deprecated alias.
+- Removed `react-image-pan-zoom-rotate` in favor of a small built-in pan/zoom layer.
+- Replaced unmaintained `utif` with the `utif2` fork for TIFF decode.
+- Image and SVG "open in new tab" now render as `<img>` in a blank document (same as print), so SVG scripts do not execute.
+- Demo webpack-dev-server binds to `127.0.0.1` instead of `0.0.0.0`.
+- Pinned patched versions of transitive dev dependencies (`brace-expansion`, `nanoid`, `postcss`, `fast-uri`, `js-yaml`, `body-parser`, `uuid`).
+
 ## [0.3.1] - 2026-08-13
 
 First release of the `react-viewer-doc` package name (the GitHub repo remains `react-document-viewer`).

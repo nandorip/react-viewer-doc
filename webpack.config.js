@@ -50,11 +50,8 @@ module.exports = (env = {}) => {
         },
       ],
       port: 3001,
-      host: '0.0.0.0',
-      allowedHosts: 'all',
-      client: {
-        webSocketURL: 'ws://localhost:3001/ws',
-      },
+      host: '127.0.0.1',
+      allowedHosts: ['localhost', '127.0.0.1'],
     },
   };
 };

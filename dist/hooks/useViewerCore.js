@@ -339,13 +339,6 @@ function useViewerCore(input) {
     };
     return null;
   }, []);
-  var handleOpenInNew = (0, _react.useCallback)(function () {
-    var fileUrl = createOpenableFileUrl();
-    if (!fileUrl) return;
-    var openedWindow = window.open(fileUrl.url, '_blank');
-    if (openedWindow) openedWindow.opener = null;
-    if (fileUrl.shouldRevoke) (0, _FileHelpers.revokeBlobUrlWhenClosed)(fileUrl.url, openedWindow);
-  }, [createOpenableFileUrl]);
   var writeImagePrintDocument = (0, _react.useCallback)(function (printWindow, imageUrl) {
     var printDoc = printWindow.document;
     printDoc.open();
@@ -361,6 +354,24 @@ function useViewerCore(input) {
     printDoc.body.appendChild(img);
     return img;
   }, [document, labels]);
+  var handleOpenInNew = (0, _react.useCallback)(function () {
+    var fileUrl = createOpenableFileUrl();
+    if (!fileUrl) return;
+    if (fileTypeRef.current === _FileHelpers.FileTypes.pdf) {
+      var _openedWindow = window.open(fileUrl.url, '_blank');
+      if (_openedWindow) _openedWindow.opener = null;
+      if (fileUrl.shouldRevoke) (0, _FileHelpers.revokeBlobUrlWhenClosed)(fileUrl.url, _openedWindow);
+      return;
+    }
+    var openedWindow = window.open('', '_blank');
+    if (openedWindow) {
+      openedWindow.opener = null;
+      writeImagePrintDocument(openedWindow, fileUrl.url);
+      if (fileUrl.shouldRevoke) (0, _FileHelpers.revokeBlobUrlWhenClosed)(fileUrl.url, openedWindow);
+      return;
+    }
+    if (fileUrl.shouldRevoke) URL.revokeObjectURL(fileUrl.url);
+  }, [createOpenableFileUrl, writeImagePrintDocument]);
   var handlePrint = (0, _react.useCallback)(function () {
     var fileUrl = createOpenableFileUrl();
     if (!fileUrl) return;

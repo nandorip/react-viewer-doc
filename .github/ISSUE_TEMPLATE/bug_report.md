@@ -14,6 +14,6 @@ labels: bug
 
 ## Environment
 
-- react-document-viewer version:
+- react-viewer-doc version:
 - React version:
 - Browser:

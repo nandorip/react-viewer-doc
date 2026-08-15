@@ -1,9 +1,8 @@
 /// <reference types="@testing-library/jest-dom" />
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { ReactDocumentViewer } from './ReactDocumentViewer';
+import { ReactDocumentViewer, ReactViewerDoc } from './ReactViewerDoc';
 
-// Mock do Viewer para testar apenas o componente ReactDocumentViewer
 jest.mock('./Viewer', () => ({
   Viewer: ({ document, labels, locale, theme }: any) => (
     <div data-testid="mock-viewer">
@@ -15,28 +14,32 @@ jest.mock('./Viewer', () => ({
   ),
 }));
 
-describe('ReactDocumentViewer', () => {
+describe('ReactViewerDoc', () => {
   it('renders without error', () => {
-    render(<ReactDocumentViewer />);
+    render(<ReactViewerDoc />);
     expect(screen.getByTestId('mock-viewer')).toBeInTheDocument();
     expect(screen.getByText(/no file/)).toBeInTheDocument();
   });
 
   it('passes document prop correctly', () => {
     const doc = { fileName: 'test.pdf' };
-    render(<ReactDocumentViewer document={doc} />);
+    render(<ReactViewerDoc document={doc} />);
     expect(screen.getByText(/Viewer for test.pdf/)).toBeInTheDocument();
   });
 
   it('passes theme prop correctly', () => {
-    render(<ReactDocumentViewer theme="dark" />);
+    render(<ReactViewerDoc theme="dark" />);
     expect(screen.getByText('dark')).toBeInTheDocument();
   });
 
   it('resolves labels from locale and allows overrides', () => {
-    render(<ReactDocumentViewer locale="es-ES" labels={{ reset: 'Reiniciar' }} />);
+    render(<ReactViewerDoc locale="es-ES" labels={{ reset: 'Reiniciar' }} />);
 
     expect(screen.getByText('Reiniciar')).toBeInTheDocument();
     expect(screen.getByText('es-ES')).toBeInTheDocument();
+  });
+
+  it('keeps ReactDocumentViewer as an alias', () => {
+    expect(ReactDocumentViewer).toBe(ReactViewerDoc);
   });
 });

@@ -26,19 +26,7 @@ jest.mock('react-pdf', () => ({
   ),
 }));
 
-jest.mock('react-image-pan-zoom-rotate', () => ({
-  PanViewer: ({ children, zoom, pandx, pandy, onPan }: any) => (
-    <div
-      data-testid="mock-pan-viewer"
-      data-zoom={zoom}
-      data-pandx={pandx}
-      data-pandy={pandy}
-      onClick={() => onPan?.(25, -30)}
-    >
-      {children}
-    </div>
-  ),
-}));
+
 
 describe('Viewer', () => {
   beforeEach(() => {
@@ -70,7 +58,7 @@ describe('Viewer', () => {
       fileUri: 'http://example.com/icon.svg',
     };
     render(<Viewer document={document} />);
-    expect(screen.getByTestId('mock-pan-viewer')).toBeInTheDocument();
+    expect(screen.getByTestId('pan-viewer')).toBeInTheDocument();
     expect(screen.getByAltText('icon.svg')).toHaveAttribute('src', 'http://example.com/icon.svg');
   });
 
@@ -80,7 +68,7 @@ describe('Viewer', () => {
       fileUri: 'http://example.com/test.jpg',
     };
     render(<Viewer document={document} />);
-    expect(screen.getByTestId('mock-pan-viewer')).toBeInTheDocument();
+    expect(screen.getByTestId('pan-viewer')).toBeInTheDocument();
     expect(screen.getByAltText('test.jpg')).toHaveAttribute('src', 'http://example.com/test.jpg');
   });
 
@@ -107,10 +95,10 @@ describe('Viewer', () => {
 
     fireEvent.click(zoomInBtn);
     // Zoom inicial é 1, sensibilidade é 0.1
-    expect(screen.getByTestId('mock-pan-viewer')).toHaveAttribute('data-zoom', '1.1');
+    expect(screen.getByTestId('pan-viewer')).toHaveAttribute('data-zoom', '1.1');
 
     fireEvent.click(zoomOutBtn);
-    expect(screen.getByTestId('mock-pan-viewer')).toHaveAttribute('data-zoom', '1');
+    expect(screen.getByTestId('pan-viewer')).toHaveAttribute('data-zoom', '1');
   });
 
   it('handles ctrl + wheel zoom in and out', () => {
@@ -122,10 +110,10 @@ describe('Viewer', () => {
     const imageContainer = screen.getByTestId('image-container');
 
     fireEvent.wheel(imageContainer, { ctrlKey: true, deltaY: -100 });
-    expect(screen.getByTestId('mock-pan-viewer')).toHaveAttribute('data-zoom', '1.1');
+    expect(screen.getByTestId('pan-viewer')).toHaveAttribute('data-zoom', '1.1');
 
     fireEvent.wheel(imageContainer, { ctrlKey: true, deltaY: 100 });
-    expect(screen.getByTestId('mock-pan-viewer')).toHaveAttribute('data-zoom', '1');
+    expect(screen.getByTestId('pan-viewer')).toHaveAttribute('data-zoom', '1');
   });
 
   it('handles rotation', () => {
@@ -170,16 +158,18 @@ describe('Viewer', () => {
       fileUri: 'http://example.com/test.jpg',
     };
     render(<Viewer document={document} />);
-    const panViewer = screen.getByTestId('mock-pan-viewer');
+    const panViewer = screen.getByTestId('pan-viewer');
     const resetBtn = screen.getByTestId('SettingsBackupRestoreIcon').closest('button')!;
 
-    fireEvent.click(panViewer);
-    expect(screen.getByTestId('mock-pan-viewer')).toHaveAttribute('data-pandx', '25');
-    expect(screen.getByTestId('mock-pan-viewer')).toHaveAttribute('data-pandy', '-30');
+    fireEvent.mouseDown(panViewer, { button: 0, clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(panViewer, { clientX: 25, clientY: -30 });
+    fireEvent.mouseUp(panViewer);
+    expect(screen.getByTestId('pan-viewer')).toHaveAttribute('data-pandx', '25');
+    expect(screen.getByTestId('pan-viewer')).toHaveAttribute('data-pandy', '-30');
 
     fireEvent.click(resetBtn);
-    expect(screen.getByTestId('mock-pan-viewer')).toHaveAttribute('data-pandx', '0');
-    expect(screen.getByTestId('mock-pan-viewer')).toHaveAttribute('data-pandy', '0');
+    expect(screen.getByTestId('pan-viewer')).toHaveAttribute('data-pandx', '0');
+    expect(screen.getByTestId('pan-viewer')).toHaveAttribute('data-pandy', '0');
   });
 
   it('changes PDF pages', async () => {
@@ -252,6 +242,26 @@ describe('Viewer', () => {
   it('opens a base64 image blob URL in a new tab', () => {
     jest.spyOn(URL, 'createObjectURL').mockReturnValue('blob:http://localhost/image');
     jest.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
+    const createdImg = {
+      src: '',
+      alt: '',
+    };
+    const openedWindow = {
+      document: {
+        open: jest.fn(),
+        write: jest.fn(),
+        close: jest.fn(),
+        title: '',
+        head: { appendChild: jest.fn() },
+        body: { appendChild: jest.fn() },
+        createElement: jest.fn((tag: string) => {
+          if (tag === 'img') return createdImg;
+          return { textContent: '' };
+        }),
+      },
+      opener: {},
+    } as unknown as Window;
+    jest.spyOn(window, 'open').mockReturnValue(openedWindow);
     const document = {
       fileName: 'test.png',
       fileData: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
@@ -261,10 +271,9 @@ describe('Viewer', () => {
 
     fireEvent.click(openButton);
 
-    expect(window.open).toHaveBeenCalledWith(
-      'blob:http://localhost/image',
-      '_blank'
-    );
+    expect(window.open).toHaveBeenCalledWith('', '_blank');
+    expect(createdImg.src).toBe('blob:http://localhost/image');
+    expect(openedWindow.opener).toBeNull();
   });
 
   it('prints an image using a generated print document', () => {
@@ -367,6 +376,26 @@ describe('Viewer', () => {
   });
 
   it('opens relative image URLs in a new tab', () => {
+    const createdImg = {
+      src: '',
+      alt: '',
+    };
+    const openedWindow = {
+      document: {
+        open: jest.fn(),
+        write: jest.fn(),
+        close: jest.fn(),
+        title: '',
+        head: { appendChild: jest.fn() },
+        body: { appendChild: jest.fn() },
+        createElement: jest.fn((tag: string) => {
+          if (tag === 'img') return createdImg;
+          return { textContent: '' };
+        }),
+      },
+      opener: {},
+    } as unknown as Window;
+    jest.spyOn(window, 'open').mockReturnValue(openedWindow);
     const document = {
       fileName: 'test.jpg',
       fileUri: '/assets/test.jpg',
@@ -376,10 +405,48 @@ describe('Viewer', () => {
 
     fireEvent.click(openButton);
 
-    expect(window.open).toHaveBeenCalledWith(
-      `${window.location.origin}/assets/test.jpg`,
-      '_blank'
+    expect(window.open).toHaveBeenCalledWith('', '_blank');
+    expect(createdImg.src).toBe(`${window.location.origin}/assets/test.jpg`);
+    expect(openedWindow.opener).toBeNull();
+  });
+
+  it('opens SVG as an image document instead of the raw file', () => {
+    const createdImg = {
+      src: '',
+      alt: '',
+    };
+    const openedWindow = {
+      document: {
+        open: jest.fn(),
+        write: jest.fn(),
+        close: jest.fn(),
+        title: '',
+        head: { appendChild: jest.fn() },
+        body: { appendChild: jest.fn() },
+        createElement: jest.fn((tag: string) => {
+          if (tag === 'img') return createdImg;
+          return { textContent: '' };
+        }),
+      },
+      opener: {},
+    } as unknown as Window;
+    jest.spyOn(window, 'open').mockReturnValue(openedWindow);
+    render(
+      <Viewer
+        document={{
+          fileName: 'icon.svg',
+          fileUri: 'http://example.com/icon.svg',
+        }}
+      />
     );
+
+    fireEvent.click(screen.getByTestId('OpenInNewIcon').closest('button')!);
+
+    expect(window.open).toHaveBeenCalledWith('', '_blank');
+    expect(window.open).not.toHaveBeenCalledWith('http://example.com/icon.svg', '_blank');
+    expect(createdImg.src).toBe('http://example.com/icon.svg');
+    expect(createdImg.alt).toBe('icon.svg');
+    expect(openedWindow.opener).toBeNull();
   });
 
   it('prints relative image URLs', () => {

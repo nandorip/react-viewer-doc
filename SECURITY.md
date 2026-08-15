@@ -2,9 +2,11 @@
 
 ## Supported versions
 
-The latest 0.3.x release on npm (`react-viewer-doc`) is the supported line.
+The latest 0.4.x release on npm (`react-viewer-doc`) is the supported line.
 
 `fileUri` is limited to `http:`, `https:`, and `blob:` (relative URLs resolve against the host origin). `data:` input is limited to PDF and supported image MIME types.
+
+Images and SVG opened in a new tab are shown as `<img>` inside a generated HTML document, so inline SVG scripts do not run. PDFs still open as the original file. New tabs clear `window.opener`.
 
 ## Reporting a Vulnerability
 

@@ -3,13 +3,13 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.ReactDocumentViewer = void 0;
+exports.ReactViewerDoc = exports.ReactDocumentViewer = void 0;
 var _react = require("react");
 var _components = require("./components");
 var _Viewer = require("./Viewer");
 var _i18n = require("./i18n");
 var _jsxRuntime = require("react/jsx-runtime");
-var ReactDocumentViewer = exports.ReactDocumentViewer = function ReactDocumentViewer(_ref) {
+var ReactViewerDoc = exports.ReactViewerDoc = function ReactViewerDoc(_ref) {
   var document = _ref.document,
     documents = _ref.documents,
     documentIndex = _ref.documentIndex,
@@ -59,3 +59,6 @@ var ReactDocumentViewer = exports.ReactDocumentViewer = function ReactDocumentVi
     })
   });
 };
+
+/** @deprecated Use `ReactViewerDoc`. */
+var ReactDocumentViewer = exports.ReactDocumentViewer = ReactViewerDoc;

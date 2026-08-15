@@ -268,14 +268,6 @@ export function useViewerCore(input: ViewerCoreInput): ViewerCoreResult {
     return null;
   }, []);
 
-  const handleOpenInNew = useCallback(() => {
-    const fileUrl = createOpenableFileUrl();
-    if (!fileUrl) return;
-    const openedWindow = window.open(fileUrl.url, '_blank');
-    if (openedWindow) openedWindow.opener = null;
-    if (fileUrl.shouldRevoke) revokeBlobUrlWhenClosed(fileUrl.url, openedWindow);
-  }, [createOpenableFileUrl]);
-
   const writeImagePrintDocument = useCallback((printWindow: Window, imageUrl: string) => {
     const printDoc = printWindow.document;
     printDoc.open();
@@ -291,6 +283,28 @@ export function useViewerCore(input: ViewerCoreInput): ViewerCoreResult {
     printDoc.body.appendChild(img);
     return img;
   }, [document, labels]);
+
+  const handleOpenInNew = useCallback(() => {
+    const fileUrl = createOpenableFileUrl();
+    if (!fileUrl) return;
+
+    if (fileTypeRef.current === FileTypes.pdf) {
+      const openedWindow = window.open(fileUrl.url, '_blank');
+      if (openedWindow) openedWindow.opener = null;
+      if (fileUrl.shouldRevoke) revokeBlobUrlWhenClosed(fileUrl.url, openedWindow);
+      return;
+    }
+
+    const openedWindow = window.open('', '_blank');
+    if (openedWindow) {
+      openedWindow.opener = null;
+      writeImagePrintDocument(openedWindow, fileUrl.url);
+      if (fileUrl.shouldRevoke) revokeBlobUrlWhenClosed(fileUrl.url, openedWindow);
+      return;
+    }
+
+    if (fileUrl.shouldRevoke) URL.revokeObjectURL(fileUrl.url);
+  }, [createOpenableFileUrl, writeImagePrintDocument]);
 
   const handlePrint = useCallback(() => {
     const fileUrl = createOpenableFileUrl();

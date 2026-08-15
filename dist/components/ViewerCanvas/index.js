@@ -5,8 +5,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ViewerCanvas = void 0;
 var _reactPdf = require("react-pdf");
-var _reactImagePanZoomRotate = require("react-image-pan-zoom-rotate");
 var _ErrorViewer = require("../ErrorViewer");
+var _PanViewer = require("../PanViewer");
 var _LazyPdfThumbnail = require("../LazyPdfThumbnail");
 var _FileHelpers = require("../../Viewer/FileHelpers");
 var _styles = require("../../styles");
@@ -111,13 +111,10 @@ var ViewerCanvas = exports.ViewerCanvas = function ViewerCanvas(_ref) {
         children: isTiff && tiffLoading && !displayImageUrl ? /*#__PURE__*/(0, _jsxRuntime.jsx)(_styles.LoadingMessage, {
           theme: theme,
           children: (labels === null || labels === void 0 ? void 0 : labels.loading) || 'Loading document...'
-        }) : /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactImagePanZoomRotate.PanViewer, {
+        }) : /*#__PURE__*/(0, _jsxRuntime.jsx)(_PanViewer.PanViewer, {
           zoom: zoom,
-          setZoom: function setZoom() {
-            return false;
-          },
-          pandx: dx,
-          pandy: dy,
+          dx: dx,
+          dy: dy,
           onPan: actions.onPan,
           children: /*#__PURE__*/(0, _jsxRuntime.jsx)("img", {
             src: displayImageUrl,

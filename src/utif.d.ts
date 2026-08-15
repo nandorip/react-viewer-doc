@@ -1,4 +1,4 @@
-declare module 'utif' {
+declare module 'utif2' {
   export interface IFD {
     width: number;
     height: number;

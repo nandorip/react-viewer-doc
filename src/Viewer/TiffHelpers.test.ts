@@ -1,7 +1,7 @@
-import UTIF from 'utif';
+import UTIF from 'utif2';
 import * as TiffHelpers from './TiffHelpers';
 
-jest.mock('utif', () => ({
+jest.mock('utif2', () => ({
   __esModule: true,
   default: {
     decode: jest.fn(),

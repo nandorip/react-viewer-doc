@@ -12,7 +12,13 @@ Object.defineProperty(exports, "DEFAULT_LOCALE", {
 Object.defineProperty(exports, "ReactDocumentViewer", {
   enumerable: true,
   get: function get() {
-    return _ReactDocumentViewer.ReactDocumentViewer;
+    return _ReactViewerDoc.ReactDocumentViewer;
+  }
+});
+Object.defineProperty(exports, "ReactViewerDoc", {
+  enumerable: true,
+  get: function get() {
+    return _ReactViewerDoc.ReactViewerDoc;
   }
 });
 Object.defineProperty(exports, "ViewerCanvas", {
@@ -57,7 +63,7 @@ Object.defineProperty(exports, "useViewerCore", {
     return _useViewerCore.useViewerCore;
   }
 });
-var _ReactDocumentViewer = require("./ReactDocumentViewer");
+var _ReactViewerDoc = require("./ReactViewerDoc");
 var _ViewerCanvas = require("./components/ViewerCanvas");
 var _useViewerCore = require("./hooks/useViewerCore");
 var _useDocumentList = require("./hooks/useDocumentList");

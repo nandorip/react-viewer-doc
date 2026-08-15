@@ -1,4 +1,4 @@
-import UTIF from 'utif';
+import UTIF from 'utif2';
 
 export const TIFF_MIME = 'image/tiff';
 

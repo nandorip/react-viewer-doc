@@ -1,7 +1,7 @@
 import { Document, Page } from 'react-pdf';
-import { PanViewer } from 'react-image-pan-zoom-rotate';
 
 import { ErrorViewer } from '../ErrorViewer';
+import { PanViewer } from '../PanViewer';
 import { LazyPdfThumbnail } from '../LazyPdfThumbnail';
 import { ViewerCanvasProps } from '../../types';
 import { FileTypes } from '../../Viewer/FileHelpers';
@@ -113,9 +113,8 @@ export const ViewerCanvas = ({
             <PanViewer
               key={viewerResetKey}
               zoom={zoom}
-              setZoom={() => false}
-              pandx={dx}
-              pandy={dy}
+              dx={dx}
+              dy={dy}
               onPan={actions.onPan}
             >
               <img

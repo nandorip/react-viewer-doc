@@ -28,11 +28,11 @@ npm install react-viewer-doc
 ```
 
 ```tsx
-import { ReactDocumentViewer } from 'react-viewer-doc';
+import { ReactViewerDoc } from 'react-viewer-doc';
 
 function App() {
   return (
-    <ReactDocumentViewer
+    <ReactViewerDoc
       document={{
         fileUri: 'https://example.com/document.pdf',
         fileName: 'document.pdf'
@@ -55,12 +55,22 @@ npm install react-viewer-doc
 npm install @mui/material @mui/icons-material @emotion/react @emotion/styled react react-dom
 ```
 
+The published package name is `react-viewer-doc`. Import `ReactViewerDoc` from that package.
+
+### Migrating from `ReactDocumentViewer`
+
+`ReactDocumentViewer` is still exported as an alias of `ReactViewerDoc`. Existing imports keep working. Prefer the new name:
+
+```tsx
+import { ReactViewerDoc } from 'react-viewer-doc';
+```
+
 ## Usage
 
 ### PDF from Base64
 
 ```tsx
-<ReactDocumentViewer
+<ReactViewerDoc
   document={{
     fileData: 'JVBERi0xLjQK...',
     fileName: 'report.pdf'
@@ -78,7 +88,7 @@ npm install @mui/material @mui/icons-material @emotion/react @emotion/styled rea
 ### Image from URL
 
 ```tsx
-<ReactDocumentViewer
+<ReactViewerDoc
   document={{
     fileUri: 'https://example.com/photo.jpg',
     fileName: 'photo.jpg'
@@ -90,7 +100,7 @@ npm install @mui/material @mui/icons-material @emotion/react @emotion/styled rea
 ### Multiple documents (list)
 
 ```tsx
-<ReactDocumentViewer
+<ReactViewerDoc
   documents={[
     {
       id: '1',
@@ -140,7 +150,7 @@ function FileUploader() {
   return (
     <>
       <input type="file" onChange={handleFile} />
-      {doc && <ReactDocumentViewer document={doc} />}
+      {doc && <ReactViewerDoc document={doc} />}
     </>
   );
 }
@@ -174,7 +184,7 @@ function FileUploader() {
 ### Add buttons to the default toolbar
 
 ```tsx
-<ReactDocumentViewer
+<ReactViewerDoc
   document={doc}
   extraToolbar={(actions) => (
     <button onClick={actions.download}>Download</button>
@@ -187,7 +197,7 @@ function FileUploader() {
 ### Replace the entire toolbar
 
 ```tsx
-<ReactDocumentViewer
+<ReactViewerDoc
   document={doc}
   renderToolbar={(actions) => (
     <div>
@@ -241,7 +251,7 @@ function MyViewer({ doc }) {
 By default, the PDF.js worker is loaded from the unpkg CDN. Host the worker locally in production (CSP, offline, and supply-chain control) and pass its URL:
 
 ```tsx
-<ReactDocumentViewer
+<ReactViewerDoc
   document={doc}
   pdfWorkerSrc="/pdf.worker.min.mjs"
 />
@@ -252,7 +262,7 @@ Copy the worker from `node_modules/pdfjs-dist/build/pdf.worker.min.mjs` to your 
 ## Labels
 
 ```tsx
-<ReactDocumentViewer
+<ReactViewerDoc
   document={doc}
   labels={{
     zoomIn: 'Aumentar',

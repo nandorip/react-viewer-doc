@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ReactDocumentViewer, useViewerCore, ViewerCanvas } from 'react-viewer-doc';
+import { ReactViewerDoc, useViewerCore, ViewerCanvas } from 'react-viewer-doc';
 
 const PDF_WORKER_SRC = (() => {
   const pathName = window.location.pathname;
@@ -286,7 +286,7 @@ function App() {
               background: `linear-gradient(135deg, ${t.accent}, #a855f7)`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#fff', fontSize: 18, fontWeight: 700,
-            }}>DV</div>
+            }}>RV</div>
             <div>
               <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em' }}>
                 react-viewer-doc
@@ -301,7 +301,7 @@ function App() {
               fontSize: 11, fontWeight: 600,
               background: t.accentLight, color: t.accent,
               padding: '3px 10px', borderRadius: 20,
-            }}>v0.3.1</span>
+            }}>v0.4.0</span>
             <button onClick={toggle} style={{
               padding: '8px 14px', borderRadius: 8, border: `1px solid ${t.border}`,
               background: t.surface, color: t.text, cursor: 'pointer',
@@ -502,7 +502,7 @@ function App() {
               </div>
             </div>
           ) : viewMode === 'documents' && hasDocuments ? (
-            <ReactDocumentViewer
+            <ReactViewerDoc
               documents={documents}
               documentIndex={documentIndex}
               onDocumentChange={handleDocumentChange}
@@ -541,7 +541,7 @@ function App() {
               labels={labels}
             />
           ) : viewMode === 'default' ? (
-            <ReactDocumentViewer
+            <ReactViewerDoc
               document={doc}
               theme={dark ? 'dark' : 'light'}
               locale="en-US"
@@ -568,7 +568,7 @@ function App() {
               labels={labels}
             />
           ) : viewMode === 'custom' ? (
-            <ReactDocumentViewer
+            <ReactViewerDoc
               document={doc}
               theme={dark ? 'dark' : 'light'}
               locale="en-US"
@@ -641,7 +641,7 @@ function App() {
               color: dark ? '#e1e4e8' : '#24292e',
               overflowX: 'auto',
             }}>{`// 1. Multiple documents with native list + navigation
-<ReactDocumentViewer
+<ReactViewerDoc
   documents={[
     { id: '1', fileName: 'contrato.pdf', fileData: 'JVBERi0xLjQK...' },
     { id: '2', fileName: 'foto.jpg', fileUri: 'https://example.com/foto.jpg' },
@@ -651,7 +651,7 @@ function App() {
 />
 
 // 2. Add custom buttons to default toolbar
-<ReactDocumentViewer
+<ReactViewerDoc
   document={doc}
   extraToolbar={(actions) => (
     <button onClick={actions.download}>Download</button>
@@ -659,7 +659,7 @@ function App() {
 />
 
 // 3. Replace the entire toolbar
-<ReactDocumentViewer
+<ReactViewerDoc
   document={doc}
   renderToolbar={(actions) => (
     <div>

@@ -1,4 +1,4 @@
-export { ReactDocumentViewer } from './ReactDocumentViewer';
+export { ReactViewerDoc, ReactDocumentViewer } from './ReactViewerDoc';
 export { ViewerCanvas } from './components/ViewerCanvas';
 export { useViewerCore } from './hooks/useViewerCore';
 export { useDocumentList } from './hooks/useDocumentList';

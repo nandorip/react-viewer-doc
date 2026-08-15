@@ -4,7 +4,7 @@ import { Viewer } from './Viewer';
 import { ViewerProps } from './types';
 import { DEFAULT_LOCALE, resolveLabels } from './i18n';
 
-export const ReactDocumentViewer = ({
+export const ReactViewerDoc = ({
   document,
   documents,
   documentIndex,
@@ -59,3 +59,6 @@ export const ReactDocumentViewer = ({
     </ErrorBoundary>
   );
 };
+
+/** @deprecated Use `ReactViewerDoc`. */
+export const ReactDocumentViewer = ReactViewerDoc;
