@@ -1,37 +1,33 @@
 {
   "name": "react-viewer-doc",
-  "version": "0.4.0",
-  "description": "React document viewer for PDF and images with pan, zoom, rotate and full i18n support",
+  "version": "0.4.1",
+  "description": "React document viewer for PDF, TIFF and images with pan, zoom, rotate and i18n.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
       "default": "./dist/index.js"
     }
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "scripts": {
-    "predev": "node scripts/copy-pdf-worker.cjs",
-    "dev": "webpack serve --mode development",
-    "prestart": "node scripts/copy-pdf-worker.cjs",
-    "start": "webpack serve --mode development",
-    "start:dist": "npm run build:lib && webpack serve --mode development --env dist",
-    "build": "webpack --mode production",
-    "build:demo": "node scripts/copy-pdf-worker.cjs && webpack --mode production && node scripts/copy-pdf-worker.cjs example/dist",
-    "clean": "node scripts/clean-dist.cjs",
-    "transpile": "babel src -d dist --extensions \".ts,.tsx\" --ignore \"src/**/*.test.ts\",\"src/**/*.test.tsx\",\"src/**/*.test.js\"",
-    "build:types": "tsc --project tsconfig.json",
-    "build:lib": "npm run clean && npm run transpile && npm run build:types",
-    "test": "jest",
-    "pack:check": "npm pack --dry-run",
-    "pack:local": "npm pack",
-    "link:local": "npm run build:lib && npm link",
-    "publish:prepare": "npm test -- --runInBand && npm run build:lib && npm pack --dry-run",
-    "prepack": "npm run build:lib",
-    "prepublishOnly": "npm test -- --runInBand && npm run build:lib"
-  },
-  "engines": {
-    "node": ">=18"
+    "test": "jest --runInBand",
+    "dev": "node scripts/demo.mjs",
+    "start": "node scripts/demo.mjs",
+    "build:lib": "node scripts/clean-dist.cjs && tsc --project tsconfig.json",
+    "prepublishOnly": "npm test && npm run build:lib",
+    "build": "node scripts/demo.mjs --production",
+    "deploy": "gh-pages -d example/dist",
+    "publish-demo": "npm run build && npm run deploy"
   },
   "repository": {
     "type": "git",
@@ -40,7 +36,6 @@
   "keywords": [
     "react",
     "react-component",
-    "react-viewer-doc",
     "document-viewer",
     "pdf-viewer",
     "image-viewer",
@@ -49,13 +44,8 @@
     "viewer",
     "pdf",
     "image",
-    "typescript",
-    "mui",
-    "emotion",
-    "zoom",
-    "pan",
-    "rotate",
-    "i18n"
+    "tiff",
+    "typescript"
   ],
   "author": "Fernando Pires Reherman <nandorip@live.com>",
   "license": "MIT",
@@ -63,11 +53,6 @@
     "url": "https://github.com/nandorip/react-document-viewer/issues"
   },
   "homepage": "https://github.com/nandorip/react-document-viewer#readme",
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
   "peerDependencies": {
     "@emotion/react": "^11.0.0",
     "@emotion/styled": "^11.0.0",
@@ -81,11 +66,6 @@
     "utif2": "^4.1.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.28.6",
-    "@babel/core": "^7.29.0",
-    "@babel/preset-env": "^7.29.2",
-    "@babel/preset-react": "^7.28.5",
-    "@babel/preset-typescript": "^7.28.5",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.0.0",
@@ -95,32 +75,20 @@
     "@types/jest": "^30.0.0",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
-    "babel-loader": "^10.1.1",
-    "css-loader": "^7.1.4",
-    "html-webpack-plugin": "^5.6.6",
+    "esbuild": "^0.28.2",
+    "gh-pages": "^6.3.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.3.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "style-loader": "^4.0.0",
     "ts-jest": "^29.4.9",
-    "typescript": "^5.7.3",
-    "webpack": "^5.106.1",
-    "webpack-cli": "^7.0.2",
-    "webpack-dev-server": "^5.2.6"
-  },
-  "overrides": {
-    "brace-expansion@1": "1.1.18",
-    "brace-expansion@2": "2.1.4",
-    "nanoid@3": "3.3.18",
-    "postcss": "8.5.26",
-    "fast-uri": "3.1.5",
-    "js-yaml@3": "3.15.1",
-    "body-parser": "1.20.6",
-    "uuid": "11.1.1"
+    "typescript": "^5.7.3"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
   }
 }

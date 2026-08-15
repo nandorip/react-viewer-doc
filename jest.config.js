@@ -7,7 +7,11 @@ module.exports = {
   },
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
-      tsconfig: 'tsconfig.json',
+      tsconfig: {
+        jsx: 'react-jsx',
+        esModuleInterop: true,
+        isolatedModules: true,
+      },
     }],
   },
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],

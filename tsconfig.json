@@ -1,18 +1,17 @@
 {
   "compilerOptions": {
-    "target": "ES6",
-    "module": "commonjs",
+    "target": "ES2018",
+    "module": "CommonJS",
+    "moduleResolution": "node",
     "jsx": "react-jsx",
     "declaration": true,
-    "declarationDir": "dist",
-    "emitDeclarationOnly": true,
+    "outDir": "dist",
+    "rootDir": "src",
     "strict": true,
-    "moduleResolution": "node",
-    "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"]
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "example", "**/*.test.ts", "**/*.test.tsx"]
+  "include": ["src"],
+  "exclude": ["**/*.test.ts", "**/*.test.tsx"]
 }

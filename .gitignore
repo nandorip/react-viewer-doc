@@ -1,7 +1,5 @@
 node_modules
-
-# Build output
-dist
+/dist
 example/dist
 example/public/pdf.worker.min.mjs
 coverage
