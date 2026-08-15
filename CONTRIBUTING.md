@@ -12,8 +12,8 @@ These versions are required to build and test the library. Consumers of the publ
 ## Getting started
 
 ```bash
-git clone https://github.com/nandorip/react-document-viewer.git
-cd react-document-viewer
+git clone https://github.com/nandorip/react-viewer-doc.git
+cd react-viewer-doc
 npm install
 ```
 
@@ -116,4 +116,4 @@ npm run publish-demo
 
 ## Reporting issues
 
-Open an issue at [github.com/nandorip/react-document-viewer/issues](https://github.com/nandorip/react-document-viewer/issues).
+Open an issue at [github.com/nandorip/react-viewer-doc/issues](https://github.com/nandorip/react-viewer-doc/issues).

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-08-15
+
+### Changed
+
+- GitHub repository renamed to [`nandorip/react-viewer-doc`](https://github.com/nandorip/react-viewer-doc)
+
 ## [0.4.1] - 2026-08-15
 
 This is a maintainer/toolchain release. The published component API and peer dependencies are unchanged.
@@ -36,7 +42,7 @@ Published as `react-viewer-doc@0.4.0`.
 
 ## [0.3.1] - 2026-08-13
 
-First release of the `react-viewer-doc` package name (the GitHub repo remains `react-document-viewer`).
+First release of the `react-viewer-doc` package name.
 
 ### Security
 
@@ -74,9 +80,10 @@ First release of the `react-viewer-doc` package name (the GitHub repo remains `r
 - Headless API: `useViewerCore` + `ViewerCanvas`
 - Custom toolbar via `extraToolbar` and `renderToolbar`
 
-[Unreleased]: https://github.com/nandorip/react-document-viewer/compare/v0.4.1...HEAD
-[0.4.1]: https://github.com/nandorip/react-document-viewer/compare/v0.4.0...v0.4.1
-[0.4.0]: https://github.com/nandorip/react-document-viewer/compare/v0.3.1...v0.4.0
-[0.3.1]: https://github.com/nandorip/react-document-viewer/compare/v0.3.0...v0.3.1
-[0.3.0]: https://github.com/nandorip/react-document-viewer/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/nandorip/react-document-viewer/releases/tag/v0.2.0
+[Unreleased]: https://github.com/nandorip/react-viewer-doc/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/nandorip/react-viewer-doc/compare/v0.4.1...v0.4.2
+[0.4.1]: https://github.com/nandorip/react-viewer-doc/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/nandorip/react-viewer-doc/compare/v0.3.1...v0.4.0
+[0.3.1]: https://github.com/nandorip/react-viewer-doc/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/nandorip/react-viewer-doc/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/nandorip/react-viewer-doc/releases/tag/v0.2.0

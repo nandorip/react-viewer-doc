@@ -1,6 +1,6 @@
 {
   "name": "react-viewer-doc",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "React document viewer for PDF, TIFF and images with pan, zoom, rotate and i18n.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -31,7 +31,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nandorip/react-document-viewer.git"
+    "url": "git+https://github.com/nandorip/react-viewer-doc.git"
   },
   "keywords": [
     "react",
@@ -50,9 +50,9 @@
   "author": "Fernando Pires Reherman <nandorip@live.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/nandorip/react-document-viewer/issues"
+    "url": "https://github.com/nandorip/react-viewer-doc/issues"
   },
-  "homepage": "https://github.com/nandorip/react-document-viewer#readme",
+  "homepage": "https://github.com/nandorip/react-viewer-doc#readme",
   "peerDependencies": {
     "@emotion/react": "^11.0.0",
     "@emotion/styled": "^11.0.0",
