@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ReactViewerDoc, useViewerCore, ViewerCanvas } from 'react-viewer-doc';
 
-const PDF_WORKER_SRC = (() => {
+export const PDF_WORKER_SRC = (() => {
   const pathName = window.location.pathname;
   const base = pathName.endsWith('/') ? pathName : pathName.replace(/\/[^/]*$/, '/');
   return `${window.location.origin}${base}pdf.worker.min.mjs`;
@@ -157,6 +157,7 @@ function HeadlessViewer({ doc, dark, height, labels, t }) {
         <button onClick={viewer.actions.zoomIn} style={sBtn(t)} title="Zoom in">🔍+</button>
         <button onClick={viewer.actions.zoomOut} style={sBtn(t)} title="Zoom out">🔍−</button>
         <button onClick={viewer.actions.rotate} style={sBtn(t)} title="Rotate">🔄</button>
+        <button onClick={viewer.actions.toggleSidebar} style={sBtn(t)} title="Thumbnails">🖼️</button>
         <button onClick={viewer.actions.resetViewState} style={sBtn(t)} title="Reset">↺</button>
         <span style={{ fontSize: 11, color: '#6b7280', margin: '0 4px' }}>|</span>
         <button onClick={viewer.actions.prevPage} disabled={viewer.state.pageNumber <= 1} style={sBtn(t)}>◀</button>
@@ -185,7 +186,7 @@ function sBtn(t) {
   };
 }
 
-function App() {
+export function App() {
   const { dark, toggle, t } = useTheme();
   const [doc, setDoc] = useState();
   const [dragOver, setDragOver] = useState(false);
@@ -301,7 +302,7 @@ function App() {
               fontSize: 11, fontWeight: 600,
               background: t.accentLight, color: t.accent,
               padding: '3px 10px', borderRadius: 20,
-            }}>v0.4.2</span>
+            }}>v0.5.0</span>
             <button onClick={toggle} style={{
               padding: '8px 14px', borderRadius: 8, border: `1px solid ${t.border}`,
               background: t.surface, color: t.text, cursor: 'pointer',
@@ -705,5 +706,8 @@ function MyViewer({ doc }) {
   );
 }
 
-const root = createRoot(document.getElementById('root'));
-root.render(<App />);
+const rootElement = document.getElementById('root');
+if (rootElement) {
+  const root = createRoot(rootElement);
+  root.render(<App />);
+}

@@ -20,6 +20,7 @@ export const ContainerDiv = styled.div<ThemedProps>`
   flex-direction: column;
   background-color: ${props => resolveThemeTokens(props.theme).containerBg};
   border: 1px solid ${props => resolveThemeTokens(props.theme).containerBorder};
+  color: ${props => resolveThemeTokens(props.theme).textPrimary};
   border-radius: 12px;
   height: 100%;
   width: 100%;
@@ -345,7 +346,9 @@ export const DocumentListItem = styled.button<{ active: boolean } & ThemedProps>
   cursor: pointer;
   font-size: 13px;
   line-height: 1.35;
-  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   &:hover {
     background-color: ${props => resolveThemeTokens(props.theme).thumbnailHover};

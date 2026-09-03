@@ -4,9 +4,10 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    '^react-viewer-doc$': '<rootDir>/src/index.ts',
   },
   transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', {
+    '^.+\\.(ts|tsx|js|jsx)$': ['ts-jest', {
       tsconfig: {
         jsx: 'react-jsx',
         esModuleInterop: true,

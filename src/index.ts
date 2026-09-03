@@ -1,6 +1,6 @@
 export { ReactViewerDoc, ReactDocumentViewer } from './ReactViewerDoc';
 export { ViewerCanvas } from './components/ViewerCanvas';
-export { useViewerCore } from './hooks/useViewerCore';
+export { useViewerCore, DEFAULT_PDF_WORKER_SRC, PDFJS_VERSION } from './hooks/useViewerCore';
 export { useDocumentList } from './hooks/useDocumentList';
 export { DEFAULT_LOCALE, localeLabels, resolveLabels } from './i18n';
 export type {

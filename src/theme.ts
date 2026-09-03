@@ -16,6 +16,7 @@ export interface ThemeTokens {
   pdfShadow: string;
   loadingPlaceholder: string;
   textMuted: string;
+  textPrimary: string;
 }
 
 export const themeTokens: Record<ViewerTheme, ThemeTokens> = {
@@ -35,6 +36,7 @@ export const themeTokens: Record<ViewerTheme, ThemeTokens> = {
     pdfShadow: 'rgba(0, 0, 0, 0.2)',
     loadingPlaceholder: '#e0e0e0',
     textMuted: '#666666',
+    textPrimary: '#333333',
   },
   dark: {
     containerBg: '#1e1e1e',
@@ -52,6 +54,7 @@ export const themeTokens: Record<ViewerTheme, ThemeTokens> = {
     pdfShadow: 'rgba(0, 0, 0, 0.5)',
     loadingPlaceholder: '#404040',
     textMuted: '#b0b0b0',
+    textPrimary: '#ffffff',
   },
 };
 

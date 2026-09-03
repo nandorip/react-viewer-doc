@@ -1,6 +1,6 @@
 # react-viewer-doc
 
-A React component for viewing PDF, TIFF, SVG and common image files, with pan, zoom, rotate and i18n.
+A React component for viewing PDF, TIFF, SVG and common image files, with pan, zoom, rotate and i18n. Optimized for performance with large documents and many pages using virtualization.
 
 [Demo](https://nandorip.github.io/react-viewer-doc/)
 

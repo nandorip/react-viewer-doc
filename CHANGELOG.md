@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-03
+
+### Added
+- Virtualization for the PDF thumbnail list using `react-window`, significantly improving performance for documents with many pages.
+- Virtualization for the `DocumentList` component (sidebar) for improved performance when handling large document sets.
+- Responsive layout for the thumbnail list (horizontal on mobile, vertical on desktop).
+- Exported `DEFAULT_PDF_WORKER_SRC` and `PDFJS_VERSION` constants for easier PDF worker configuration.
+
+### Changed
+- Refactored `useViewerCore` hook into specialized smaller hooks (`useViewerState`, `useViewerEvents`, `useDocumentActions`, `useFileLoader`, `useIsMobile`) to improve maintainability.
+- Updated `pdfWorkerSrc` prop to accept `null` to disable automatic CDN configuration.
+- Internal styles updated to support virtualized lists and consistent text handling.
+- Optimized PDF thumbnails by removing redundant intersection observers.
+
+### Fixed
+- Improved viewer reset behavior for PDF documents, ensuring scroll position is reset when switching files or clicking reset.
+- Improved overall code modularity and documentation.
+
 ## [0.4.3] - 2026-09-03
 
 ### Fixed
@@ -86,7 +104,9 @@ First release of the `react-viewer-doc` package name.
 - Headless API: `useViewerCore` + `ViewerCanvas`
 - Custom toolbar via `extraToolbar` and `renderToolbar`
 
-[Unreleased]: https://github.com/nandorip/react-viewer-doc/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/nandorip/react-viewer-doc/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/nandorip/react-viewer-doc/compare/v0.4.3...v0.5.0
+[0.4.3]: https://github.com/nandorip/react-viewer-doc/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/nandorip/react-viewer-doc/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/nandorip/react-viewer-doc/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/nandorip/react-viewer-doc/compare/v0.3.1...v0.4.0

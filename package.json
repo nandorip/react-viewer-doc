@@ -1,14 +1,16 @@
 {
   "name": "react-viewer-doc",
-  "version": "0.4.3",
+  "version": "0.5.0",
   "description": "React document viewer for PDF, TIFF and images with pan, zoom, rotate and i18n.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/cjs/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "default": "./dist/index.js"
+      "types": "./dist/cjs/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "default": "./dist/esm/index.js"
     }
   },
   "files": [
@@ -23,7 +25,7 @@
     "test": "jest --runInBand",
     "dev": "node scripts/demo.mjs",
     "start": "node scripts/demo.mjs",
-    "build:lib": "node scripts/clean-dist.cjs && tsc --project tsconfig.json",
+    "build:lib": "node scripts/clean-dist.cjs && tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json && node scripts/post-build.cjs",
     "prepublishOnly": "npm test && npm run build:lib",
     "build": "node scripts/demo.mjs --production",
     "deploy": "gh-pages -d example/dist",
@@ -63,6 +65,7 @@
   },
   "dependencies": {
     "react-pdf": "^10.4.1",
+    "react-window": "^1.8.10",
     "utif2": "^4.1.0"
   },
   "devDependencies": {
@@ -75,6 +78,7 @@
     "@types/jest": "^30.0.0",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
+    "@types/react-window": "^1.8.8",
     "esbuild": "^0.28.2",
     "gh-pages": "^6.3.0",
     "identity-obj-proxy": "^3.0.0",

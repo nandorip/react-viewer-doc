@@ -1,5 +1,4 @@
 import { Page } from 'react-pdf';
-import { useIntersectionObserver } from '../../hooks/useIntersectionObserver';
 import { ThumbnailItem, ThumbnailPlaceholder } from '../../styles';
 import { ViewerTheme } from '../../types';
 
@@ -11,6 +10,7 @@ interface LazyPdfThumbnailProps {
   loadingLabel: string;
   onSelect: (page: number) => void;
   onLoadError: (error: Error) => void;
+  style?: React.CSSProperties;
 }
 
 export const LazyPdfThumbnail = ({
@@ -21,33 +21,26 @@ export const LazyPdfThumbnail = ({
   loadingLabel,
   onSelect,
   onLoadError,
+  style,
 }: LazyPdfThumbnailProps) => {
-  const { ref, isIntersecting } = useIntersectionObserver<HTMLButtonElement>({
-    rootMargin: '160px',
-  });
-
   return (
     <ThumbnailItem
-      ref={ref}
       type="button"
       active={active}
       theme={theme}
       onClick={() => onSelect(pageNumber)}
       aria-label={`Page ${pageNumber}`}
       aria-current={active ? 'page' : undefined}
+      style={style}
     >
-      {isIntersecting ? (
-        <Page
-          pageNumber={pageNumber}
-          width={width}
-          renderTextLayer={false}
-          renderAnnotationLayer={false}
-          onLoadError={onLoadError}
-          loading={<ThumbnailPlaceholder theme={theme}>{loadingLabel}</ThumbnailPlaceholder>}
-        />
-      ) : (
-        <ThumbnailPlaceholder theme={theme} style={{ width, minHeight: width * 1.3 }} />
-      )}
+      <Page
+        pageNumber={pageNumber}
+        width={width}
+        renderTextLayer={false}
+        renderAnnotationLayer={false}
+        onLoadError={onLoadError}
+        loading={<ThumbnailPlaceholder theme={theme}>{loadingLabel}</ThumbnailPlaceholder>}
+      />
       <div style={{ fontSize: '12px' }}>{pageNumber}</div>
     </ThumbnailItem>
   );

@@ -122,7 +122,7 @@ export interface ViewerCoreInput {
   document?: DocumentData;
   labels?: Labels;
   theme?: ViewerTheme;
-  pdfWorkerSrc?: string;
+  pdfWorkerSrc?: string | null;
   onLoad?: () => void;
   onError?: (error: string) => void;
 }
