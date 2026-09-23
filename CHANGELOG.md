@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated dependencies within existing semver ranges (including `react-pdf` to 10.5.0) and cleared npm audit findings
+
 ## [0.5.0] - 2026-09-03
 
 ### Added
