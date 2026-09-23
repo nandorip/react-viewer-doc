@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-09-23
+
 ### Changed
 
-- Updated dependencies within existing semver ranges (including `react-pdf` to 10.5.0) and cleared npm audit findings
+- Upgraded `react-pdf` to v11 (PDF.js 6) and required React 19 as a peer dependency
+- Migrated virtualization to `react-window` v2 (`List` / `Grid`); mobile PDF thumbnails use a one-row `Grid`
+- Updated `@testing-library/jest-dom` to v7
+- Cleared npm audit findings from prior lockfile refresh
 
 ## [0.5.0] - 2026-09-03
 

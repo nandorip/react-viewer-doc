@@ -1,4 +1,4 @@
-import { FixedSizeList } from 'react-window';
+import { List, type RowComponentProps } from 'react-window';
 import { useElementSize } from '../../hooks/useElementSize';
 import { DocumentData, Labels, ViewerTheme } from '../../types';
 import {
@@ -13,6 +13,37 @@ interface DocumentListProps {
   onSelect: (index: number) => void;
   labels?: Labels;
   theme?: ViewerTheme;
+}
+
+type DocumentListRowProps = {
+  documents: DocumentData[];
+  activeIndex: number;
+  onSelect: (index: number) => void;
+  theme: ViewerTheme;
+};
+
+function DocumentListRow({
+  index,
+  style,
+  documents,
+  activeIndex,
+  onSelect,
+  theme,
+}: RowComponentProps<DocumentListRowProps>) {
+  const doc = documents[index];
+  return (
+    <DocumentListItem
+      type="button"
+      active={index === activeIndex}
+      theme={theme}
+      onClick={() => onSelect(index)}
+      aria-label={doc.fileName}
+      aria-current={index === activeIndex ? 'true' : undefined}
+      style={style}
+    >
+      {doc.fileName}
+    </DocumentListItem>
+  );
 }
 
 export const DocumentList = ({
@@ -32,30 +63,13 @@ export const DocumentList = ({
       <DocumentListHeader theme={theme}>
         {labels?.documents || 'Documents'}
       </DocumentListHeader>
-      <FixedSizeList
-        height={listHeight}
-        itemCount={documents.length}
-        itemSize={40}
-        width="100%"
-      >
-        {({ index, style }) => {
-          const doc = documents[index];
-          return (
-            <DocumentListItem
-              key={doc.id ?? `${doc.fileName}-${index}`}
-              type="button"
-              active={index === activeIndex}
-              theme={theme}
-              onClick={() => onSelect(index)}
-              aria-label={doc.fileName}
-              aria-current={index === activeIndex ? 'true' : undefined}
-              style={style}
-            >
-              {doc.fileName}
-            </DocumentListItem>
-          );
-        }}
-      </FixedSizeList>
+      <List
+        rowComponent={DocumentListRow}
+        rowCount={documents.length}
+        rowHeight={40}
+        rowProps={{ documents, activeIndex, onSelect, theme }}
+        style={{ height: listHeight, width: '100%' }}
+      />
     </DocumentListContainer>
   );
 };

@@ -1,10 +1,10 @@
 import { Document, Page } from 'react-pdf';
-import { FixedSizeList, ListChildComponentProps } from 'react-window';
+import { Grid, List, type CellComponentProps, type RowComponentProps } from 'react-window';
 
 import { ErrorViewer } from '../ErrorViewer';
 import { PanViewer } from '../PanViewer';
 import { LazyPdfThumbnail } from '../LazyPdfThumbnail';
-import { ViewerCanvasProps } from '../../types';
+import { ViewerCanvasProps, ViewerTheme } from '../../types';
 import { FileTypes } from '../../Viewer/FileHelpers';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import {
@@ -18,6 +18,65 @@ import {
 
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
+
+type ThumbnailListProps = {
+  theme: ViewerTheme;
+  width: number;
+  loadingLabel: string;
+  onSelect: (page: number) => void;
+  onLoadError: (error: Error) => void;
+  currentPage: number;
+};
+
+function DesktopThumbnailRow({
+  index,
+  style,
+  theme,
+  width,
+  loadingLabel,
+  onSelect,
+  onLoadError,
+  currentPage,
+}: RowComponentProps<ThumbnailListProps>) {
+  const pageNumber = index + 1;
+  return (
+    <LazyPdfThumbnail
+      pageNumber={pageNumber}
+      active={currentPage === pageNumber}
+      width={width}
+      theme={theme}
+      loadingLabel={loadingLabel}
+      onSelect={onSelect}
+      onLoadError={onLoadError}
+      style={style}
+    />
+  );
+}
+
+function MobileThumbnailCell({
+  columnIndex,
+  style,
+  theme,
+  width,
+  loadingLabel,
+  onSelect,
+  onLoadError,
+  currentPage,
+}: CellComponentProps<ThumbnailListProps>) {
+  const pageNumber = columnIndex + 1;
+  return (
+    <LazyPdfThumbnail
+      pageNumber={pageNumber}
+      active={currentPage === pageNumber}
+      width={width}
+      theme={theme}
+      loadingLabel={loadingLabel}
+      onSelect={onSelect}
+      onLoadError={onLoadError}
+      style={style}
+    />
+  );
+}
 
 export const ViewerCanvas = ({
   state,
@@ -50,6 +109,7 @@ export const ViewerCanvas = ({
   const thumbnailHeight = Math.floor(thumbnailWidth * 1.3) + 36;
   const thumbnailMobileWidth = 92;
   const desktopHeight = typeof height === 'number' ? height : 600;
+  const loadingLabel = labels?.loading || 'Loading document...';
 
   if (error) {
     return (
@@ -62,6 +122,15 @@ export const ViewerCanvas = ({
   }
 
   if (fileType === FileTypes.pdf && fileSelected) {
+    const thumbnailProps: ThumbnailListProps = {
+      theme,
+      width: thumbnailWidth,
+      loadingLabel,
+      onSelect: actions.setPageNumber,
+      onLoadError: actions.onThumbnailLoadError,
+      currentPage: pageNumber,
+    };
+
     return (
       <MainContent>
         <PdfViewerRoot>
@@ -69,32 +138,30 @@ export const ViewerCanvas = ({
             file={fileSelected}
             onLoadSuccess={actions.onPdfLoadSuccess}
             onLoadError={actions.onPdfLoadError}
-            loading={<LoadingMessage theme={theme}>{labels?.loading || 'Loading document...'}</LoadingMessage>}
+            suspense={false}
+            loading={<LoadingMessage theme={theme}>{loadingLabel}</LoadingMessage>}
           >
             {showSidebar && numPages > 0 && (
               <SidebarContainer visible={showSidebar} theme={theme}>
-                <FixedSizeList
-                  height={isMobile ? 132 : desktopHeight}
-                  itemCount={numPages}
-                  itemSize={isMobile ? thumbnailMobileWidth : thumbnailHeight}
-                  width={isMobile ? '100%' : 200}
-                  layout={isMobile ? 'horizontal' : 'vertical'}
-                  style={{ overflow: 'auto' }}
-                >
-                  {({ index, style }: ListChildComponentProps) => (
-                    <LazyPdfThumbnail
-                      key={`thumb_${index + 1}`}
-                      pageNumber={index + 1}
-                      active={pageNumber === index + 1}
-                      width={thumbnailWidth}
-                      theme={theme}
-                      loadingLabel={labels?.loading || 'Loading document...'}
-                      onSelect={actions.setPageNumber}
-                      onLoadError={actions.onThumbnailLoadError}
-                      style={style}
-                    />
-                  )}
-                </FixedSizeList>
+                {isMobile ? (
+                  <Grid
+                    cellComponent={MobileThumbnailCell}
+                    cellProps={thumbnailProps}
+                    columnCount={numPages}
+                    columnWidth={thumbnailMobileWidth}
+                    rowCount={1}
+                    rowHeight={132}
+                    style={{ height: 132, width: '100%' }}
+                  />
+                ) : (
+                  <List
+                    rowComponent={DesktopThumbnailRow}
+                    rowCount={numPages}
+                    rowHeight={thumbnailHeight}
+                    rowProps={thumbnailProps}
+                    style={{ height: desktopHeight, width: 200, overflow: 'auto' }}
+                  />
+                )}
               </SidebarContainer>
             )}
 
@@ -111,7 +178,7 @@ export const ViewerCanvas = ({
                 rotate={rotation}
                 renderTextLayer={true}
                 renderAnnotationLayer={true}
-                loading={<LoadingMessage theme={theme}>{labels?.loading || 'Loading document...'}</LoadingMessage>}
+                loading={<LoadingMessage theme={theme}>{loadingLabel}</LoadingMessage>}
               />
             </DocumentContainer>
           </Document>
@@ -131,7 +198,7 @@ export const ViewerCanvas = ({
           data-testid="image-container"
         >
           {isTiff && tiffLoading && !displayImageUrl ? (
-            <LoadingMessage theme={theme}>{labels?.loading || 'Loading document...'}</LoadingMessage>
+            <LoadingMessage theme={theme}>{loadingLabel}</LoadingMessage>
           ) : (
             <PanViewer
               key={viewerResetKey}

@@ -6,7 +6,7 @@ A React component for viewing PDF, TIFF, SVG and common image files, with pan, z
 
 ## Requirements
 
-- React: `>=18 <20`
+- React: `^19.0.0`
 - Peer UI: `@mui/material`, `@mui/icons-material`, `@emotion/react`, `@emotion/styled`
 
 ## Install
