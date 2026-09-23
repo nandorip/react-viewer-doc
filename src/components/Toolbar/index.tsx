@@ -1,19 +1,17 @@
 import { Grid, Tooltip } from '@mui/material';
-import {
-  Add,
-  Remove,
-  Refresh,
-  Fullscreen,
-  ChevronLeft,
-  ChevronRight,
-  NavigateBefore,
-  NavigateNext,
-  OpenInNew,
-  Download,
-  Print,
-  SettingsBackupRestore,
-  ViewList,
-} from '@mui/icons-material';
+import Add from '@mui/icons-material/Add';
+import Remove from '@mui/icons-material/Remove';
+import Refresh from '@mui/icons-material/Refresh';
+import Fullscreen from '@mui/icons-material/Fullscreen';
+import ChevronLeft from '@mui/icons-material/ChevronLeft';
+import ChevronRight from '@mui/icons-material/ChevronRight';
+import NavigateBefore from '@mui/icons-material/NavigateBefore';
+import NavigateNext from '@mui/icons-material/NavigateNext';
+import OpenInNew from '@mui/icons-material/OpenInNew';
+import Download from '@mui/icons-material/Download';
+import Print from '@mui/icons-material/Print';
+import SettingsBackupRestore from '@mui/icons-material/SettingsBackupRestore';
+import ViewList from '@mui/icons-material/ViewList';
 import { ToolbarContainer } from '../../styles';
 import { ToolbarButton } from './ToolbarButton';
 import { DisplayPageNumber } from './DisplayPageNumber';
