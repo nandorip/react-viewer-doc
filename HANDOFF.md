@@ -4,10 +4,11 @@ Updated: 2026-10-01
 
 ## Current state
 
-- Repository: `react-viewer-doc`, branch `main`, based on `origin/main` at `78b1874` when work began.
-- The working tree contains uncommitted release changes in `CHANGELOG.md`, `package.json`, `package-lock.json`, `tsconfig.json`, `tsconfig.cjs.json`, and `tsconfig.esm.json`.
+- Repository: `react-viewer-doc`, branch `main`.
+- Release changes were committed as `18e3b08` (`chore: prepare 0.6.1 TypeScript toolchain release`) and pushed to `origin/main`.
+- `HANDOFF.md` records the remaining npm publish step; no release changes are intended to be left uncommitted.
 - Release version is prepared as `0.6.1`. npm was checked before release preparation; `0.6.0` was the published `latest` version.
-- The demo deployment to GitHub Pages completed successfully (`npm run deploy`, output: `Published`).
+- The demo deployment to GitHub Pages completed successfully after the push (`npm run deploy`, output: `Published`). The push also triggered the GitHub Pages workflow.
 - **The npm package has not been published.** The publish attempt completed `prepublishOnly`, tests, and library build, but the registry rejected the PUT with 404. `npm whoami` returned 401, confirming this environment has no authenticated npm account.
 
 ## Changes made
