@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-10-01
+
+### Changed
+
+- Updated the TypeScript toolchain to TypeScript 7 while retaining the TypeScript 6 compiler API for Jest compatibility
+- Updated the library build configuration for the TypeScript 7 module resolution rules
+
 ## [0.6.0] - 2026-09-23
 
 ### Changed
