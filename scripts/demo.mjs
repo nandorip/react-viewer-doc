@@ -1,5 +1,5 @@
 import * as esbuild from 'esbuild';
-import { copyFileSync, existsSync, mkdirSync } from 'node:fs';
+import { copyFileSync, cpSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -16,6 +16,10 @@ if (!existsSync(workerSource)) {
 mkdirSync(outdir, { recursive: true });
 copyFileSync(join(root, 'example', 'index.html'), join(outdir, 'index.html'));
 copyFileSync(workerSource, join(outdir, 'pdf.worker.min.mjs'));
+const samplesDir = join(root, 'example', 'samples');
+if (existsSync(samplesDir)) {
+  cpSync(samplesDir, join(outdir, 'samples'), { recursive: true });
+}
 
 const cssInjectPlugin = {
   name: 'css-inject',
@@ -56,10 +60,10 @@ if (production) {
 } else {
   const ctx = await esbuild.context(options);
   await ctx.watch();
-  const { host, port } = await ctx.serve({
+  const { hosts, port } = await ctx.serve({
     servedir: outdir,
     host: '127.0.0.1',
     port: 3001,
   });
-  console.log(`Demo: http://${host}:${port}`);
+  console.log(`Demo: http://${hosts[0]}:${port}`);
 }

@@ -129,6 +129,9 @@ describe('useViewerCore', () => {
 
     act(() => result.current.actions.setPageNumber(Number.NaN));
     expect(result.current.state.pageNumber).toBe(1);
+
+    act(() => result.current.actions.setPageNumber(1.5));
+    expect(result.current.state.pageNumber).toBe(1);
   });
 
   it('reports unsupported files via onError', () => {

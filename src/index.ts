@@ -1,3 +1,5 @@
+'use client';
+
 export { ReactViewerDoc, ReactDocumentViewer } from './ReactViewerDoc';
 export { ViewerCanvas } from './components/ViewerCanvas';
 export { useViewerCore, DEFAULT_PDF_WORKER_SRC, PDFJS_VERSION } from './hooks/useViewerCore';

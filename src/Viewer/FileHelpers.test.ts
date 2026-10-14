@@ -104,6 +104,12 @@ describe('FileHelpers', () => {
     });
   });
 
+  it('ignores fragments and queries in relative URLs', () => {
+    expect(getExtension('/assets/report.pdf#page=2')).toBe('pdf');
+    expect(getExtension('report.PDF?token=123#page=2')).toBe('pdf');
+    expect(resolveExtension('/assets/report.pdf#page=2', 'report.pdf')).toBe('pdf');
+  });
+
   describe('resolveExtension', () => {
     it('should fall back to fileName when the URI has no extension', () => {
       expect(resolveExtension('https://api.example.com/files/abc123', 'report.pdf')).toBe('pdf');

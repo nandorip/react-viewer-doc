@@ -67,7 +67,7 @@ export function useViewerState() {
   }, [resetViewState]);
 
   const setPageNumber = useCallback((page: number, totalPages: number) => {
-    if (!Number.isFinite(page) || page < 1) return;
+    if (!Number.isInteger(page) || page < 1) return;
     if (totalPages > 0 && page > totalPages) return;
     setState(prev => ({ ...prev, pageNumber: page }));
   }, []);

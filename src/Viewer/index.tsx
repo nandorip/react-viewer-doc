@@ -28,7 +28,7 @@ export const Viewer = ({
     if (documents && documents.length > 0) return documents;
     if (document) return [document];
     return [];
-  }, [documents, document?.fileName, document?.fileUri, document?.fileData]);
+  }, [documents, document?.id, document?.fileName, document?.fileUri, document?.fileData]);
 
   const documentList = useDocumentList({
     documents: resolvedDocuments,
@@ -49,7 +49,8 @@ export const Viewer = ({
   });
   const { state, actions } = viewer;
 
-  const showToolbar = !state.error && (resolvedDocuments.length > 0 || Boolean(state.fileSelected));
+  const showToolbar = (!state.error || documentList.hasMultiple)
+    && (resolvedDocuments.length > 0 || Boolean(state.fileSelected));
   const showList = showDocumentList && documentList.hasMultiple;
 
   const toolbarActions = useMemo<ToolbarActions>(() => ({
@@ -109,18 +110,21 @@ export const Viewer = ({
           onNextChange={actions.nextPage}
           onPrevPage={actions.prevPage}
           onPageChange={actions.setPageNumber}
-          onNewPage={actions.handleOpenInNew}
-          onDownload={actions.handleDownload}
-          onPrint={actions.handlePrint}
+          onNewPage={state.error ? undefined : actions.handleOpenInNew}
+          onDownload={state.error ? undefined : actions.handleDownload}
+          onPrint={state.error ? undefined : actions.handlePrint}
           onFullscreen={actions.toggleFullscreen}
-          onToggleSidebar={state.fileType === FileTypes.pdf ? actions.toggleSidebar : undefined}
+          onToggleSidebar={!state.error && state.fileType === FileTypes.pdf ? actions.toggleSidebar : undefined}
           onPrevDocument={documentList.hasMultiple ? documentList.prevDocument : undefined}
           onNextDocument={documentList.hasMultiple ? documentList.nextDocument : undefined}
           documentIndex={documentList.activeIndex}
           documentCount={resolvedDocuments.length}
           currentDocumentName={activeDocument?.fileName}
           showSidebar={state.showSidebar}
-          hideMovePage={!state.supportsPagination}
+          hideMovePage={Boolean(state.error) || !state.supportsPagination}
+          hideZoom={Boolean(state.error)}
+          hideRotate={Boolean(state.error)}
+          hideReset={Boolean(state.error)}
           pdfPages={state.totalPages}
           pdfPage={state.pageNumber}
           extra={extraToolbar}

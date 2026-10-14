@@ -7,12 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.6.1] - 2026-10-01
+## [0.6.1] - 2026-10-14
+
+### Added
+
+- Added `'use client'` directive to root export for Next.js App Router and RSC compatibility
+- Added explicit `.js` and `/index.js` resolution script in ESM build for Node.js ESM consumers
+- Added consumer package validation script (`npm run check:package`) in CI and `prepublishOnly`
+- Connected PDF internal links to current page navigation via `onItemClick`
+- Propagated page-level PDF render and load failures to `onError`
+- Added reload key tracking so `handleRetry` cleanly re-fetches and decodes TIFF documents
+
+### Fixed
+
+- Fixed race condition where slow previous page decode could overwrite the currently selected TIFF page
+- Optimized TIFF memory footprint by decoding only requested pages on demand and freeing previous page raster data
+- Prevented blank flash during TIFF page changes by delaying Object URL revocation until the replacement page renders
+- Prevented opener access vulnerability in `handlePrint` by setting `window.opener = null` before opening remote PDFs
+- Kept document navigation accessible in multi-document mode even when a single document encounters an error
+- Fixed file extension resolution for URLs with hash fragments (`#`) or query strings (`?`)
+- Prevented fractional page numbers from being applied in viewer state
 
 ### Changed
 
 - Updated the TypeScript toolchain to TypeScript 7 while retaining the TypeScript 6 compiler API for Jest compatibility
-- Updated the library build configuration for the TypeScript 7 module resolution rules
+- Updated the library build configuration for TypeScript 7 module resolution rules
+- Updated CI matrix to Node 22 and 24
 
 ## [0.6.0] - 2026-09-23
 

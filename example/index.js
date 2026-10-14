@@ -302,7 +302,7 @@ export function App() {
               fontSize: 11, fontWeight: 600,
               background: t.accentLight, color: t.accent,
               padding: '3px 10px', borderRadius: 20,
-            }}>v0.5.0</span>
+            }}>v0.6.1</span>
             <button onClick={toggle} style={{
               padding: '8px 14px', borderRadius: 8, border: `1px solid ${t.border}`,
               background: t.surface, color: t.text, cursor: 'pointer',

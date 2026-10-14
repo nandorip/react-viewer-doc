@@ -55,7 +55,7 @@ describe('Demo App', () => {
     render(<App />);
     expect(screen.getByText('react-viewer-doc')).toBeInTheDocument();
     expect(screen.getByText('Upload a document')).toBeInTheDocument();
-    expect(screen.getByText('v0.5.0')).toBeInTheDocument();
+    expect(screen.getByText('v0.6.1')).toBeInTheDocument();
   });
 
   it('renders all sample buttons', () => {

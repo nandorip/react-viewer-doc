@@ -81,8 +81,8 @@ function MobileThumbnailCell({
 export const ViewerCanvas = ({
   state,
   actions,
-  labels,
-  theme = 'light',
+  labels = state.labels,
+  theme = state.theme,
   height,
 }: ViewerCanvasProps) => {
   const isMobile = useIsMobile();
@@ -138,6 +138,8 @@ export const ViewerCanvas = ({
             file={fileSelected}
             onLoadSuccess={actions.onPdfLoadSuccess}
             onLoadError={actions.onPdfLoadError}
+            onSourceError={actions.onPdfLoadError}
+            onItemClick={({ pageNumber: targetPage }) => actions.setPageNumber(targetPage)}
             suspense={false}
             loading={<LoadingMessage theme={theme}>{loadingLabel}</LoadingMessage>}
           >
@@ -178,6 +180,8 @@ export const ViewerCanvas = ({
                 rotate={rotation}
                 renderTextLayer={true}
                 renderAnnotationLayer={true}
+                onLoadError={actions.onPdfLoadError}
+                onRenderError={actions.onPdfLoadError}
                 loading={<LoadingMessage theme={theme}>{loadingLabel}</LoadingMessage>}
               />
             </DocumentContainer>

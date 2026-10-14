@@ -85,19 +85,23 @@ export function useDocumentActions({
     if (!fileUrl) return;
     const printWindow = window.open('', '_blank');
     if (printWindow) {
+      printWindow.opener = null;
+      if (fileUrl.shouldRevoke) revokeBlobUrlWhenClosed(fileUrl.url, printWindow);
       if (fileTypeRef.current === FileTypes.pdf) {
-        printWindow.location.href = fileUrl.url;
         printWindow.onload = () => {
-          printWindow.print();
-          if (fileUrl.shouldRevoke) revokeBlobUrlWhenClosed(fileUrl.url, printWindow);
+          try {
+            printWindow.print();
+          } catch {
+            // A remote PDF may be cross-origin; its native viewer still offers print.
+          }
         };
+        printWindow.location.href = fileUrl.url;
         return;
       }
       const printableImage = writeImagePrintDocument(printWindow, fileUrl.url);
       const printImage = () => {
         printWindow.focus();
         printWindow.print();
-        if (fileUrl.shouldRevoke) revokeBlobUrlWhenClosed(fileUrl.url, printWindow);
       };
       if (printableImage.complete) printImage();
       else printableImage.addEventListener('load', printImage, { once: true });

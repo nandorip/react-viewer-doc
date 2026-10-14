@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20, 22]
+        node-version: [22, 24]
 
     steps:
       - name: Checkout
@@ -31,6 +31,9 @@ jobs:
 
       - name: Build library
         run: npm run build:lib
+
+      - name: Check consumer integration
+        run: npm run check:package
 
       - name: Check package contents
         run: npm pack --dry-run

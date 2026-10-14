@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import {
   buildFileFromBase64,
   isSafeDocumentUri,
@@ -22,6 +22,7 @@ export function useFileLoader({
   setState,
   resetDocumentState,
 }: UseFileLoaderProps) {
+  const [reloadKey, setReloadKey] = useState(0);
 
   const getUnsupportedFileMessage = useCallback(
     () => labelsRef.current?.unsupportedFile || labelsRef.current?.error || 'Unsupported file type',
@@ -30,7 +31,7 @@ export function useFileLoader({
 
   const setUnsupportedFileError = useCallback(() => {
     const msg = getUnsupportedFileMessage();
-    setState(prev => ({ ...prev, error: msg }));
+    setState(prev => ({ ...prev, fileType: undefined, fileSelected: null, imageUrl: undefined, error: msg }));
     onErrorRef.current?.(msg);
   }, [getUnsupportedFileMessage, onErrorRef, setState]);
 
@@ -54,7 +55,7 @@ export function useFileLoader({
     const doc = documentRef.current;
     if (!doc) {
       resetDocumentState();
-      setState(prev => ({ ...prev, fileType: undefined, fileSelected: null, error: '' }));
+      setState(prev => ({ ...prev, fileType: undefined, fileSelected: null, imageUrl: undefined, error: '' }));
       return;
     }
     resetDocumentState();
@@ -68,6 +69,7 @@ export function useFileLoader({
   }, [documentRef, resetDocumentState, applyFileFromBase64, applyFileFromUrl, setUnsupportedFileError, setState]);
 
   const handleRetry = useCallback(() => {
+    setReloadKey(prev => prev + 1);
     setState(prev => ({ ...prev, error: '' }));
     initData();
   }, [initData, setState]);
@@ -75,5 +77,6 @@ export function useFileLoader({
   return {
     initData,
     handleRetry,
+    reloadKey,
   };
 }

@@ -1,46 +1,53 @@
 # Handoff for the next agent
 
-Updated: 2026-10-01
+Updated: 2026-10-14
 
 ## Current state
 
 - Repository: `react-viewer-doc`, branch `main`.
-- Release changes were committed as `18e3b08` (`chore: prepare 0.6.1 TypeScript toolchain release`) and pushed to `origin/main`.
-- `HANDOFF.md` records the remaining npm publish step; no release changes are intended to be left uncommitted.
-- Release version is prepared as `0.6.1`. npm was checked before release preparation; `0.6.0` was the published `latest` version.
-- The demo deployment to GitHub Pages completed successfully after the push (`npm run deploy`, output: `Published`). The push also triggered the GitHub Pages workflow.
-- **The npm package has not been published.** The publish attempt completed `prepublishOnly`, tests, and library build, but the registry rejected the PUT with 404. `npm whoami` returned 401, confirming this environment has no authenticated npm account.
+- Release version: `0.6.1`. (npm latest published is `0.6.0`).
+- The repository includes bug fixes, memory optimizations for multi-page TIFFs, security improvements for print window openers, PDF link/error callbacks, Next.js/RSC `'use client'` support, and automated package integration verification (`npm run check:package`).
 
-## Changes made
+## Changes made in this cycle
 
-- Updated TypeScript tooling: `@typescript/native` aliases TypeScript `^7.0.2`, while `typescript` aliases `@typescript/typescript6@^6.0.2` to provide the compiler API expected by `ts-jest`.
-- Changed the shared TypeScript config to `module: ESNext` and `moduleResolution: Bundler`.
-- ESM build uses TypeScript 7 with bundler resolution. The CommonJS build uses `tsc6`, `moduleResolution: Node10`, and `ignoreDeprecations: "6.0"` to preserve the existing output format.
-- Bumped package version to `0.6.1` and documented the toolchain changes in `CHANGELOG.md`.
+1. **TIFF performance & race condition prevention**:
+   - `src/Viewer/TiffHelpers.ts`: Added AbortSignal support, recognized `image/tif` MIME alias, implemented on-demand page decoding, and deallocated previous page raster memory upon switching.
+   - `src/hooks/useTiffImage.ts`: AbortController-driven request cancellation, session-based page synchronization to prevent slow previous page renders from overwriting the selected page, and delayed Object URL revocation to prevent screen flashing.
+   - `src/hooks/useTiffImage.test.ts` & `src/Viewer/TiffHelpers.test.ts`: Complete unit tests covering concurrency, lazy decoding, retry, cancellation, and error handling.
+
+2. **Security & robustness**:
+   - `src/hooks/useDocumentActions.ts`: Set `printWindow.opener = null` when opening remote PDFs to prevent reverse tabnabbing vulnerabilities. Wrapped cross-origin PDF print in try/catch.
+   - `src/Viewer/FileHelpers.ts`: Stripped query parameters and URL hash fragments (`[?#]`) when parsing file extensions.
+   - `src/hooks/useViewerState.ts`: Enforced `Number.isInteger` on page numbers to prevent fractional page navigation.
+
+3. **Error recovery & navigation**:
+   - `src/Viewer/index.tsx`: Kept document navigation controls available when in multi-document mode even if the active document fails to load.
+   - `src/hooks/useFileLoader.ts`: Added `reloadKey` state and retry trigger to restart TIFF and document loading cleanly.
+
+4. **PDF integration**:
+   - `src/components/ViewerCanvas/index.tsx`: Attached `onItemClick` to `Document` to connect PDF internal links (bookmarks/outlines) to current page navigation.
+   - Added `onLoadError` and `onRenderError` callbacks to `Page` to propagate page-level errors to `onError`.
+
+5. **Packaging, Tooling & CI**:
+   - `src/index.ts`: Added `'use client'` directive for Next.js and RSC compatibility.
+   - `scripts/post-build.cjs`: Post-processes ESM build output to append explicit `.js` extensions for relative imports.
+   - `scripts/check-package.cjs`: Validates package manifest (`main`, `module`, `types`, `exports`), declarations, and relative ESM imports.
+   - `package.json`: Added `check:package` script and wired it into `prepublishOnly`.
+   - `.github/workflows/ci.yml`: Updated Node matrix to `[22, 24]` and added the package check step.
+   - Updated documentation (`README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CHANGELOG.md`, `example/index.js`).
 
 ## Verification
 
-- `npm test -- --runInBand`: passed, 10 suites and 108 tests.
-- `npm run build:lib`: passed with the split TypeScript 6/7 toolchain.
-- `npm run build`: passed.
-- `npm outdated`: no outdated packages reported after the TypeScript aliases were installed.
-- npm audit during installation reported zero vulnerabilities.
-- `npm publish` ran its `prepublishOnly` hook successfully (tests and library build both passed), then failed only at registry authorization.
-- `npm pack --dry-run` content listing showed `react-viewer-doc@0.6.1`, 133 files, about 36.9 kB packed. The dry-run command itself was first blocked by local npm cache permissions; package inspection occurred during the publish attempt.
+- `npm test`: 11 test suites passed, 121 tests passed.
+- `npm run build:lib`: Built CommonJS (`dist/cjs/`) and ESM (`dist/esm/`).
+- `npm run check:package`: Passed with full manifest and import resolution validation.
+- `npm run build`: Demo built successfully with production esbuild bundle.
+- `npm pack --dry-run`: Verified package contents.
 
 ## Next action to publish
 
-1. Have the package owner authenticate this environment with `npm login` (or configure a valid npm token with publish access to `react-viewer-doc`).
-2. Confirm authentication with `npm whoami`.
-3. Run `npm publish`. Its `prepublishOnly` script will rerun the tests and library build.
-4. Confirm release with `npm view react-viewer-doc version dist-tags --json`; expected version/tag is `0.6.1` / `latest`.
-
-Do not bump the version again unless `0.6.1` has become occupied in the meantime. The current version files already identify `0.6.1`.
-
-## Release details
-
-- Changelog date: 2026-10-01.
-- Package name: `react-viewer-doc`.
-- Public access is configured in `package.json` under `publishConfig`.
-- `dist/` is generated by the publish lifecycle and is ignored by git; do not commit it.
-- No source or test behavior changes were made; this release is for the TypeScript toolchain and build configuration.
+1. Authenticate with npm: `npm login`.
+2. Confirm identity: `npm whoami`.
+3. Run `npm publish`.
+4. Deploy demo: `npm run publish-demo`.
+5. Confirm npm release: `npm view react-viewer-doc version dist-tags --json`.

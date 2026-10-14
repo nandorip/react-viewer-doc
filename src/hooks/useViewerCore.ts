@@ -50,6 +50,19 @@ export function useViewerCore(input: ViewerCoreInput): ViewerCoreResult {
   const documentRef = useRef(document);
   documentRef.current = document;
 
+  const {
+    initData,
+    handleRetry,
+    reloadKey,
+  } = useFileLoader({
+    documentRef,
+    labelsRef,
+    onErrorRef,
+    setState,
+    resetDocumentState,
+  });
+
+
   const fileTypeRef = useRef(state.fileType);
   fileTypeRef.current = state.fileType;
 
@@ -61,6 +74,7 @@ export function useViewerCore(input: ViewerCoreInput): ViewerCoreResult {
     loading: tiffLoading,
   } = useTiffImage({
     source: tiffSource,
+    reloadKey,
     pageNumber: state.pageNumber,
     onLoad,
     onError: (message) => {
@@ -131,17 +145,6 @@ export function useViewerCore(input: ViewerCoreInput): ViewerCoreResult {
     displayImageUrlRef,
   });
 
-  const {
-    initData,
-    handleRetry,
-  } = useFileLoader({
-    documentRef,
-    labelsRef,
-    onErrorRef,
-    setState,
-    resetDocumentState,
-  });
-
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return;
     const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
@@ -188,7 +191,7 @@ export function useViewerCore(input: ViewerCoreInput): ViewerCoreResult {
   }, [initData, document?.fileName, document?.fileUri, document?.fileData]);
 
   useEffect(() => {
-    if (isTiffMime(state.fileType)) {
+    if (!state.fileSelected || state.fileType === FileTypes.pdf || isTiffMime(state.fileType)) {
       setState(prev => ({ ...prev, imageUrl: undefined }));
       return;
     }

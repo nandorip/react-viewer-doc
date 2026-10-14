@@ -1,8 +1,11 @@
 /// <reference types="@testing-library/jest-dom" />
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { Viewer } from './index';
 import { pdfjs } from 'react-pdf';
+
+let mockDocumentProps: any;
+let mockPageProps: any;
 
 // Mock das dependências externas que podem ser difíceis em JSDOM
 jest.mock('react-pdf', () => ({
@@ -12,18 +15,24 @@ jest.mock('react-pdf', () => ({
     },
     version: '1.2.3',
   },
-  Document: ({ children, onLoadSuccess }: any) => {
+  Document: (props: any) => {
+    mockDocumentProps = props;
+    const { children, onLoadSuccess } = props;
     // Simular o evento de sucesso após a renderização
     React.useEffect(() => {
       onLoadSuccess?.({ numPages: 5 });
     }, [onLoadSuccess]);
     return <div data-testid="mock-pdf-document">{children}</div>;
   },
-  Page: ({ pageNumber, scale, width, rotate }: any) => (
+  Page: (props: any) => {
+    mockPageProps = props;
+    const { pageNumber, scale, width, rotate } = props;
+    return (
     <div data-testid="mock-pdf-page" data-width={width} data-scale={scale}>
       Page: {pageNumber}, Scale: {scale}, Width: {width}, Rotate: {rotate}
     </div>
-  ),
+    );
+  },
 }));
 
 
@@ -619,4 +628,44 @@ describe('Viewer', () => {
     fireEvent.blur(pageInput);
     expect(screen.getByDisplayValue('2')).toBeInTheDocument();
   });
+});
+
+
+test('keeps document navigation available when an error occurs without the sidebar', async () => {
+  const documents = [{ fileName: 'ok.png', fileUri: '/ok.png' }, { fileName: 'bad.csv', fileUri: '/bad.csv' }];
+  render(<Viewer documents={documents} defaultDocumentIndex={1} showDocumentList={false} />);
+  expect(screen.getByText('Unsupported file type')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Previous document' }));
+  expect(await screen.findByAltText('ok.png')).toBeInTheDocument();
+  expect(screen.queryByText('Unsupported file type')).not.toBeInTheDocument();
+});
+
+test('connects PDF internal links to the current page', async () => {
+  render(<Viewer document={{ fileName: 'report.pdf', fileUri: '/report.pdf' }} />);
+  expect(await screen.findByDisplayValue('1')).toBeInTheDocument();
+  act(() => mockDocumentProps.onItemClick({ pageNumber: 3 }));
+  expect(screen.getByDisplayValue('3')).toBeInTheDocument();
+});
+
+test.each(['onLoadError', 'onRenderError'])('reports main PDF page %s through onError and offers retry', async callback => {
+  const onError = jest.fn();
+  render(<Viewer document={{ fileName: 'report.pdf', fileUri: '/report.pdf' }} onError={onError} />);
+  await screen.findByDisplayValue('1');
+  act(() => mockPageProps[callback](new Error('page failed')));
+  expect(onError).toHaveBeenCalledWith('page failed');
+  expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+});
+
+test('clears opener before navigating a print window to a remote PDF', async () => {
+  let href = '';
+  const printWindow: any = { opener: {}, print: jest.fn(() => { throw new DOMException('Cross origin', 'SecurityError'); }), onload: null };
+  printWindow.location = { set href(value: string) { expect(printWindow.opener).toBeNull(); expect(printWindow.onload).toEqual(expect.any(Function)); href = value; } };
+  const spy = jest.spyOn(window, 'open').mockReturnValue(printWindow);
+  try {
+    render(<Viewer document={{ fileName: 'report.pdf', fileUri: 'https://example.com/report.pdf' }} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Print' }));
+    expect(href).toBe('https://example.com/report.pdf');
+    expect(() => printWindow.onload()).not.toThrow();
+    expect(printWindow.print).toHaveBeenCalled();
+  } finally { spy.mockRestore(); }
 });

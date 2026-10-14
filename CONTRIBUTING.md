@@ -4,7 +4,7 @@ Thank you for your interest in contributing to `react-viewer-doc`.
 
 ## Requirements
 
-- Node.js 20+ (recommended: current Active LTS)
+- Node.js 22.13+ or 24+ (required by `pdfjs-dist` and `react-pdf`)
 - npm 10+
 
 These versions are required to build and test the library. Consumers of the published npm package are not constrained by this.
@@ -33,7 +33,8 @@ Open [http://localhost:3001](http://localhost:3001). The demo lives in `example/
 | --- | --- |
 | `npm start` | esbuild dev server for the demo |
 | `npm test` | Run unit tests with Jest |
-| `npm run build:lib` | Compile `src/` to CommonJS and types in `dist/` |
+| `npm run build:lib` | Compile `src/` to CommonJS (`dist/cjs`) and ESM (`dist/esm`) with types |
+| `npm run check:package` | Validate package manifest, ESM imports, and exported declarations |
 | `npm run build` | Build the demo bundle in `example/dist` |
 | `npm run publish-demo` | Build and deploy the demo to GitHub Pages |
 
@@ -67,8 +68,8 @@ npm run build:lib
 
 This generates:
 
-- `dist/index.js` — CommonJS build (`tsc`)
-- `dist/index.d.ts` — TypeScript declarations
+- `dist/cjs/` — CommonJS build and declarations (`index.js`, `index.d.ts`)
+- `dist/esm/` — ESM build and declarations (`index.js`, `index.d.ts`)
 
 ## Publishing to npm
 

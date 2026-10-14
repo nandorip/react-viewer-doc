@@ -178,7 +178,7 @@ export const getExtension = (file: string) => {
     path = file;
   }
 
-  const pathWithoutQuery = path.split('?')[0];
+  const pathWithoutQuery = path.split(/[?#]/)[0];
   const fileName = pathWithoutQuery.split('/').pop() || pathWithoutQuery;
   const parts = fileName.split('.');
   return parts.length > 1 ? parts.pop()?.toLowerCase() || '' : '';
