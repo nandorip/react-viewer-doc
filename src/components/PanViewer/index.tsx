@@ -1,4 +1,4 @@
-import { useCallback, useRef, type MouseEvent, type PointerEvent, type ReactNode } from 'react';
+import { useCallback, useRef, useState, type MouseEvent, type PointerEvent, type ReactNode } from 'react';
 
 export interface PanViewerProps {
   zoom: number;
@@ -11,6 +11,7 @@ export interface PanViewerProps {
 const isPrimaryButton = (button: number) => button === 0;
 
 export const PanViewer = ({ zoom, dx, dy, onPan, children }: PanViewerProps) => {
+  const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef<{
     startX: number;
     startY: number;
@@ -19,6 +20,7 @@ export const PanViewer = ({ zoom, dx, dy, onPan, children }: PanViewerProps) => 
   } | null>(null);
 
   const startDrag = useCallback((clientX: number, clientY: number) => {
+    setIsDragging(true);
     dragRef.current = {
       startX: clientX,
       startY: clientY,
@@ -37,6 +39,7 @@ export const PanViewer = ({ zoom, dx, dy, onPan, children }: PanViewerProps) => 
   }, [onPan]);
 
   const endDrag = useCallback(() => {
+    setIsDragging(false);
     dragRef.current = null;
   }, []);
 
@@ -79,7 +82,7 @@ export const PanViewer = ({ zoom, dx, dy, onPan, children }: PanViewerProps) => 
       onMouseLeave={endDrag}
       style={{
         userSelect: 'none',
-        cursor: 'grab',
+        cursor: isDragging ? 'grabbing' : 'grab',
         touchAction: 'none',
       }}
     >

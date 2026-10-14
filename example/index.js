@@ -8,6 +8,12 @@ export const PDF_WORKER_SRC = (() => {
   return `${window.location.origin}${base}pdf.worker.min.mjs`;
 })();
 
+export const SAMPLE_BASE = (() => {
+  const pathName = typeof window !== 'undefined' ? window.location.pathname : '/';
+  const base = pathName.endsWith('/') ? pathName : pathName.replace(/\/[^/]*$/, '/');
+  return typeof window !== 'undefined' ? `${window.location.origin}${base}` : '';
+})();
+
 const SAMPLES = [
   {
     id: 'pdf',
@@ -16,6 +22,22 @@ const SAMPLES = [
     fileUri: 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf',
     icon: '📄',
     color: '#ef4444',
+  },
+  {
+    id: 'tiff',
+    label: 'Multipage TIFF',
+    fileName: 'multipage.tiff',
+    fileUri: `${SAMPLE_BASE}samples/multipage.tiff`,
+    icon: '📑',
+    color: '#f59e0b',
+  },
+  {
+    id: 'svg',
+    label: 'Vector SVG',
+    fileName: 'vector.svg',
+    fileUri: `${SAMPLE_BASE}samples/vector.svg`,
+    icon: '📐',
+    color: '#06b6d4',
   },
   {
     id: 'img',

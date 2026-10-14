@@ -62,6 +62,8 @@ describe('Demo App', () => {
     render(<App />);
     expect(screen.getByText('All Samples')).toBeInTheDocument();
     expect(screen.getByText('Tracemonkey PDF')).toBeInTheDocument();
+    expect(screen.getByText('Multipage TIFF')).toBeInTheDocument();
+    expect(screen.getByText('Vector SVG')).toBeInTheDocument();
     expect(screen.getByText('Nature Image')).toBeInTheDocument();
   });
 
