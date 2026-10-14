@@ -195,11 +195,12 @@ Shortcuts apply only while the viewer is focused.
 | `→` | Next PDF / TIFF page |
 | `←` | Previous PDF / TIFF page |
 
-## Contributing
+## Contributing & Publishing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, testing, and publishing instructions.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and testing.
+See [PUBLISHING.md](PUBLISHING.md) for release instructions and automated GitHub Actions publishing.
 
-Local development requires Node.js 20+. The published package has no Node.js version constraint for consumers.
+Local development requires Node.js 22.13+ or 24+. The published package has no Node.js version constraint for consumers.
 
 ## Changelog
 

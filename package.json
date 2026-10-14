@@ -28,6 +28,7 @@
     "build:lib": "node scripts/clean-dist.cjs && tsc6 -p tsconfig.cjs.json && tsc -p tsconfig.esm.json && node scripts/post-build.cjs",
     "check:package": "node scripts/check-package.cjs",
     "prepublishOnly": "npm test && npm run build:lib && npm run check:package",
+    "release": "node scripts/release.cjs",
     "build": "node scripts/demo.mjs --production",
     "deploy": "gh-pages -d example/dist",
     "publish-demo": "npm run build && npm run deploy"

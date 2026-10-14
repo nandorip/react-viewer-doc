@@ -73,32 +73,25 @@ This generates:
 
 ## Publishing to npm
 
-### Prerequisites
+See [PUBLISHING.md](PUBLISHING.md) for full instructions, including 1-click GitHub Actions automated releases and owner configuration.
 
-- npm account with publish access to `react-viewer-doc`
-- logged in: `npm login`
+### Quick local release
 
-### Release checklist
-
-1. Update `CHANGELOG.md` with the new version and changes.
-2. Bump the version in `package.json` following [semver](https://semver.org/):
-   ```bash
-   npm version patch   # 0.4.0 → 0.4.1
-   npm version minor   # 0.4.0 → 0.5.0
-   npm version major   # 0.4.0 → 1.0.0
-   ```
-3. Publish:
-   ```bash
-   npm publish
-   ```
-
-The `prepublishOnly` script runs automatically before publish:
-
-```
-npm test → npm run build:lib
+```bash
+npm run release
 ```
 
-Do not commit `dist/` — it is built during publish and excluded via `.gitignore`.
+This runs unit tests, compiles CJS/ESM libraries, runs package verification checks, and publishes to npm. If your npm account requires 2FA:
+
+```bash
+npm run release -- --otp=YOUR_OTP_CODE
+```
+
+### Automated release via GitHub Actions (Recommended)
+
+Once you set the `NPM_TOKEN` secret in your GitHub repository, you can publish without local credentials:
+- **By tag:** `git tag v0.6.1 && git push origin v0.6.1`
+- **By web UI:** Go to **Actions** -> **Release & Publish to npm** -> **Run workflow**.
 
 ### Deploying the demo
 
