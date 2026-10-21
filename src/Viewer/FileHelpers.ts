@@ -2,6 +2,8 @@
 
 import { DocumentData } from '../types';
 
+export const MAX_DOCUMENT_BYTES = 50 * 1024 * 1024;
+
 const ALLOWED_URL_PROTOCOLS = ['http:', 'https:', 'blob:', 'data:'] as const;
 const SAFE_DOCUMENT_URI_PROTOCOLS = ['http:', 'https:', 'blob:'] as const;
 
@@ -152,14 +154,13 @@ export const base64ToBlob = (base64: string, mimeType: string): Blob | null => {
       }
     }
 
+    if (content.length > Math.ceil(MAX_DOCUMENT_BYTES / 3) * 4) return null;
     const byteCharacters = atob(content);
-    const byteNumbers = new Array(byteCharacters.length);
-
+    if (byteCharacters.length > MAX_DOCUMENT_BYTES) return null;
+    const byteArray = new Uint8Array(byteCharacters.length);
     for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
+      byteArray[i] = byteCharacters.charCodeAt(i);
     }
-
-    const byteArray = new Uint8Array(byteNumbers);
     return new Blob([byteArray], { type: mimeType });
   } catch {
     return null;
@@ -207,6 +208,7 @@ export interface BuiltFile {
 }
 
 export const buildFileFromBase64 = (fileBase64: string): BuiltFile | null => {
+  if (fileBase64.length > Math.ceil(MAX_DOCUMENT_BYTES / 3) * 4 + 128) return null;
   let content = fileBase64;
   if (fileBase64.startsWith('data:')) {
     const parts = fileBase64.split(',');
@@ -231,10 +233,48 @@ export const buildFileFromBase64 = (fileBase64: string): BuiltFile | null => {
     return { file: blobFile, mime };
   }
 
-  return {
-    file: `data:${mime};base64,${content}`,
-    mime,
-  };
+  return null;
+};
+
+export const createSafePdfBlob = async (source: Blob | string): Promise<Blob | null> => {
+  try {
+    let blob: Blob;
+    if (source instanceof Blob) {
+      blob = source;
+    } else {
+      const url = resolveOpenableUrl(source);
+      if (!url || !isSafeDocumentUri(url)) return null;
+      const response = await fetch(url);
+      if (!response.ok || !response.body) return null;
+      const length = Number(response.headers.get('content-length'));
+      if (length > MAX_DOCUMENT_BYTES) {
+        await response.body.cancel();
+        return null;
+      }
+      const reader = response.body.getReader();
+      const chunks: ArrayBuffer[] = [];
+      let size = 0;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        size += value.byteLength;
+        if (size > MAX_DOCUMENT_BYTES) {
+          await reader.cancel();
+          return null;
+        }
+        const copy = new Uint8Array(value.byteLength);
+        copy.set(value);
+        chunks.push(copy.buffer);
+      }
+      blob = new Blob(chunks);
+    }
+    if (blob.size > MAX_DOCUMENT_BYTES) return null;
+    const header = new Uint8Array(await blob.slice(0, 5).arrayBuffer());
+    if (header.length !== 5 || header.some((byte, index) => byte !== [37, 80, 68, 70, 45][index])) return null;
+    return new Blob([blob], { type: 'application/pdf' });
+  } catch {
+    return null;
+  }
 };
 
 export const downloadFile = (file: Blob | string, fileName: string) => {

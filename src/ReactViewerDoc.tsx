@@ -27,13 +27,10 @@ export const ReactViewerDoc = ({
   );
 
   const errorResetKey = [
-    document?.id,
-    document?.fileName,
-    document?.fileUri,
-    document?.fileData,
-    documents?.map((item) => item.id ?? item.fileName).join('|'),
+    document?.id, document?.fileName, document?.fileUri, document?.fileData,
     documentIndex,
-  ].join('::');
+    ...(documents?.flatMap((item) => [item.id, item.fileName, item.fileUri, item.fileData]) ?? []),
+  ];
 
   return (
     <ErrorBoundary labels={resolvedLabels} resetKey={errorResetKey}>

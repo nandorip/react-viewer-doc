@@ -53,6 +53,13 @@ test('returns null on malformed input or page decode failure', async () => {
   expect(await decoded?.renderPage(0)).toBeNull();
 });
 
+test('rejects a page whose dimensions exceed the pixel limit before decoding', async () => {
+  mockedUtif.decode.mockReturnValue([{ width: 10000, height: 10000 }]);
+  const decoded = await TiffHelpers.decodeTiff(new Blob(['tiff']));
+  expect(await decoded?.renderPage(0)).toBeNull();
+  expect(mockedUtif.decodeImage).not.toHaveBeenCalled();
+});
+
 test('does not decode an aborted source', async () => {
   const controller = new AbortController();
   controller.abort();

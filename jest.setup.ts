@@ -9,6 +9,7 @@ class ResizeObserverMock {
   disconnect() {}
 }
 
+if (typeof window !== 'undefined') {
 Object.defineProperty(window, 'ResizeObserver', {
   writable: true,
   configurable: true,
@@ -28,3 +29,4 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: () => false,
   }),
 });
+}

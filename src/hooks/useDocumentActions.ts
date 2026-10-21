@@ -5,6 +5,7 @@ import {
   revokeBlobUrlWhenClosed,
   downloadFile,
   resolveDownloadFileName,
+  createSafePdfBlob,
 } from '../Viewer/FileHelpers';
 import { isTiffMime } from '../Viewer/TiffHelpers';
 import { DocumentData, Labels } from '../types';
@@ -15,6 +16,7 @@ interface UseDocumentActionsProps {
   fileSelectedRef: React.MutableRefObject<string | Blob | null>;
   fileTypeRef: React.MutableRefObject<string | undefined>;
   displayImageUrlRef: React.MutableRefObject<string | undefined>;
+  onErrorRef: React.MutableRefObject<((error: string) => void) | undefined>;
 }
 
 export function useDocumentActions({
@@ -23,7 +25,12 @@ export function useDocumentActions({
   fileSelectedRef,
   fileTypeRef,
   displayImageUrlRef,
+  onErrorRef,
 }: UseDocumentActionsProps) {
+
+  const reportPdfOpenError = useCallback(() => {
+    onErrorRef.current?.('Unable to open PDF document');
+  }, [onErrorRef]);
 
   const createOpenableFileUrl = useCallback(() => {
     if (isTiffMime(fileTypeRef.current)) {
@@ -59,15 +66,27 @@ export function useDocumentActions({
   }, [document, labels]);
 
   const handleOpenInNew = useCallback(() => {
-    const fileUrl = createOpenableFileUrl();
-    if (!fileUrl) return;
-
     if (fileTypeRef.current === FileTypes.pdf) {
-      const openedWindow = window.open(fileUrl.url, '_blank');
-      if (openedWindow) openedWindow.opener = null;
-      if (fileUrl.shouldRevoke) revokeBlobUrlWhenClosed(fileUrl.url, openedWindow);
+      const source = fileSelectedRef.current;
+      if (!source) return;
+      const openedWindow = window.open('', '_blank');
+      if (!openedWindow) return;
+      openedWindow.opener = null;
+      void createSafePdfBlob(source).then((blob) => {
+        if (!blob || openedWindow.closed) {
+          openedWindow.close();
+          if (!blob) reportPdfOpenError();
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        revokeBlobUrlWhenClosed(url, openedWindow);
+        openedWindow.location.href = url;
+      });
       return;
     }
+
+    const fileUrl = createOpenableFileUrl();
+    if (!fileUrl) return;
 
     const openedWindow = window.open('', '_blank');
     if (openedWindow) {
@@ -78,26 +97,36 @@ export function useDocumentActions({
     }
 
     if (fileUrl.shouldRevoke) URL.revokeObjectURL(fileUrl.url);
-  }, [createOpenableFileUrl, fileTypeRef, writeImagePrintDocument]);
+  }, [createOpenableFileUrl, fileSelectedRef, fileTypeRef, reportPdfOpenError, writeImagePrintDocument]);
 
   const handlePrint = useCallback(() => {
+    if (fileTypeRef.current === FileTypes.pdf) {
+      const source = fileSelectedRef.current;
+      if (!source) return;
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) return;
+      printWindow.opener = null;
+      void createSafePdfBlob(source).then((blob) => {
+        if (!blob || printWindow.closed) {
+          printWindow.close();
+          if (!blob) reportPdfOpenError();
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        revokeBlobUrlWhenClosed(url, printWindow);
+        printWindow.onload = () => {
+          try { printWindow.print(); } catch { /* Native PDF viewer still offers print. */ }
+        };
+        printWindow.location.href = url;
+      });
+      return;
+    }
     const fileUrl = createOpenableFileUrl();
     if (!fileUrl) return;
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       printWindow.opener = null;
       if (fileUrl.shouldRevoke) revokeBlobUrlWhenClosed(fileUrl.url, printWindow);
-      if (fileTypeRef.current === FileTypes.pdf) {
-        printWindow.onload = () => {
-          try {
-            printWindow.print();
-          } catch {
-            // A remote PDF may be cross-origin; its native viewer still offers print.
-          }
-        };
-        printWindow.location.href = fileUrl.url;
-        return;
-      }
       const printableImage = writeImagePrintDocument(printWindow, fileUrl.url);
       const printImage = () => {
         printWindow.focus();
@@ -106,7 +135,7 @@ export function useDocumentActions({
       if (printableImage.complete) printImage();
       else printableImage.addEventListener('load', printImage, { once: true });
     } else if (fileUrl.shouldRevoke) URL.revokeObjectURL(fileUrl.url);
-  }, [createOpenableFileUrl, fileTypeRef, writeImagePrintDocument]);
+  }, [createOpenableFileUrl, fileSelectedRef, fileTypeRef, reportPdfOpenError, writeImagePrintDocument]);
 
   const handleDownload = useCallback(() => {
     const fileSelected = fileSelectedRef.current;

@@ -36,7 +36,7 @@ Open [http://localhost:3001](http://localhost:3001). The demo lives in `example/
 | `npm run build:lib` | Compile `src/` to CommonJS (`dist/cjs`) and ESM (`dist/esm`) with types |
 | `npm run check:package` | Validate package manifest, ESM imports, and exported declarations |
 | `npm run build` | Build the demo bundle in `example/dist` |
-| `npm run publish-demo` | Build and deploy the demo to GitHub Pages |
+| `npm run publish-demo` | Trigger the GitHub Pages workflow (requires GitHub CLI authentication) |
 
 ## Project structure
 
@@ -95,7 +95,7 @@ Once you set the `NPM_TOKEN` secret in your GitHub repository, you can publish w
 
 ### Deploying the demo
 
-Pushes to `main` deploy the demo through GitHub Actions. To publish it manually:
+Pushes to `main` deploy the demo through GitHub Actions. To trigger the workflow manually with an authenticated GitHub CLI:
 
 ```bash
 npm run publish-demo

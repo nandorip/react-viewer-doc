@@ -79,11 +79,12 @@ const props: ViewerProps = {
 | theme | `'light'` \| `'dark'` | `'light'` | Color theme |
 | extraToolbar | `ReactNode` \| `function` | — | Extra controls in the default toolbar |
 | renderToolbar | `function` | — | `(actions: ToolbarActions) => ReactNode` — replace the toolbar |
-| pdfWorkerSrc | `string` | unpkg CDN | PDF.js worker URL |
+| pdfWorkerSrc | `string` | Existing PDF.js setting, then unpkg CDN | PDF.js worker URL |
 | onLoad | `function` | — | Called when the document loads |
 | onError | `function` | — | `(error: string) => void` |
 
 Supported files: PDF, PNG, JPEG, GIF, WebP, SVG and TIFF. `fileUri` is limited to `http:`, `https:` and `blob:`. `data:` input must use an allowed document MIME type.
+Base64 documents and TIFF files are limited to 50 MiB. TIFF pages are limited to 25 million pixels and 1000 pages. Opening or printing a PDF creates a validated PDF copy, so remote PDF URLs must allow browser `fetch` (including CORS when cross-origin).
 
 ## Examples
 
@@ -176,7 +177,7 @@ function MyViewer({ doc }) {
 
 ## PDF worker
 
-By default the PDF.js worker is loaded from the unpkg CDN. Host it locally in production and pass the URL:
+Pass a locally hosted PDF.js worker in production, especially for offline use or a restrictive Content Security Policy. If `pdfWorkerSrc` is omitted, the viewer preserves an existing `pdfjs.GlobalWorkerOptions.workerSrc` setting and otherwise uses the unpkg CDN:
 
 ```tsx
 <ReactViewerDoc document={doc} pdfWorkerSrc="/pdf.worker.min.mjs" />

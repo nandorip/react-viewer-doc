@@ -1,99 +1,31 @@
-# Guia Simplificado de Publicação no npm
+# Publicação no npm
 
-Este guia foi criado para tornar o processo de publicação do `react-viewer-doc` **rápido, direto e à prova de erros**, eliminando atritos com 2FA, OTP e permissões de conta.
+O pacote público é `react-viewer-doc`. O fluxo de publicação está em `.github/workflows/release.yml` e exige acesso de mantenedor ao pacote no npm.
 
----
+## Configuração recomendada: publicação confiável
 
-## 1. Passo Inicial: Transferir ou Conceder Acesso a `nandorip`
+Nas configurações do pacote no npm, adicione um **Trusted Publisher** do GitHub Actions com:
 
-O pacote `react-viewer-doc` foi originalmente criado pela conta `wipmob`. Para que o seu usuário **`nandorip`** possa publicar e gerenciar o pacote:
+- Usuário ou organização: `nandorip`
+- Repositório: `react-viewer-doc`
+- Arquivo do workflow: `release.yml`
+- Permissão para `npm publish`
 
-1. No seu navegador, certifique-se de estar conectado com a conta **`wipmob`**.
-2. Acesse a página de controle de acesso do pacote:  
-   👉 **[https://www.npmjs.com/package/react-viewer-doc/access](https://www.npmjs.com/package/react-viewer-doc/access)**
-3. Em **Collaborators**, digite **`nandorip`** e clique em **Invite / Add**.
-4. *(Opcional)* Se quiser que `nandorip` seja o único dono no futuro, você poderá remover o `wipmob` dessa mesma tela.
+O workflow já concede `id-token: write` e usa Node 24. Com essa configuração, o npm autentica a publicação via OIDC e gera a proveniência automaticamente. Confirme que a URL de `repository` em `package.json` corresponde ao repositório configurado. Se a publicação confiável ainda não estiver configurada, o workflow pode usar o segredo `NPM_TOKEN` como alternativa; use um token granular com permissão de publicação e as exigências de 2FA apropriadas da conta. Não desative a proteção de 2FA para publicar.
 
----
+## Antes de publicar
 
-## 2. Método Recomendado: Publicação com 1 Clique via GitHub Actions
+1. Atualize `version` em `package.json` e `package-lock.json`. Uma combinação de nome e versão já publicada não pode ser reutilizada.
+2. Registre as mudanças em `CHANGELOG.md` e faça commit.
+3. Execute `npm ci`, `npm test`, `npm pack --dry-run` e `npm audit`.
+4. Confira o tarball: `prepack` compila CJS e ESM e valida os imports. O `prepublishOnly` executa os testes.
 
-Este é o método mais simples e seguro. Uma vez configurado, você **nunca mais precisará de código OTP** e nem precisará usar o terminal para publicar.
+## Publicação
 
-### Configuração Única (Feita em 2 minutos):
+Dispare **Release & Publish to npm** na aba Actions do GitHub, ou crie e envie uma tag `vX.Y.Z` que corresponda à versão em `package.json`. O workflow aceita uma dist-tag opcional na execução manual.
 
-1. **Gerar um Token de Automação no npm:**
-   - No site do npm, conectado como **`nandorip`**:
-   - Acesse: **[https://www.npmjs.com/settings/nandorip/tokens/create](https://www.npmjs.com/settings/nandorip/tokens/create)**
-   - Selecione **Classic Token**.
-   - Dê um nome (ex: `GitHub Actions Release`) e marque a opção **Automation** *(tokens de automação ignoram a exigência de 2FA/OTP)*.
-   - Copie o token gerado (`npm_...`).
+Para publicação local, `npm run release` também executa os testes, compila e valida o pacote antes de chamar `npm publish`; a conta npm precisa ter permissão de publicação e satisfazer o 2FA exigido pelo registro.
 
-2. **Salvar o Token no Repositório do GitHub:**
-   - Acesse seu repositório no GitHub: **[https://github.com/nandorip/react-viewer-doc/settings/secrets/actions](https://github.com/nandorip/react-viewer-doc/settings/secrets/actions)**
-   - Clique em **New repository secret**.
-   - Nome: `NPM_TOKEN`
-   - Valor: Cole o token que você copiou no passo anterior.
-   - Clique em **Add secret**.
+Após a publicação, confira `npm view react-viewer-doc version dist-tags --json`.
 
-### Como Publicar Qualquer Nova Versão:
-
-Depois de salvar o segredo, você tem duas opções extremamente simples:
-
-- **Pelo Navegador (Sem comandos):**
-  1. Vá até a aba **[Actions](https://github.com/nandorip/react-viewer-doc/actions/workflows/release.yml)** no GitHub.
-  2. Selecione **Release & Publish to npm**.
-  3. Clique em **Run workflow** -> **Run workflow**.
-  4. O GitHub executará os testes, o build e publicará no npm automaticamente!
-
-- **Por Git Tag (Pelo terminal):**
-  ```bash
-  git tag v0.6.1
-  git push origin v0.6.1
-  ```
-  *(O envio da tag dispara a publicação automática no npm).*
-
----
-
-## 3. Método Alternativo: Publicação Local com o Script `release`
-
-Se você preferir publicar diretamente pela sua máquina, criamos o comando `npm run release`:
-
-```bash
-npm run release
-```
-
-### O que este comando faz automaticamente:
-1. Verifica se o repositório Git está limpo.
-2. Executa a suíte de testes (`npm test`).
-3. Compila a biblioteca em CommonJS (`dist/cjs`) e ESM (`dist/esm`).
-4. Valida a integridade do pacote e todos os imports (`npm run check:package`).
-5. Verifica se o usuário autenticado é o dono do pacote.
-6. Publica no registro público e exibe a confirmação.
-
-> **Se a sua conta exigir código de 2FA no terminal:**  
-> Basta passar o código com `--otp`:
-> ```bash
-> npm run release -- --otp=SEU_CODIGO_DE_6_DIGITOS
-> ```
-
----
-
-## 4. Como Evitar Pedido de Código OTP no Terminal
-
-Se você quiser rodar `npm publish` no seu computador sem que o npm peça código OTP:
-
-1. Acesse: **[https://www.npmjs.com/settings/nandorip/tfa](https://www.npmjs.com/settings/nandorip/tfa)**
-2. Em **2FA Mode**, altere de *"Authorization and writes"* para **"Authorization only"**.
-3. Salve.
-   *(Com essa configuração, o 2FA continuará protegendo o seu login, mas não bloqueará a publicação de pacotes).*
-
----
-
-## 5. Verificação Pós-Publicação
-
-Para conferir se uma versão foi publicada com sucesso e já está disponível globalmente:
-
-```bash
-npm view react-viewer-doc version dist-tags --json
-```
+Referência: [publicação confiável do npm](https://docs.npmjs.com/trusted-publishers/).

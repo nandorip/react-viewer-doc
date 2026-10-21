@@ -7,7 +7,7 @@ interface Props {
   children: ReactNode;
   fallback?: ReactNode;
   labels?: Labels;
-  resetKey?: string;
+  resetKey?: readonly unknown[];
 }
 
 interface State {
@@ -29,7 +29,11 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidUpdate(prevProps: Props) {
-    if (this.state.hasError && this.props.resetKey !== prevProps.resetKey) {
+    const current = this.props.resetKey;
+    const previous = prevProps.resetKey;
+    const changed = current?.length !== previous?.length
+      || current?.some((value, index) => !Object.is(value, previous?.[index]));
+    if (this.state.hasError && changed) {
       this.setState({ hasError: false, error: undefined });
     }
   }

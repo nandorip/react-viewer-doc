@@ -19,6 +19,7 @@ import {
 
 export const PDFJS_VERSION = pdfjs.version;
 export const DEFAULT_PDF_WORKER_SRC = `https://unpkg.com/pdfjs-dist@${PDFJS_VERSION}/build/pdf.worker.min.mjs`;
+const REACT_PDF_PLACEHOLDER_WORKER_SRC = 'pdf.worker.mjs';
 
 const VIEWER_HORIZONTAL_PADDING = 32;
 const MOBILE_MEDIA_QUERY = '(max-width: 768px)';
@@ -143,6 +144,7 @@ export function useViewerCore(input: ViewerCoreInput): ViewerCoreResult {
     fileSelectedRef,
     fileTypeRef,
     displayImageUrlRef,
+    onErrorRef,
   });
 
   useEffect(() => {
@@ -183,7 +185,12 @@ export function useViewerCore(input: ViewerCoreInput): ViewerCoreResult {
 
   useEffect(() => {
     if (typeof window === 'undefined' || pdfWorkerSrc === null) return;
-    pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerSrc || DEFAULT_PDF_WORKER_SRC;
+    if (pdfWorkerSrc) {
+      pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
+    } else if (!pdfjs.GlobalWorkerOptions.workerSrc
+      || pdfjs.GlobalWorkerOptions.workerSrc === REACT_PDF_PLACEHOLDER_WORKER_SRC) {
+      pdfjs.GlobalWorkerOptions.workerSrc = DEFAULT_PDF_WORKER_SRC;
+    }
   }, [pdfWorkerSrc]);
 
   useEffect(() => {

@@ -1,7 +1,8 @@
 /// <reference types="@testing-library/jest-dom" />
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 import { Viewer } from './index';
+import * as FileHelpers from './FileHelpers';
 import { pdfjs } from 'react-pdf';
 
 let mockDocumentProps: any;
@@ -661,11 +662,14 @@ test('clears opener before navigating a print window to a remote PDF', async () 
   const printWindow: any = { opener: {}, print: jest.fn(() => { throw new DOMException('Cross origin', 'SecurityError'); }), onload: null };
   printWindow.location = { set href(value: string) { expect(printWindow.opener).toBeNull(); expect(printWindow.onload).toEqual(expect.any(Function)); href = value; } };
   const spy = jest.spyOn(window, 'open').mockReturnValue(printWindow);
+  const safePdf = jest.spyOn(FileHelpers, 'createSafePdfBlob').mockResolvedValue(new Blob(['%PDF-1.7'], { type: 'application/pdf' }));
+  const revoke = jest.spyOn(FileHelpers, 'revokeBlobUrlWhenClosed').mockReturnValue(() => {});
   try {
     render(<Viewer document={{ fileName: 'report.pdf', fileUri: 'https://example.com/report.pdf' }} />);
     fireEvent.click(screen.getByRole('button', { name: 'Print' }));
-    expect(href).toBe('https://example.com/report.pdf');
+    await waitFor(() => expect(href).toBe('blob:http://localhost/file'));
+    expect(safePdf).toHaveBeenCalledWith('https://example.com/report.pdf');
     expect(() => printWindow.onload()).not.toThrow();
     expect(printWindow.print).toHaveBeenCalled();
-  } finally { spy.mockRestore(); }
+  } finally { spy.mockRestore(); safePdf.mockRestore(); revoke.mockRestore(); }
 });
