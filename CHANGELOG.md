@@ -40,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated the TypeScript toolchain to TypeScript 7 while retaining the TypeScript 6 compiler API for Jest compatibility
 - Updated the library build configuration for TypeScript 7 module resolution rules
-- Updated CI matrix to Node 22 and 24
+- Updated CI to the same layout as the sibling packages: Node 20 and 24, `npm run check`, the demo build, and a React 19 compatibility job
 - Leave an existing PDF.js worker in place, and apply the CDN worker only when react-pdf still has its `pdf.worker.mjs` placeholder
 - Show a grab cursor while panning images
 - Refreshed dependencies inside current ranges, including React 19.3.1, MUI 9.5.0 and react-window 2.5.3

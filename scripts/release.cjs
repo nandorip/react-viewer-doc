@@ -42,9 +42,7 @@ if (publishedVersion === version) {
 }
 
 console.log('\nExecutando verificações (testes, build e pacote)...');
-run('npm test -- --runInBand');
-run('npm run build:lib');
-run('npm run check:package');
+run('npm run check');
 
 const otpArg = process.argv.find((arg) => arg.startsWith('--otp=')) || '';
 const otp = otpArg.slice('--otp='.length);
