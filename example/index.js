@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ReactViewerDoc, useViewerCore, ViewerCanvas } from 'react-viewer-doc';
 
@@ -102,22 +102,6 @@ const THEME = {
   },
 };
 
-function IconUpload() {
-  return (
-    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="17 8 12 3 7 8" />
-      <line x1="12" y1="3" x2="12" y2="15" />
-    </svg>
-  );
-}
-
-function FileIcon({ type }) {
-  if (type === 'pdf') return '📄';
-  if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(type)) return '🖼️';
-  return '📁';
-}
-
 function formatFileSize(bytes) {
   if (!bytes) return '';
   if (bytes < 1024) return bytes + ' B';
@@ -128,33 +112,31 @@ function formatFileSize(bytes) {
 function useTheme() {
   const [dark, setDark] = useState(() => window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false);
   const toggle = useCallback(() => setDark((d) => !d), []);
+  useEffect(() => {
+    document.body.classList.toggle('dark', dark);
+  }, [dark]);
   const t = dark ? THEME.dark : THEME.light;
   return { dark, toggle, t };
 }
 
-function ViewModeSelector({ mode, onChange, t }) {
-  const modes = [
-    { key: 'default', label: 'Standard', desc: 'extraToolbar' },
-    { key: 'custom', label: 'Custom Toolbar', desc: 'renderToolbar' },
-    { key: 'headless', label: 'Headless', desc: 'useViewerCore' },
-    { key: 'documents', label: 'Documents', desc: 'documents[]' },
-  ];
+const VIEW_MODES = [
+  { key: 'default', label: 'Standard', desc: 'extraToolbar' },
+  { key: 'custom', label: 'Custom Toolbar', desc: 'renderToolbar' },
+  { key: 'headless', label: 'Headless', desc: 'useViewerCore' },
+  { key: 'documents', label: 'Documents', desc: 'documents[]' },
+];
+
+function ViewModeSelector({ mode, onChange }) {
   return (
-    <div style={{ display: 'flex', gap: 6, marginTop: 14 }}>
-      {modes.map((m) => (
+    <div className="modes">
+      {VIEW_MODES.map((item) => (
         <button
-          key={m.key}
-          onClick={() => onChange(m.key)}
-          style={{
-            padding: '8px 16px', borderRadius: 8,
-            border: mode === m.key ? `2px solid ${t.accent}` : `1px solid ${t.border}`,
-            background: mode === m.key ? t.accentLight : t.surface,
-            color: t.text, cursor: 'pointer', fontSize: 12, fontWeight: 600,
-            transition: 'all 0.15s',
-          }}
+          key={item.key}
+          className={mode === item.key ? 'active' : undefined}
+          onClick={() => onChange(item.key)}
         >
-          {m.label}
-          <span style={{ display: 'block', fontSize: 10, fontWeight: 400, color: t.textMuted, marginTop: 1 }}>{m.desc}</span>
+          <strong>{item.label}</strong>
+          <span>{item.desc}</span>
         </button>
       ))}
     </div>
@@ -289,239 +271,120 @@ export function App() {
   const hasDocuments = documents && documents.length > 0;
   const showViewer = Boolean(doc) || hasDocuments;
 
+  const sampleKind = (sample) => (
+    sample.id === 'pdf' ? 'PDF' : sample.id === 'tiff' ? 'TIFF' : sample.id === 'svg' ? 'SVG' : 'Image'
+  );
+
   return (
-    <div style={{ minHeight: '100vh', background: t.bg, color: t.text, transition: 'all 0.3s' }}>
-      {/* Header */}
-      <header style={{
-        background: `linear-gradient(135deg, ${t.accent}15 0%, ${t.surface} 100%)`,
-        borderBottom: `1px solid ${t.border}`,
-        backdropFilter: 'blur(12px)',
-        position: 'sticky', top: 0, zIndex: 50,
-      }}>
-        <div style={{
-          maxWidth: 1100, margin: '0 auto',
-          padding: '14px 24px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: `linear-gradient(135deg, ${t.accent}, #a855f7)`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontSize: 18, fontWeight: 700,
-            }}>RV</div>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em' }}>
-                react-viewer-doc
-              </div>
-              <div style={{ fontSize: 11, color: t.textMuted, marginTop: -1 }}>
-                React component · PDF & Image viewer
-              </div>
-            </div>
+    <div style={{ minHeight: '100vh' }}>
+      <header className="topbar">
+        <div className="brand">
+          <div className="mark">rv</div>
+          <div>
+            <h1>react-viewer-doc</h1>
+            <p>PDF, TIFF, SVG and images</p>
           </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <span style={{
-              fontSize: 11, fontWeight: 600,
-              background: t.accentLight, color: t.accent,
-              padding: '3px 10px', borderRadius: 20,
-            }}>v0.6.1</span>
-            <button onClick={toggle} style={{
-              padding: '8px 14px', borderRadius: 8, border: `1px solid ${t.border}`,
-              background: t.surface, color: t.text, cursor: 'pointer',
-              fontSize: 13, fontWeight: 500, transition: 'all 0.15s',
-            }}>
-              {dark ? '☀️ Light' : '🌙 Dark'}
-            </button>
-          </div>
+        </div>
+        <div className="top-actions">
+          <span className="pill">v0.6.1</span>
+          <button className="ghost" onClick={toggle}>{dark ? 'Light' : 'Dark'}</button>
         </div>
       </header>
 
-      <main style={{ maxWidth: 1100, margin: '0 auto', padding: '28px 24px' }}>
-        {/* Upload Area */}
-        <div
-          className="fade-in"
-          style={{
-            border: `2px dashed ${dragOver ? t.accent : t.border}`,
-            borderRadius: 16, padding: '40px 24px', textAlign: 'center',
-            cursor: 'pointer', transition: 'all 0.2s',
-            background: dragOver
-              ? (dark ? '#1e1f3a' : '#f0f0ff')
-              : t.surface,
-            boxShadow: t.shadow,
-          }}
-          onDrop={handleDrop}
-          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-          onDragLeave={() => setDragOver(false)}
-          onClick={() => document.getElementById('fileInput')?.click()}
-        >
-          <input
-            id="fileInput" type="file"
-            accept="image/*,.pdf,.svg,.tif,.tiff"
-            style={{ display: 'none' }}
-            onChange={(e) => handleFile(e.target.files[0])}
-          />
-          <div style={{ marginBottom: 12 }}><IconUpload /></div>
-          <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 4 }}>
-            Upload a document
-          </div>
-          <div style={{ fontSize: 13, color: t.textMuted, marginBottom: 16 }}>
-            Drag & drop or click to browse — PDF, images, TIFF, SVG
-          </div>
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <span style={{
-              fontSize: 11, padding: '3px 10px', borderRadius: 6,
-              background: t.surface2, border: `1px solid ${t.border}`, color: t.textMuted,
-            }}>PDF</span>
-            <span style={{
-              fontSize: 11, padding: '3px 10px', borderRadius: 6,
-              background: t.surface2, border: `1px solid ${t.border}`, color: t.textMuted,
-            }}>JPG · PNG · GIF</span>
-            <span style={{
-              fontSize: 11, padding: '3px 10px', borderRadius: 6,
-              background: t.surface2, border: `1px solid ${t.border}`, color: t.textMuted,
-            }}>WebP · TIFF · SVG</span>
-          </div>
+      <main className="page">
+        <div className="intro">
+          <h2>Look at a document, then change the API.</h2>
+          <p>Upload a file or open a sample. Switch between the standard toolbar, a custom toolbar, the headless hook and a document list.</p>
         </div>
 
-        {/* URL Input Toggle */}
-        <div style={{ marginTop: 12, textAlign: 'center' }}>
-          <button onClick={() => setShowUrlInput(!showUrlInput)} style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: 13, color: t.accent, fontWeight: 500,
-          }}>
-            {showUrlInput ? '− Hide URL input' : '+ Load from URL'}
-          </button>
-          {showUrlInput && (
-            <div style={{ marginTop: 10, display: 'flex', gap: 8, justifyContent: 'center' }}>
-              <input
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleUrlLoad()}
-                placeholder="https://example.com/document.pdf"
-                style={{
-                  padding: '10px 14px', borderRadius: 8, border: `1px solid ${t.border}`,
-                  background: t.surface, color: t.text, fontSize: 13, width: 320,
-                  outline: 'none', maxWidth: '70vw',
-                }}
-              />
-              <button onClick={handleUrlLoad} style={{
-                padding: '10px 18px', borderRadius: 8, border: 'none',
-                background: t.accent, color: '#fff', cursor: 'pointer',
-                fontSize: 13, fontWeight: 600,
-              }}>Load</button>
-            </div>
-          )}
-        </div>
-
-        {/* Samples */}
-        <section style={{ marginTop: 32 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 14 }}>
-            Sample documents
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
-            <button
-              className="fade-in"
-              onClick={loadDocumentBundle}
-              style={{
-                padding: '16px', borderRadius: 12,
-                border: viewMode === 'documents' && hasDocuments ? `2px solid ${t.accent}` : `1px solid ${t.border}`,
-                background: viewMode === 'documents' && hasDocuments ? t.accentLight : t.surface,
-                cursor: 'pointer', textAlign: 'left',
-                transition: 'all 0.15s',
-                boxShadow: t.shadow,
-              }}
+        <div className="layout">
+          <aside className="side">
+            <div
+              className="drop"
+              style={{ borderColor: dragOver ? 'var(--accent)' : undefined, background: dragOver ? 'var(--accent-soft)' : undefined }}
+              onDrop={handleDrop}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onClick={() => document.getElementById('fileInput')?.click()}
             >
-              <div style={{ fontSize: 28, marginBottom: 8 }}>📚</div>
-              <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 2 }}>All Samples</div>
-              <div style={{ fontSize: 11, color: t.accent, fontWeight: 500 }}>
-                {DEMO_DOCUMENTS.length} files · documents[]
+              <input
+                id="fileInput" type="file"
+                accept="image/*,.pdf,.svg,.tif,.tiff"
+                style={{ display: 'none' }}
+                onChange={(e) => handleFile(e.target.files[0])}
+              />
+              <strong>Upload a document</strong>
+              <span>Drag and drop or click to browse.</span>
+              <div className="formats">
+                <i>PDF</i><i>TIFF</i><i>SVG</i><i>JPG</i><i>PNG</i><i>WebP</i>
               </div>
+            </div>
+
+            <button className="linkish" onClick={() => setShowUrlInput(!showUrlInput)}>
+              {showUrlInput ? 'Hide URL' : 'Load from URL'}
             </button>
-            {SAMPLES.map((s) => {
-              const active = doc?.fileName === s.fileName;
-              return (
-                <button
-                  key={s.id}
-                  className="fade-in"
-                  onClick={() => loadSample(s)}
-                  style={{
-                    padding: '16px', borderRadius: 12,
-                    border: active ? `2px solid ${t.accent}` : `1px solid ${t.border}`,
-                    background: active ? t.accentLight : t.surface,
-                    cursor: 'pointer', textAlign: 'left',
-                    transition: 'all 0.15s',
-                    boxShadow: t.shadow,
-                  }}
-                >
-                  <div style={{ fontSize: 28, marginBottom: 8 }}>{s.icon}</div>
-                  <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 2 }}>{s.label}</div>
-                  <div style={{ fontSize: 11, color: s.color, fontWeight: 500 }}>
-                    {s.id === 'pdf' ? 'PDF' : 'Image'}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* File Info */}
-        {showViewer && fileInfo && (
-          <div className="fade-in" style={{
-            marginTop: 18, padding: '12px 16px', borderRadius: 10,
-            background: t.surface, border: `1px solid ${t.border}`,
-            display: 'flex', alignItems: 'center', gap: 10, fontSize: 13,
-            boxShadow: t.shadow,
-          }}>
-            <span>{FileIcon({ type: fileInfo.type || doc?.fileName?.split('.').pop() || 'bundle' })}</span>
-            <span style={{ fontWeight: 500, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {fileInfo.activeFile || fileInfo.name || doc?.fileName}
-            </span>
-            {hasDocuments && (
-              <span style={{ color: t.textMuted }}>
-                {documentIndex + 1} / {documents.length}
-              </span>
-            )}
-            {fileInfo.size > 0 && (
-              <span style={{ color: t.textMuted }}>{formatFileSize(fileInfo.size)}</span>
-            )}
-            <button
-              onClick={() => { setDoc(null); setDocuments(null); setFileInfo(null); setDocumentIndex(0); }}
-              style={{
-                background: 'none', border: `1px solid ${t.border}`, borderRadius: 6,
-                padding: '4px 10px', cursor: 'pointer', fontSize: 12, color: t.textMuted,
-              }}
-            >Close</button>
-          </div>
-        )}
-
-        {/* View Mode Selector */}
-        <ViewModeSelector mode={viewMode} onChange={setViewMode} t={t} />
-
-        {/* Viewer */}
-        <div className="fade-in" style={{
-          marginTop: 10, borderRadius: 16, overflow: 'hidden',
-          boxShadow: t.shadowLg,
-        }}>
-          {!showViewer ? (
-            <div style={{
-              height: 340, borderRadius: 16,
-              border: `1px solid ${t.border}`,
-              background: t.surface,
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center',
-              gap: 12,
-            }}>
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={t.textDim} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
-              </svg>
-              <div style={{ fontSize: 14, color: t.textDim, fontWeight: 500 }}>
-                Select a file or sample to preview
+            {showUrlInput && (
+              <div className="url-row">
+                <input
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleUrlLoad()}
+                  placeholder="https://example.com/document.pdf"
+                />
+                <button className="load" onClick={handleUrlLoad}>Load</button>
               </div>
-              <div style={{ fontSize: 12, color: t.textDim }}>
-                Supports PDF, images, TIFF and SVG
+            )}
+
+            <div className="kicker">Samples</div>
+            <div className="samples">
+              <button
+                className={viewMode === 'documents' && hasDocuments ? 'sample active' : 'sample'}
+                onClick={loadDocumentBundle}
+              >
+                <b style={{ background: 'var(--accent)' }} />
+                <span>
+                  <strong>All Samples</strong>
+                  <small>{DEMO_DOCUMENTS.length} files · documents[]</small>
+                </span>
+              </button>
+              {SAMPLES.map((sample) => {
+                const active = doc?.fileName === sample.fileName;
+                return (
+                  <button
+                    key={sample.id}
+                    className={active ? 'sample active' : 'sample'}
+                    onClick={() => loadSample(sample)}
+                  >
+                    <b style={{ background: sample.color }} />
+                    <span>
+                      <strong>{sample.label}</strong>
+                      <small>{sampleKind(sample)}</small>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </aside>
+
+          <section className="stage">
+            <div className="stage-head">
+              <ViewModeSelector mode={viewMode} onChange={setViewMode} />
+            </div>
+            {showViewer && fileInfo && (
+              <div className="filebar">
+                <strong>{fileInfo.activeFile || fileInfo.name || doc?.fileName}</strong>
+                {hasDocuments && <span>{documentIndex + 1} / {documents.length}</span>}
+                {fileInfo.size > 0 && <span>{formatFileSize(fileInfo.size)}</span>}
+                <button onClick={() => { setDoc(null); setDocuments(null); setFileInfo(null); setDocumentIndex(0); }}>Close</button>
+              </div>
+            )}
+
+            <div className="viewer-frame">
+          {!showViewer ? (
+            <div className="empty">
+              <div>
+                <strong>Select a file or sample to preview</strong>
+                <span>Supports PDF, images, TIFF and SVG</span>
               </div>
             </div>
           ) : viewMode === 'documents' && hasDocuments ? (
@@ -532,7 +395,7 @@ export function App() {
               pdfWorkerSrc={PDF_WORKER_SRC}
               theme={dark ? 'dark' : 'light'}
               locale="en-US"
-              height="clamp(340px, 68vh, 720px)"
+              height="clamp(420px, 72vh, 820px)"
               extraToolbar={(actions) => (
                 <>
                   <button
@@ -569,7 +432,7 @@ export function App() {
               theme={dark ? 'dark' : 'light'}
               locale="en-US"
               pdfWorkerSrc={PDF_WORKER_SRC}
-              height="clamp(340px, 68vh, 720px)"
+              height="clamp(420px, 72vh, 820px)"
               extraToolbar={(actions) => (
                 <>
                   <button
@@ -596,7 +459,7 @@ export function App() {
               theme={dark ? 'dark' : 'light'}
               locale="en-US"
               pdfWorkerSrc={PDF_WORKER_SRC}
-              height="clamp(340px, 68vh, 720px)"
+              height="clamp(420px, 72vh, 820px)"
               renderToolbar={(actions) => (
                 <div style={{
                   display: 'flex', gap: 6, padding: '8px 12px',
@@ -619,51 +482,31 @@ export function App() {
               labels={labels}
             />
           ) : (
-            <HeadlessViewer doc={doc} dark={dark} height="clamp(340px, 68vh, 720px)" labels={labels} t={t} />
+            <HeadlessViewer doc={doc} dark={dark} height="clamp(420px, 72vh, 820px)" labels={labels} t={t} />
           )}
+            </div>
+          </section>
         </div>
 
-        {/* Features */}
-        <section style={{ marginTop: 40, marginBottom: 20 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 16 }}>
-            API Modes
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
-            {[
-              { icon: '🎛️', label: 'extraToolbar', desc: 'Add buttons to default toolbar — accepts ReactNode or function(actions)' },
-              { icon: '🔄', label: 'renderToolbar', desc: 'Fully replace the toolbar — function(actions) => ReactNode' },
-              { icon: '🎣', label: 'useViewerCore', desc: 'Headless hook — all state + actions, render your own UI' },
-              { icon: '🖼️', label: 'ViewerCanvas', desc: 'Renders document only (no toolbar) — pairs with useViewerCore' },
-              { icon: '📚', label: 'documents', desc: 'Native file list with sidebar + prev/next toolbar navigation' },
-            ].map((f) => (
-              <div key={f.label} className="fade-in" style={{
-                padding: '14px', borderRadius: 10,
-                background: t.surface, border: `1px solid ${t.border}`,
-                boxShadow: t.shadow,
-              }}>
-                <div style={{ fontSize: 22, marginBottom: 4 }}>{f.icon}</div>
-                <div style={{ fontSize: 12, fontWeight: 600 }}>{f.label}</div>
-                <div style={{ fontSize: 11, color: t.textMuted }}>{f.desc}</div>
-              </div>
-            ))}
-          </div>
-        </section>
+        <div className="kicker">API modes</div>
+        <div className="cards">
+          {[
+            { label: 'extraToolbar', desc: 'Add buttons to the default toolbar.' },
+            { label: 'renderToolbar', desc: 'Replace the toolbar with your own controls.' },
+            { label: 'useViewerCore', desc: 'Read state and actions without the built-in chrome.' },
+            { label: 'ViewerCanvas', desc: 'Render the document and supply the surrounding UI.' },
+            { label: 'documents', desc: 'Move through a list with previous and next.' },
+          ].map((item) => (
+            <article key={item.label} className="card">
+              <strong>{item.label}</strong>
+              <p>{item.desc}</p>
+            </article>
+          ))}
+        </div>
 
-        {/* Example Code */}
-        <section style={{ marginTop: 36, marginBottom: 20 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 16 }}>
-            Quick Examples
-          </div>
-          <div style={{
-            borderRadius: 12, overflow: 'hidden',
-            border: `1px solid ${t.border}`, boxShadow: t.shadow,
-          }}>
-            <pre style={{
-              margin: 0, padding: '20px', fontSize: 13, lineHeight: 1.6,
-              background: dark ? '#0d1117' : '#f8f9fa',
-              color: dark ? '#e1e4e8' : '#24292e',
-              overflowX: 'auto',
-            }}>{`// 1. Multiple documents with native list + navigation
+        <div className="kicker">Quick examples</div>
+        <div className="code">
+          <pre>{`// 1. Multiple documents with native list + navigation
 <ReactViewerDoc
   documents={[
     { id: '1', fileName: 'contrato.pdf', fileData: 'JVBERi0xLjQK...' },
@@ -713,16 +556,9 @@ function MyViewer({ doc }) {
     </div>
   );
 }`}</pre>
-          </div>
-        </section>
+        </div>
 
-        {/* Footer */}
-        <footer style={{
-          marginTop: 40, padding: '20px 0', borderTop: `1px solid ${t.border}`,
-          textAlign: 'center', fontSize: 12, color: t.textDim,
-        }}>
-          react-viewer-doc · MIT License · Built with React, MUI, and pdf.js
-        </footer>
+        <footer>react-viewer-doc · MIT License · React, MUI and pdf.js</footer>
       </main>
     </div>
   );
