@@ -1,4 +1,5 @@
 import UTIF from 'utif2';
+import { MAX_DOCUMENT_BYTES } from './FileHelpers';
 import * as TiffHelpers from './TiffHelpers';
 
 jest.mock('utif2', () => ({ __esModule: true, default: { decode: jest.fn(), decodeImage: jest.fn(), toRGBA8: jest.fn() } }));
@@ -79,5 +80,20 @@ test('passes cancellation to fetch', async () => {
     controller.abort();
     expect(await TiffHelpers.readSourceAsArrayBuffer('https://example.com/scan.tiff', controller.signal)).toBeNull();
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  } finally { globalThis.fetch = originalFetch; }
+});
+
+test('cancels an oversized TIFF download', async () => {
+  (TiffHelpers.readSourceAsArrayBuffer as jest.Mock).mockRestore();
+  const cancel = jest.fn();
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = jest.fn().mockResolvedValue({
+    ok: true,
+    headers: { get: () => String(MAX_DOCUMENT_BYTES + 1) },
+    body: { cancel },
+  });
+  try {
+    expect(await TiffHelpers.readSourceAsArrayBuffer('https://example.com/huge.tiff')).toBeNull();
+    expect(cancel).toHaveBeenCalled();
   } finally { globalThis.fetch = originalFetch; }
 });

@@ -57,7 +57,7 @@ Antes de disparar qualquer publicação:
 
 ### Método A: Via GitHub Actions (Recomendado)
 
-O workflow [`.github/workflows/release.yml`](.github/workflows/release.yml) executa os testes em ambiente limpo, compila CJS e ESM, valida o pacote e publica com `--provenance`.
+O workflow [`.github/workflows/release.yml`](.github/workflows/release.yml) executa os testes em ambiente limpo, compila CJS e ESM, valida o pacote e publica pelo Trusted Publisher. A proveniência sai automaticamente. O secret `NPM_TOKEN` não é usado: um token vazio ou expirado no `.npmrc` impede o OIDC.
 
 #### Opção 1: Por Git Tag
 Crie e envie uma tag correspondente à versão no `package.json`:
@@ -125,6 +125,6 @@ Para publicar `0.6.1` depois de corrigir o acesso no npm:
 1. Confirme em **Trusted Publishers** do pacote que o workflow é exatamente `release.yml`, no repositório `nandorip/react-viewer-doc`.
 2. Uma configuração nova de Trusted Publisher expira se a primeira publicação não for concluída em 2 dias. Se a configuração de novembro expirou, apague e crie outra antes de publicar.
 3. Na aba **Actions**, execute **Release & Publish to npm** em `main` (`workflow_dispatch`). Esse caminho usa o workflow atual e não exige uma tag nova.
-4. A publicação usa OIDC. O secret `NPM_TOKEN` só entra se estiver preenchido. Com Trusted Publisher, a proveniência é gerada automaticamente; o comando não passa `--provenance`.
+4. A publicação usa só OIDC. Não configure `registry-url` nem `NODE_AUTH_TOKEN` nesse workflow.
 
 Publicação local continua disponível com `npm run release -- --otp=CODIGO` na conta `wipmob`.

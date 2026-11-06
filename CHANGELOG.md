@@ -31,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-- Open and print for PDFs now fetch the file, require a `%PDF-` header, and reject payloads over 50 MB before navigating a new tab
+- Open and print for PDFs now fetch the file, require a `%PDF-` header in the first 1024 bytes, and reject payloads over 50 MB before navigating a new tab
 - New tabs and print windows set `window.opener = null` before the document URL is assigned
 - Reject base64 documents over 50 MB
 - Reject TIFF files over 50 MB, files with more than 1000 pages, and pages larger than 25 megapixels

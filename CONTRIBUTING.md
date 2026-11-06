@@ -89,7 +89,7 @@ npm run release -- --otp=YOUR_OTP_CODE
 
 ### Automated release via GitHub Actions (Recommended)
 
-Prefer a Trusted Publisher for `release.yml`. `NPM_TOKEN` is optional and is used only when that secret is set.
+Configure a Trusted Publisher for `release.yml`. The workflow publishes with OIDC and does not read `NPM_TOKEN`.
 - **By tag:** `git tag vX.Y.Z && git push origin vX.Y.Z` (the tag must match `package.json` and must not already exist)
 - **By web UI:** Go to **Actions** -> **Release & Publish to npm** -> **Run workflow**.
 

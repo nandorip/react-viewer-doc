@@ -26,7 +26,6 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 24
-          registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
 
       - name: Install dependencies
@@ -49,10 +48,5 @@ jobs:
 
       - name: Publish to npm
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_DIST_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || 'latest' }}
-        run: |
-          if [ -z "$NODE_AUTH_TOKEN" ]; then
-            unset NODE_AUTH_TOKEN
-          fi
-          npm publish --access public --tag "$NPM_DIST_TAG"
+          NPM_DIST_TAG: ${{ github.event.inputs.tag || 'latest' }}
+        run: npm publish --access public --tag "$NPM_DIST_TAG"

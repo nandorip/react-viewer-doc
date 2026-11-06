@@ -41,7 +41,10 @@ export const readSourceAsArrayBuffer = async (source: Blob | string, signal?: Ab
     const response = await fetch(source, { signal });
     if (!response.ok) return null;
     const length = Number(response.headers?.get('content-length'));
-    if (length > MAX_DOCUMENT_BYTES) return null;
+    if (length > MAX_DOCUMENT_BYTES) {
+      await response.body?.cancel();
+      return null;
+    }
     if (!response.body) {
       const buffer = await response.arrayBuffer();
       return buffer.byteLength <= MAX_DOCUMENT_BYTES ? buffer : null;

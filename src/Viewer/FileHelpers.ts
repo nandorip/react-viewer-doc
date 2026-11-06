@@ -236,6 +236,16 @@ export const buildFileFromBase64 = (fileBase64: string): BuiltFile | null => {
   return null;
 };
 
+const PDF_SIGNATURE = [0x25, 0x50, 0x44, 0x46, 0x2d];
+
+const hasPdfSignature = (bytes: Uint8Array): boolean => {
+  const last = Math.min(bytes.length, 1024) - PDF_SIGNATURE.length;
+  for (let offset = 0; offset <= last; offset += 1) {
+    if (PDF_SIGNATURE.every((byte, index) => bytes[offset + index] === byte)) return true;
+  }
+  return false;
+};
+
 export const createSafePdfBlob = async (source: Blob | string): Promise<Blob | null> => {
   try {
     let blob: Blob;
@@ -269,8 +279,8 @@ export const createSafePdfBlob = async (source: Blob | string): Promise<Blob | n
       blob = new Blob(chunks);
     }
     if (blob.size > MAX_DOCUMENT_BYTES) return null;
-    const header = new Uint8Array(await blob.slice(0, 5).arrayBuffer());
-    if (header.length !== 5 || header.some((byte, index) => byte !== [37, 80, 68, 70, 45][index])) return null;
+    const header = new Uint8Array(await blob.slice(0, 1024).arrayBuffer());
+    if (!hasPdfSignature(header)) return null;
     return new Blob([blob], { type: 'application/pdf' });
   } catch {
     return null;
