@@ -113,3 +113,18 @@ Para publicar diretamente do terminal:
    ```bash
    npm run publish-demo
    ```
+
+---
+
+## 5. Se a publicação no GitHub Actions falhar
+
+A tag `v0.6.1` já existe no GitHub. O workflow de 1º de novembro de 2026 passou nos testes e falhou só em `npm publish`. Reenviar a mesma tag não dispara o workflow de novo.
+
+Para publicar `0.6.1` depois de corrigir o acesso no npm:
+
+1. Confirme em **Trusted Publishers** do pacote que o workflow é exatamente `release.yml`, no repositório `nandorip/react-viewer-doc`.
+2. Uma configuração nova de Trusted Publisher expira se a primeira publicação não for concluída em 2 dias. Se a configuração de novembro expirou, apague e crie outra antes de publicar.
+3. Na aba **Actions**, execute **Release & Publish to npm** em `main` (`workflow_dispatch`). Esse caminho usa o workflow atual e não exige uma tag nova.
+4. A publicação usa OIDC. O secret `NPM_TOKEN` só entra se estiver preenchido. Com Trusted Publisher, a proveniência é gerada automaticamente; o comando não passa `--provenance`.
+
+Publicação local continua disponível com `npm run release -- --otp=CODIGO` na conta `wipmob`.

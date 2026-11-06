@@ -1,53 +1,28 @@
 # Handoff for the next agent
 
-Updated: 2026-10-14
+Updated: 2026-11-06
 
 ## Current state
 
 - Repository: `react-viewer-doc`, branch `main`.
-- Release version: `0.6.1`. (npm latest published is `0.6.0`).
-- The repository includes bug fixes, memory optimizations for multi-page TIFFs, security improvements for print window openers, PDF link/error callbacks, Next.js/RSC `'use client'` support, and automated package integration verification (`npm run check:package`).
+- Package version in `package.json`: `0.6.1`.
+- npm `latest` is still `0.6.0`. Version `0.6.1` has never been published.
+- Git tag `v0.6.1` points at `2e43573` and is already on `origin`. The release workflow for that tag passed tests, build and `check:package`, then failed on `npm publish` (run 41364663354, 2026-11-02).
+- `main` is one empty deploy commit ahead of that tag (`6505eb0`), plus any uncommitted release prep.
+- `npm whoami` on this machine is `wipmob`.
 
-## Changes made in this cycle
+## Release prep in this cycle
 
-1. **TIFF performance & race condition prevention**:
-   - `src/Viewer/TiffHelpers.ts`: Added AbortSignal support, recognized `image/tif` MIME alias, implemented on-demand page decoding, and deallocated previous page raster memory upon switching.
-   - `src/hooks/useTiffImage.ts`: AbortController-driven request cancellation, session-based page synchronization to prevent slow previous page renders from overwriting the selected page, and delayed Object URL revocation to prevent screen flashing.
-   - `src/hooks/useTiffImage.test.ts` & `src/Viewer/TiffHelpers.test.ts`: Complete unit tests covering concurrency, lazy decoding, retry, cancellation, and error handling.
-
-2. **Security & robustness**:
-   - `src/hooks/useDocumentActions.ts`: Set `printWindow.opener = null` when opening remote PDFs to prevent reverse tabnabbing vulnerabilities. Wrapped cross-origin PDF print in try/catch.
-   - `src/Viewer/FileHelpers.ts`: Stripped query parameters and URL hash fragments (`[?#]`) when parsing file extensions.
-   - `src/hooks/useViewerState.ts`: Enforced `Number.isInteger` on page numbers to prevent fractional page navigation.
-
-3. **Error recovery & navigation**:
-   - `src/Viewer/index.tsx`: Kept document navigation controls available when in multi-document mode even if the active document fails to load.
-   - `src/hooks/useFileLoader.ts`: Added `reloadKey` state and retry trigger to restart TIFF and document loading cleanly.
-
-4. **PDF integration**:
-   - `src/components/ViewerCanvas/index.tsx`: Attached `onItemClick` to `Document` to connect PDF internal links (bookmarks/outlines) to current page navigation.
-   - Added `onLoadError` and `onRenderError` callbacks to `Page` to propagate page-level errors to `onError`.
-
-5. **Packaging, Tooling & CI**:
-   - `src/index.ts`: Added `'use client'` directive for Next.js and RSC compatibility.
-   - `scripts/post-build.cjs`: Post-processes ESM build output to append explicit `.js` extensions for relative imports.
-   - `scripts/check-package.cjs`: Validates package manifest (`main`, `module`, `types`, `exports`), declarations, and relative ESM imports.
-   - `package.json`: Added `check:package` script and wired it into `prepublishOnly`.
-   - `.github/workflows/ci.yml`: Updated Node matrix to `[22, 24]` and added the package check step.
-   - Updated documentation (`README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CHANGELOG.md`, `example/index.js`).
-
-## Verification
-
-- `npm test`: 11 test suites passed, 121 tests passed.
-- `npm run build:lib`: Built CommonJS (`dist/cjs/`) and ESM (`dist/esm/`).
-- `npm run check:package`: Passed with full manifest and import resolution validation.
-- `npm run build`: Demo built successfully with production esbuild bundle.
-- `npm pack --dry-run`: Verified package contents.
+- Changelog for 0.6.1 now includes the PDF/TIFF size and header checks, error-boundary reset, PDF worker placeholder behavior, pan cursor and demo samples.
+- Dependencies updated inside existing ranges: React 19.3.1, MUI 9.5.0, react-window 2.5.3, ts-jest 29.4.15.
+- Release workflow publishes with OIDC and uses `NPM_TOKEN` only when the secret is non-empty. Actions `checkout` and `setup-node` are v7.
+- Production `npm audit --omit=dev` is clean. Dev audit still reports moderate `minimatch` issues through Jest; `npm audit fix --force` would downgrade Jest to 25 and must not be used.
 
 ## Next action to publish
 
-1. Authenticate with npm: `npm login`.
-2. Confirm identity: `npm whoami`.
-3. Run `npm publish`.
-4. Deploy demo: `npm run publish-demo`.
-5. Confirm npm release: `npm view react-viewer-doc version dist-tags --json`.
+Do not push tag `v0.6.1` again. It already exists.
+
+1. Commit the release prep on `main` and push.
+2. On npm, confirm Trusted Publisher for workflow `release.yml`. Recreate it if the November configuration expired (first publish must succeed within 2 days).
+3. Run **Release & Publish to npm** with `workflow_dispatch` on `main`, or locally: `npm run release -- --otp=CODIGO`.
+4. Confirm with `npm view react-viewer-doc version dist-tags --json`.

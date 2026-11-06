@@ -89,8 +89,8 @@ npm run release -- --otp=YOUR_OTP_CODE
 
 ### Automated release via GitHub Actions (Recommended)
 
-Once you set the `NPM_TOKEN` secret in your GitHub repository, you can publish without local credentials:
-- **By tag:** `git tag v0.6.1 && git push origin v0.6.1`
+Prefer a Trusted Publisher for `release.yml`. `NPM_TOKEN` is optional and is used only when that secret is set.
+- **By tag:** `git tag vX.Y.Z && git push origin vX.Y.Z` (the tag must match `package.json` and must not already exist)
 - **By web UI:** Go to **Actions** -> **Release & Publish to npm** -> **Run workflow**.
 
 ### Deploying the demo

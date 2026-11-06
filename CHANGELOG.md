@@ -7,32 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.6.1] - 2026-10-14
+## [0.6.1] - 2026-11-06
 
 ### Added
 
 - Added `'use client'` directive to root export for Next.js App Router and RSC compatibility
 - Added explicit `.js` and `/index.js` resolution script in ESM build for Node.js ESM consumers
-- Added consumer package validation script (`npm run check:package`) in CI and `prepublishOnly`
+- Added consumer package validation script (`npm run check:package`) in CI and `prepack`
 - Connected PDF internal links to current page navigation via `onItemClick`
 - Propagated page-level PDF render and load failures to `onError`
 - Added reload key tracking so `handleRetry` cleanly re-fetches and decodes TIFF documents
+- Added multipage TIFF and SVG samples to the GitHub Pages demo
 
 ### Fixed
 
 - Fixed race condition where slow previous page decode could overwrite the currently selected TIFF page
 - Optimized TIFF memory footprint by decoding only requested pages on demand and freeing previous page raster data
 - Prevented blank flash during TIFF page changes by delaying Object URL revocation until the replacement page renders
-- Prevented opener access vulnerability in `handlePrint` by setting `window.opener = null` before opening remote PDFs
 - Kept document navigation accessible in multi-document mode even when a single document encounters an error
 - Fixed file extension resolution for URLs with hash fragments (`#`) or query strings (`?`)
 - Prevented fractional page numbers from being applied in viewer state
+- Reset the error boundary when any field of the active document changes, including `fileUri` and `fileData`
+
+### Security
+
+- Open and print for PDFs now fetch the file, require a `%PDF-` header, and reject payloads over 50 MB before navigating a new tab
+- New tabs and print windows set `window.opener = null` before the document URL is assigned
+- Reject base64 documents over 50 MB
+- Reject TIFF files over 50 MB, files with more than 1000 pages, and pages larger than 25 megapixels
 
 ### Changed
 
 - Updated the TypeScript toolchain to TypeScript 7 while retaining the TypeScript 6 compiler API for Jest compatibility
 - Updated the library build configuration for TypeScript 7 module resolution rules
 - Updated CI matrix to Node 22 and 24
+- Leave an existing PDF.js worker in place, and apply the CDN worker only when react-pdf still has its `pdf.worker.mjs` placeholder
+- Show a grab cursor while panning images
+- Refreshed dependencies inside current ranges, including React 19.3.1, MUI 9.5.0 and react-window 2.5.3
 
 ## [0.6.0] - 2026-09-23
 
@@ -140,7 +151,9 @@ First release of the `react-viewer-doc` package name.
 - Headless API: `useViewerCore` + `ViewerCanvas`
 - Custom toolbar via `extraToolbar` and `renderToolbar`
 
-[Unreleased]: https://github.com/nandorip/react-viewer-doc/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/nandorip/react-viewer-doc/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/nandorip/react-viewer-doc/compare/v0.6.0...v0.6.1
+[0.6.0]: https://github.com/nandorip/react-viewer-doc/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/nandorip/react-viewer-doc/compare/v0.4.3...v0.5.0
 [0.4.3]: https://github.com/nandorip/react-viewer-doc/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/nandorip/react-viewer-doc/compare/v0.4.1...v0.4.2
