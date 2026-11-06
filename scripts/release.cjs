@@ -1,71 +1,85 @@
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const { execFileSync, execSync } = require('child_process');
+const { readFileSync } = require('fs');
+const { join } = require('path');
 
-const rootDir = path.join(__dirname, '..');
-const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
+const root = join(__dirname, '..');
+const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+const version = manifest.version;
 
-console.log(`\n========================================`);
-console.log(`  Release Helper: ${pkg.name}@${pkg.version}`);
-console.log(`========================================\n`);
+function run(command) {
+  execSync(command, { cwd: root, stdio: 'inherit' });
+}
 
-function run(cmd, desc) {
-  console.log(`▶ ${desc || cmd}...`);
+function capture(command) {
   try {
-    execSync(cmd, { cwd: rootDir, stdio: 'inherit' });
-    console.log(`✓ ${desc || cmd} OK\n`);
-  } catch (error) {
-    console.error(`\n❌ Falha em: ${desc || cmd}`);
-    process.exit(1);
+    return execSync(command, {
+      cwd: root,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    }).trim();
+  } catch {
+    return null;
   }
 }
 
-// 1. Check Git status
-try {
-  const status = execSync('git status --porcelain', { cwd: rootDir }).toString().trim();
-  if (status) {
-    console.warn(`⚠️  Atenção: existem arquivos não commitados no repositório:\n${status}\n`);
-  } else {
-    console.log(`✓ Repositório Git limpo.`);
-  }
-} catch {
-  // git not available or outside repo
-}
+console.log(`\nIniciando preparação de release para ${manifest.name}@${version}\n`);
 
-// 2. Run Tests, Build and Package Check
-run('npm test -- --runInBand', 'Executando testes unitários');
-run('npm run build:lib', 'Compilando biblioteca (CJS e ESM)');
-run('npm run check:package', 'Validando estrutura e imports do pacote');
-
-// 3. Check npm whoami
-let currentUser = null;
-try {
-  currentUser = execSync('npm whoami', { cwd: rootDir }).toString().trim();
-  console.log(`✓ Usuário autenticado no npm: "${currentUser}"`);
-} catch {
-  console.error(`\n❌ Você não está autenticado no npm.`);
-  console.error(`   Execute primeiro: npm login\n`);
+const currentUser = capture('npm whoami');
+if (!currentUser) {
+  console.error('Você não está autenticado no npm. Execute `npm login` antes de continuar.');
   process.exit(1);
 }
 
-// 4. Pass additional arguments (e.g. --otp=XXXXXX) to npm publish
-const args = process.argv.slice(2).join(' ');
-const publishCmd = `npm publish --access public ${args}`.trim();
+console.log(`Usuário npm conectado: ${currentUser}`);
+if (currentUser !== 'wipmob' && currentUser !== 'nandorip') {
+  console.warn(`Aviso: o pacote pertence a wipmob. Seu usuário é ${currentUser}.`);
+}
 
-console.log(`▶ Publicando pacote no registro do npm:`);
-console.log(`  Comando: ${publishCmd}\n`);
+const publishedVersion = capture(`npm view ${manifest.name}@${version} version`);
+if (publishedVersion === version) {
+  console.error(`A versão ${version} já está publicada no npm. Atualize a versão no package.json primeiro.`);
+  process.exit(1);
+}
 
+console.log('\nExecutando verificações (testes, build e pacote)...');
+run('npm test -- --runInBand');
+run('npm run build:lib');
+run('npm run check:package');
+
+const otpArg = process.argv.find((arg) => arg.startsWith('--otp=')) || '';
+const otp = otpArg.slice('--otp='.length);
+if (otpArg && !/^\d{6,8}$/.test(otp)) {
+  console.error('OTP inválido: informe um código numérico de 6 a 8 dígitos.');
+  process.exit(1);
+}
+
+const publishArgs = ['publish', '--access', 'public', ...(otpArg ? [`--otp=${otp}`] : [])];
+const npmCli = process.env.npm_execpath;
+if (!npmCli) {
+  console.error('Execute este script com `npm run release`.');
+  process.exit(1);
+}
+
+console.log(`\nExecutando: npm publish --access public${otpArg ? ' --otp=<oculto>' : ''}`);
 try {
-  execSync(publishCmd, { cwd: rootDir, stdio: 'inherit' });
-  console.log(`\n🎉 Publicação da versão ${pkg.version} concluída com sucesso!`);
+  execFileSync(process.execPath, [npmCli, ...publishArgs], { cwd: root, stdio: 'inherit' });
+  console.log(`\n${manifest.name}@${version} publicado com sucesso no npm.`);
+} catch {
+  console.error('\nFalha na publicação. Se for erro de 2FA, use: npm run release -- --otp=123456');
+  process.exit(1);
+}
+
+const tag = `v${version}`;
+const existingTag = capture(`git tag -l ${tag}`);
+if (!existingTag) {
+  console.log(`\nCriando tag ${tag}...`);
   try {
-    execSync(`npm view ${pkg.name} version dist-tags --json`, { cwd: rootDir, stdio: 'inherit' });
-  } catch {}
-} catch (error) {
-  console.error(`\n❌ Erro ao publicar no npm.`);
-  console.error(`Dicas:`);
-  console.error(`  1. Verifique se o usuário "${currentUser}" é proprietário ou colaborador do pacote.`);
-  console.error(`  2. Se a sua conta exigir 2FA no terminal, use: npm run release -- --otp=SEU_CODIGO`);
-  console.error(`  3. Ou consulte o arquivo PUBLISHING.md para publicar com 1 clique via GitHub Actions.\n`);
-  process.exit(1);
+    run(`git tag ${tag}`);
+    run(`git push origin ${tag}`);
+    console.log(`Tag ${tag} enviada para o GitHub.`);
+  } catch {
+    console.warn(`Não foi possível enviar a tag ${tag} automaticamente.`);
+  }
 }
+
+console.log('\nProcesso de release concluído.\n');
